@@ -135,14 +135,14 @@ def home_body():
 
 def hero():
     return '''<section class="hero">
-  <div class="hero-logo"><img src="assets/img/logo.webp" width="560" height="645" alt="সৃজনশীল তরুণ সংঘ লোগো — স্থাপিত ২০১১ ই." fetchpriority="high"></div>
+  <div class="hero-logo"><img src="assets/img/logo.webp" width="93" height="107" alt="সৃজনশীল তরুণ সংঘ লোগো — স্থাপিত ২০১১ ই." fetchpriority="high"></div>
   <figure class="charter"><img src="assets/img/charter.jpg" width="1400" height="1120" alt="ঘোষণাপত্র হাতে সংগঠনের চার প্রতিষ্ঠাতা — Charter of Srijonshil Declaration"></figure>
-  <div class="wrap hero-text">
+  <div class="hero-block"><div class="hero-text">
     <h1>সৃজনশীল তরুণ সংঘ</h1>
     <p class="hero-slogan">সামাজিক উন্নয়ন ও ন্যায়বিচার,<br>তারুণ্যের অঙ্গীকার</p>
     <p class="hero-desc">শিক্ষা, স্বাস্থ্য, পরিবেশ, সংস্কৃতি, ক্রীড়া ও সচেতনতার মাধ্যমে সামাজিক ও মানবিক সমস্যার সমাধানে তরুণদের সম্মিলিত উদ্যোগ।</p>
     <div class="hero-btns"><a class="btn btn-light" href="pages/about.html">আমাদের সম্পর্কে</a><a class="btn btn-ghost" href="pages/membership.html#apply">সদস্য হতে চাই</a></div>
-  </div>
+  </div></div>
 </section>
 '''
 

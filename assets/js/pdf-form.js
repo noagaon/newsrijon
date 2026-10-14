@@ -7,7 +7,7 @@
 
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
-  var FONT = '"Hind Siliguri","Noto Sans Bengali","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
+  var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
   var INK = '#10205a';              // পূরণ করা তথ্যের রং
   var LABEL = '#111';
 
@@ -24,10 +24,10 @@
     if (!document.fonts || !document.fonts.load) return Promise.resolve();
     var sample = 'সৃজনশীল তরুণ সংঘ অআকখ ০১২৩৪৫৬৭৮৯';
     return Promise.all([
-      document.fonts.load('400 16px "Hind Siliguri"', sample),
-      document.fonts.load('500 16px "Hind Siliguri"', sample),
-      document.fonts.load('600 16px "Hind Siliguri"', sample),
-      document.fonts.load('700 16px "Hind Siliguri"', sample)
+      document.fonts.load('400 16px "Noto Sans Bengali"', sample),
+      document.fonts.load('500 16px "Noto Sans Bengali"', sample),
+      document.fonts.load('600 16px "Noto Sans Bengali"', sample),
+      document.fonts.load('700 16px "Noto Sans Bengali"', sample)
     ]).catch(function () {});
   }
 
