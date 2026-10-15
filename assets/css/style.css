@@ -61,8 +61,8 @@ p { margin: 0 0 1em; }
 
 /* হিরো (হোম) — মোবাইল রেফারেন্স ৩৬০px প্রস্থ */
 .hero { background: #145337; color: #fff; padding: 11px 0 20px; }
-.hero-logo { margin: 0 11px 6px; height: 115px; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse closest-side at center, #ffffff 0%, #e2f9ec 20%, #93ddbe 55%, #145337 100%); border-radius: 0; }
-.hero-logo img { height: 117px; width: auto; max-width: none; margin: 0; }
+.hero-logo { margin: 0 11px 12px; }
+.hero-logo img { width: 100%; height: auto; max-width: none; margin: 0; }
 .charter { margin: 0 auto 6px; width: 232px; border-radius: 0; overflow: hidden; box-shadow: none; }
 .charter img { width: 100%; }
 .hero-text { text-align: center; max-width: none; padding: 0; }
@@ -79,8 +79,7 @@ p { margin: 0 0 1em; }
   .brand-text small { font-size: .88rem; }
   .menu-btn { width: 52px; height: 48px; border-radius: 12px; }
   .hero { padding: 18px 0 40px; }
-  .hero-logo { max-width: 720px; margin: 0 auto 10px; height: 200px; }
-  .hero-logo img { height: 184px; }
+  .hero-logo { max-width: 720px; margin: 0 auto 12px; }
   .charter { width: 400px; margin-bottom: 12px; }
   .hero-block { max-width: 760px; margin: 0 auto; padding: 22px 24px 34px; }
   .hero-btns .btn { padding: 13px 24px; font-size: 1.05rem; }
@@ -109,6 +108,8 @@ p { margin: 0 0 1em; }
 .home-card h3.mini { font-size: 1.1rem; color: var(--g700); margin: 0 0 .3em; }
 .more { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; color: var(--g700); }
 .more:hover { text-decoration: underline; }
+.home-grid .more-btn { background: #fff; border: 2px solid var(--g700); border-radius: 10px; padding: 3px 14px; line-height: 1.5; }
+.home-grid .more-btn:hover { background: var(--g100); text-decoration: none; }
 .more-row { margin: .8em 0 0; }
 .facts { margin: 0; }
 .facts dt { font-weight: 700; color: var(--g800); margin-top: .9em; }

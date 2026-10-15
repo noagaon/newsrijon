@@ -135,7 +135,7 @@ def home_body():
 
 def hero():
     return '''<section class="hero">
-  <div class="hero-logo"><img src="assets/img/logo.webp" width="93" height="107" alt="সৃজনশীল তরুণ সংঘ লোগো — স্থাপিত ২০১১ ই." fetchpriority="high"></div>
+  <div class="hero-logo"><img src="assets/img/hero-band.webp" width="673" height="232" alt="সৃজনশীল তরুণ সংঘ লোগো — স্থাপিত ২০১১ ই." fetchpriority="high"></div>
   <figure class="charter"><img src="assets/img/charter.jpg" width="1400" height="1120" alt="ঘোষণাপত্র হাতে সংগঠনের চার প্রতিষ্ঠাতা — Charter of Srijonshil Declaration"></figure>
   <div class="hero-block"><div class="hero-text">
     <h1>সৃজনশীল তরুণ সংঘ</h1>

@@ -135,7 +135,8 @@ ICONS = {
 
 
 def more_link(link, label='বিস্তারিত'):
-    return '<a class="more" href="%s">%s %s</a>' % (link, esc(label), ICONS['arrow'])
+    cls = 'more more-btn' if label == 'বিস্তারিত' else 'more'
+    return '<a class="%s" href="%s">%s %s</a>' % (cls, link, esc(label), ICONS['arrow'])
 
 
 # ---------- পেইজ শেল ----------
@@ -168,6 +169,7 @@ def header(root, current=''):
         '<li><a href="%spages/%s.html"%s>%s</a></li>' % (
             root, s, ' aria-current="page"' if s == current else '', esc(t)) for s, t in MENU)
     home = root + 'index.html' if root else 'index.html'
+    links = '<li><a href="%s"%s>হোম</a></li>' % (home, ' aria-current="page"' if current == '' else '') + links
     return '''<body>
 <a class="skip" href="#main">মূল অংশে যান</a>
 <div class="topbar"><div class="wrap">%(slogan)s</div></div>
