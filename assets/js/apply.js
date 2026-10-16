@@ -6,9 +6,17 @@
   'use strict';
 
   var CFG = window.SRIJON_CONFIG || {};
-  var FEES = { general: '১,০০০ টাকা', expat: '১,২০০ টাকা', junior: '১০০ টাকা', donor: '২,০০০ টাকা' };
+  var FEE_NUM = { general: 1000, expat: 1200, junior: 100, donor: 2000 };
+  var REF_DISCOUNT = 0.2;                                    // রেফারেন্স থাকলে ২০% ছাড়
+  var REF_LABEL = { none: 'কোন রেফারেন্স নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' };
+  function feeAmount(t, ref) {
+    if (!FEE_NUM[t]) return 0;
+    return Math.round(FEE_NUM[t] * (ref && ref !== 'none' ? 1 - REF_DISCOUNT : 1));
+  }
+  function feeText(t, ref) { var n = feeAmount(t, ref); return n ? bnNum(n) + ' টাকা' : ''; }
+  function bnNum(n) { return bn(String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')); }
   var TYPE_LABEL = { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', junior: 'জুনিয়র সদস্য', donor: 'দাতা সদস্য' };
-  var MAX_PHOTO = 500 * 1024;
+  var PHOTO_MAX_SIDE = 1600;                                 // সংরক্ষণের জন্য ছবি এর বেশি বড় হলে ছোট করা হয় (আপলোডের সীমা নেই)
   // সিটি কর্পোরেশনের ওয়ার্ড সংখ্যা
   var CITY_WARDS = {
     'ঢাকা দক্ষিণ সিটি কর্পোরেশন': 75, 'ঢাকা উত্তর সিটি কর্পোরেশন': 54, 'গাজীপুর সিটি কর্পোরেশন': 57,
@@ -25,6 +33,7 @@
 
   var geo = null;
   var photoDataUrl = '';
+  var photoThumbUrl = '';
   var busy = false;
 
   // ---------- ছোট হেল্পার ----------
@@ -81,11 +90,13 @@
     function syncUnionWard() {
       var u = upa.value;
       uw.hidden = ww.hidden = true;
+      $(p + 'Loc').classList.remove('city');
       wardText.hidden = true; wardText.value = '';
       ward.hidden = false;
       if (!u) return;
-      if (/সিটি কর্পোরেশন$/.test(u)) {                       // সিটি কর্পোরেশন: শুধু ওয়ার্ড
+      if (/সিটি কর্পোরেশন$/.test(u)) {                       // সিটি কর্পোরেশন: শুধু ওয়ার্ড (সিটি কর্পোরেশনের ঠিক নিচে)
         ww.hidden = false;
+        $(p + 'Loc').classList.add('city');
         if (CITY_WARDS[u]) fillSelect(ward, wardOptions(CITY_WARDS[u]), '— নির্বাচন করুন —');
         else { ward.hidden = true; wardText.hidden = false; }
       } else {                                                  // উপজেলা: ইউনিয়ন/পৌরসভা + ওয়ার্ড (১–৯)
@@ -123,10 +134,23 @@
     $('nidHelp').textContent = t === 'junior' ? 'এনআইডি অথবা জন্মনিবন্ধন সনদ নম্বর — যেকোনো একটি বাধ্যতামূলক'
       : t === 'general' ? 'সাধারণ সদস্যের জন্য বাধ্যতামূলক' : 'ঐচ্ছিক';
   }
-  $('memberType').addEventListener('change', function () {
-    $('fee').value = FEES[this.value] || '';
-    syncNidRules();
-  });
+  // রেফারেন্স: নিজের সদস্য ধরণের রেফারেন্স বাছাই করা যাবে না
+  function syncReference() {
+    var t = val('memberType'), sel = $('reference');
+    Array.prototype.forEach.call(sel.options, function (o) {
+      var off = o.value !== 'none' && o.value === t;
+      o.hidden = off; o.disabled = off;
+    });
+    if (sel.value !== 'none' && sel.value === t) sel.value = 'none';
+  }
+  function syncFee() {
+    var t = val('memberType'), r = val('reference');
+    $('fee').value = feeText(t, r);
+    $('feeNote').hidden = !(t && r && r !== 'none');
+  }
+  $('memberType').addEventListener('change', function () { syncReference(); syncFee(); syncNidRules(); });
+  $('reference').addEventListener('change', syncFee);
+  wireOther('religion');
   syncNidRules();
 
   $('countryType').addEventListener('change', function () {
@@ -150,29 +174,39 @@
     });
   });
 
+  // ছবি: যেকোনো আকারের ছবি নেওয়া হয়; ব্রাউজারেই ছোট (সর্বোচ্চ ১৬০০ পিক্সেল) JPEG ও শিটের জন্য থাম্বনেইল বানানো হয়
+  function scaled(img, maxSide, quality) {
+    var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, maxSide / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    var x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);   // স্বচ্ছ PNG-র জন্য সাদা জমিন
+    x.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', quality);
+  }
   $('photo').addEventListener('change', function () {
-    var f = this.files && this.files[0];
+    var input = this, f = input.files && input.files[0];
     var prev = $('photoPreview');
-    photoDataUrl = '';
+    photoDataUrl = ''; photoThumbUrl = '';
     prev.hidden = true;
     if (!f) return;
-    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) {
-      this.value = ''; setStatus('error', 'ছবি অবশ্যই JPG, PNG বা WEBP হতে হবে।'); return;
-    }
-    if (f.size > MAX_PHOTO) {
-      this.value = '';
-      setStatus('error', 'ছবির আকার সর্বোচ্চ ৫০০ কেভি হতে হবে। আপনার ছবি ' + bn(Math.round(f.size / 1024)) + ' কেভি। ছোট আকারের ছবি দিন।');
-      return;
-    }
     setStatus('', '');
-    var fr = new FileReader();
-    fr.onload = function () {
-      photoDataUrl = fr.result;
-      $('photoImg').src = photoDataUrl;
-      $('photoInfo').textContent = f.name + ' (' + bn(Math.round(f.size / 1024)) + ' কেভি)';
-      prev.hidden = false;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function () {
+      try {
+        photoDataUrl = scaled(img, PHOTO_MAX_SIDE, 0.9);
+        photoThumbUrl = scaled(img, 200, 0.75);
+        $('photoImg').src = photoThumbUrl;
+        $('photoInfo').textContent = f.name + ' (' + bn(Math.round(f.size / 1024)) + ' কেভি)';
+        prev.hidden = false;
+      } catch (e) { input.value = ''; setStatus('error', 'ছবিটি পড়া যায়নি। অন্য একটি JPG বা PNG ছবি দিন।'); }
+      URL.revokeObjectURL(url);
     };
-    fr.readAsDataURL(f);
+    img.onerror = function () {
+      URL.revokeObjectURL(url); input.value = '';
+      setStatus('error', 'ছবিটি পড়া যায়নি। অনুগ্রহ করে JPG বা PNG ছবি দিন।');
+    };
+    img.src = url;
   });
 
   // ---------- যাচাই ----------
@@ -197,6 +231,7 @@
     if (!val('profession')) return fail('profession', 'পেশা নির্বাচন করুন।');
     if (val('profession') === '__other' && !val('professionOther')) return fail('professionOther', 'পেশা লিখুন।');
     if (!val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
+    if (val('religion') === '__other' && !val('religionOther')) return fail('religionOther', 'ধর্ম লিখুন।');
     var type = val('memberType');
     var nid = en(val('nid')).replace(/[\s-]/g, '');
     var reg = en(val('birthReg')).replace(/[\s-]/g, '');
@@ -226,7 +261,7 @@
     }
     if (!val('countryType')) return fail('countryType', 'দেশের নাম নির্বাচন করুন।');
     if (val('countryType') === 'abroad' && !val('country')) return fail('country', 'প্রবাসের দেশ নির্বাচন করুন।');
-    if (!photoDataUrl) return fail('photo', 'আপনার ছবি দিন (সর্বোচ্চ ৫০০ কেভি)।');
+    if (!photoDataUrl) return fail('photo', 'আপনার ছবি দিন।');
     if (!$('agree').checked) return fail('agree', 'অঙ্গীকারনামায় টিক চিহ্ন দিন।');
     return true;
   }
@@ -254,7 +289,9 @@
     return {
       memberType: val('memberType'),
       memberTypeLabel: TYPE_LABEL[val('memberType')],
-      feeText: FEES[val('memberType')],
+      reference: val('reference') || 'none',
+      referenceLabel: REF_LABEL[val('reference') || 'none'],
+      feeText: feeText(val('memberType'), val('reference')),
       nameBn: val('nameBn'),
       nameEn: val('nameEn').toUpperCase(),
       father: val('father'),
@@ -265,7 +302,7 @@
       blood: val('blood'),
       education: val('education') === '__other' ? val('educationOther') : val('education'),
       profession: val('profession') === '__other' ? val('professionOther') : val('profession'),
-      religion: val('religion'),
+      religion: val('religion') === '__other' ? val('religionOther') : val('religion'),
       nid: en(val('nid')).replace(/[\s-]/g, ''),
       birthReg: en(val('birthReg')).replace(/[\s-]/g, ''),
       phone: en(val('phone')).replace(/[\s-]/g, ''),
@@ -351,18 +388,25 @@
       var payload = { action: 'pdf', formNo: serverInfo.formNo, token: serverInfo.token, memberType: data.memberType, nameEn: data.nameEn, pdf: window.SrijonPDF.toBase64(pdf.bytes) };
       var note = document.createElement('p');
       note.className = 'small muted';
-      note.textContent = 'সংগঠনের কাছে পিডিএফ কপি সংরক্ষণ করা হচ্ছে…';
+      note.textContent = 'সংগঠনের কাছে পিডিএফ কপি ও ছবি সংরক্ষণ করা হচ্ছে…';
       $('applySuccess').insertBefore(note, $('applySuccess').querySelector('.btn-row'));
-      function upload(retry) {
+      function upload(payload, retry) {
         return post(payload).then(function (r) {
-          if (!r || !r.ok) throw new Error('pdf save failed');
-          note.textContent = '✔ পিডিএফ কপি সংগঠনের কাছে সংরক্ষিত হয়েছে।';
-        }).catch(function () {
-          if (retry) return upload(false);
-          note.textContent = 'আপনার আবেদন গৃহীত হয়েছে। পিডিএফ কপি সংরক্ষণে সমস্যা হয়েছে; আপনার ডাউনলোড করা কপিটি সংগঠনের কার্যালয়ে জমা দিন।';
+          if (!r || !r.ok) throw new Error((r && r.error) || 'save failed');
+          return true;
+        }).catch(function (e) {
+          if (window.console) console.error('upload ' + payload.action + ' failed:', e && e.message);
+          if (retry) return upload(payload, false);
+          return false;
         });
       }
-      return upload(true);
+      var photoPayload = { action: 'photo', formNo: serverInfo.formNo, token: serverInfo.token, nameEn: data.nameEn, photo: photoDataUrl.split(',')[1], thumb: photoThumbUrl.split(',')[1] };
+      return upload(payload, true).then(function (okPdf) {
+        return upload(photoPayload, true).then(function (okPhoto) {
+          note.textContent = okPdf && okPhoto ? '✔ পিডিএফ কপি ও ছবি সংগঠনের কাছে সংরক্ষিত হয়েছে।'
+            : 'আপনার আবেদন গৃহীত হয়েছে। ' + (okPdf ? '' : 'পিডিএফ কপি ') + (!okPdf && !okPhoto ? 'ও ' : '') + (okPhoto ? '' : 'ছবি ') + 'সংরক্ষণে সমস্যা হয়েছে; আপনার ডাউনলোড করা কপিটি সংগঠনের কার্যালয়ে জমা দিন।';
+        });
+      });
     }).catch(function (err) {
       if (serverInfo) {
         setStatus('error', 'আপনার আবেদন গৃহীত হয়েছে (ফরম নম্বর: ' + serverInfo.formNo + ') কিন্তু পিডিএফ তৈরি করা যায়নি। ফরম নম্বরটি সংরক্ষণ করে সংগঠনের সাথে যোগাযোগ করুন।');

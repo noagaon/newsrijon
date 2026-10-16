@@ -278,3 +278,12 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
 
 /* অঙ্গীকারনামায় ৭ সে.মি. ফাঁকা জায়গা (হাতে নাম লেখার জন্য) */
 .pledge-blank { display: inline-block; width: 7cm; max-width: 60%; border-bottom: 2px dotted #444; height: 1.1em; vertical-align: baseline; margin: 0 2px; }
+
+/* ঠিকানা: সিটি কর্পোরেশনের ওয়ার্ড ঠিক নিচে (ডেস্কটপে বাম কলামে), মোবাইলে DOM ক্রমে: উপজেলা/সিটি → ইউনিয়ন → ওয়ার্ড → থানা */
+@media (min-width: 640px) {
+  .addr-loc .loc-upa { grid-column: 1; grid-row: 1; }
+  .addr-loc .loc-thana { grid-column: 2; grid-row: 1; }
+  .addr-loc .loc-union { grid-column: 1; grid-row: 2; }
+  .addr-loc .loc-ward { grid-column: 2; grid-row: 2; }
+  .addr-loc.city .loc-ward { grid-column: 1; }
+}

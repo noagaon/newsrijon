@@ -39,13 +39,11 @@ def addr_block(prefix, title):
     <div class="field"><label for="%(p)sDiv">বিভাগ <span class="req">*</span></label><select id="%(p)sDiv" name="%(p)sDiv" required><option value="">— নির্বাচন করুন —</option></select></div>
     <div class="field"><label for="%(p)sDist">জেলা <span class="req">*</span></label><select id="%(p)sDist" name="%(p)sDist" required disabled><option value="">— আগে বিভাগ নির্বাচন করুন —</option></select></div>
   </div>
-  <div class="row-2">
-    <div class="field"><label for="%(p)sUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="%(p)sUpa" name="%(p)sUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-    <div class="field"><label for="%(p)sThana">থানা <span class="req">*</span></label><select id="%(p)sThana" name="%(p)sThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-  </div>
-  <div class="row-2">
-    <div class="field" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন/পৌরসভা <span class="req">*</span></label><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80"></div>
-    <div class="field" id="%(p)sWardWrap" hidden><label for="%(p)sWard">ওয়ার্ড <span class="req">*</span></label><select id="%(p)sWard" name="%(p)sWard"><option value="">— নির্বাচন করুন —</option></select><input id="%(p)sWardText" name="%(p)sWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
+  <div class="row-2 addr-loc" id="%(p)sLoc">
+    <div class="field loc-upa"><label for="%(p)sUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="%(p)sUpa" name="%(p)sUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
+    <div class="field loc-union" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন/পৌরসভা <span class="req">*</span></label><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80"></div>
+    <div class="field loc-ward" id="%(p)sWardWrap" hidden><label for="%(p)sWard">ওয়ার্ড <span class="req">*</span></label><select id="%(p)sWard" name="%(p)sWard"><option value="">— নির্বাচন করুন —</option></select><input id="%(p)sWardText" name="%(p)sWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
+    <div class="field loc-thana"><label for="%(p)sThana">থানা <span class="req">*</span></label><select id="%(p)sThana" name="%(p)sThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
   </div>
   <div class="row-3">
     %(po)s
@@ -92,14 +90,14 @@ def membership_body():
   </div>
   <div class="pill">সদস্য নিবন্ধন ফরম</div>
 
-  <p class="warn" role="note">সতর্কতা: সর্বোচ্চ ৫০০ কেভি পরিমাণ আপনার একটা ছবি দিতে হবে। অনুগ্রহ করে ছবির ব্যাকগ্রাউন্ড একক কালারে রাখবেন।</p>
+  <p class="warn" role="note">সতর্কতা: অনুগ্রহ করে ছবির ব্যাকগ্রাউন্ড একক কালারে রাখবেন।</p>
 
   <div class="row-2">
     <div class="field"><label for="formNo">ফরম নম্বর</label><input id="formNo" type="text" readonly value="স্বয়ংক্রিয়" aria-describedby="formNoHelp"><small id="formNoHelp">জমা দেওয়ার সময় স্বয়ংক্রিয়ভাবে তৈরি হবে</small></div>
     <div class="field"><label for="memberNo">সদস্য নম্বর</label><input id="memberNo" type="text" readonly placeholder="অফিস কর্তৃক পূরণীয়" tabindex="-1"></div>
   </div>
 
-  <div class="row-2">
+  <div class="row-3">
     <div class="field"><label for="memberType">১। সদস্য ধরণ <span class="req">*</span></label>
       <select id="memberType" name="memberType" required>
         <option value="">— নির্বাচন করুন —</option>
@@ -108,7 +106,15 @@ def membership_body():
         <option value="junior">(গ) জুনিয়র সদস্য</option>
         <option value="donor">(ঘ) দাতা সদস্য</option>
       </select></div>
-    <div class="field"><label for="fee">২। নিবন্ধন ফি</label><input id="fee" type="text" readonly placeholder="সদস্য ধরণ নির্বাচন করুন"></div>
+    <div class="field"><label for="reference">রেফারেন্স <span class="req">*</span></label>
+      <select id="reference" name="reference" required>
+        <option value="none">কোন রেফারেন্স নেই</option>
+        <option value="junior">জুনিয়র সদস্য ছিলাম</option>
+        <option value="general">সাধারণ সদস্য ছিলাম</option>
+        <option value="expat">প্রবাসী সদস্য ছিলাম</option>
+        <option value="donor">দাতা সদস্য ছিলাম</option>
+      </select></div>
+    <div class="field"><label for="fee">২। নিবন্ধন ফি</label><input id="fee" type="text" readonly placeholder="সদস্য ধরণ নির্বাচন করুন"><small id="feeNote" hidden>রেফারেন্সের জন্য ২০%% ছাড় প্রযোজ্য</small></div>
   </div>
 
   <div class="field"><label for="nameBn">৩। নাম (বাংলায়) এনআইডি অনুযায়ী <span class="req">*</span></label><input id="nameBn" name="nameBn" type="text" maxlength="100" required autocomplete="name"></div>
@@ -131,7 +137,8 @@ def membership_body():
       <input id="professionOther" name="professionOther" type="text" maxlength="80" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
   </div>
   <div class="row-2">
-    <div class="field"><label for="religion">১২। ধর্ম <span class="req">*</span></label><select id="religion" name="religion" required>%(rel)s</select></div>
+    <div class="field"><label for="religion">১২। ধর্ম <span class="req">*</span></label><select id="religion" name="religion" required>%(rel)s<option value="__other">অন্য</option></select>
+      <input id="religionOther" name="religionOther" type="text" maxlength="40" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
     <div class="field"><label for="nid">১৩। জাতীয় পরিচয় পত্র (এনআইডি) নম্বর <span class="req" id="nidReq">*</span></label><input id="nid" name="nid" type="text" inputmode="numeric" maxlength="20"><small id="nidHelp">সাধারণ সদস্যের জন্য বাধ্যতামূলক</small></div>
   </div>
   <div class="field" id="birthRegWrap" hidden><label for="birthReg">জন্মনিবন্ধন সনদ নম্বর</label><input id="birthReg" name="birthReg" type="text" inputmode="numeric" maxlength="25"><small>জুনিয়র সদস্যের জন্য এনআইডি অথবা জন্মনিবন্ধন সনদ নম্বর — যেকোনো একটি দেওয়া বাধ্যতামূলক</small></div>
@@ -156,8 +163,8 @@ def membership_body():
     <div class="field" id="countryWrap" hidden><label for="country">প্রবাসের দেশ <span class="req">*</span></label><select id="country" name="country"><option value="">— নির্বাচন করুন —</option></select></div>
   </div>
 
-  <div class="field"><label for="photo">২০। ছবি দিন <span class="req">*</span> <small>(সর্বোচ্চ ৫০০ কেভি, JPG/PNG)</small></label>
-    <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required>
+  <div class="field"><label for="photo">২০। ছবি দিন <span class="req">*</span> <small>(JPG/PNG)</small></label>
+    <input id="photo" name="photo" type="file" accept="image/*" required>
     <div class="photo-preview" id="photoPreview" hidden><img alt="আপনার ছবির প্রিভিউ" id="photoImg"><span id="photoInfo"></span></div></div>
 
   <div class="pledge">
