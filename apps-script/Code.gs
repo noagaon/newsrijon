@@ -29,9 +29,10 @@ var CONFIG = {
 var APPLY_HEADERS = [
   'ফরম নম্বর', 'জমার সময়', 'সদস্য ধরণ', 'নিবন্ধন ফি (টাকা)', 'সদস্য নম্বর',
   'নাম (বাংলা)', 'নাম (ইংরেজি)', 'পিতার নাম', 'মাতার নাম', 'জন্ম তারিখ', 'লিঙ্গ', 'রক্ত গ্রুপ',
-  'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
-  'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
-  'বর্তমান ঠিকানা', 'বর্তমান দেশ', 'পিডিএফ লিংক', 'অবস্থা'
+  'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'জন্মনিবন্ধন সনদ নম্বর', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
+  'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: ইউনিয়ন/পৌরসভা', 'স্থায়ী: ওয়ার্ড',
+  'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
+  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা'
 ];
 var FEEDBACK_HEADERS = ['সময়', 'নাম', 'যোগাযোগ', 'মতামত'];
 
@@ -63,14 +64,31 @@ function json_(obj) {
 function sheet_(name, headers) {
   var ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
   var sh = ss.getSheetByName(name);
-  if (!sh) {
-    sh = ss.insertSheet(name);
-  }
+  if (!sh) sh = ss.insertSheet(name);
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
     sh.setFrozenRows(1);
+  } else {
+    // আগের শিটে নতুন কলাম লাগলে শেষে যোগ হয়; পুরোনো কলাম নড়ে না
+    var have = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    var missing = headers.filter(function (h) { return have.indexOf(h) < 0; });
+    if (missing.length) {
+      sh.getRange(1, have.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
+    }
   }
   return sh;
+}
+
+// হেডারের নাম ধরে সারি যোগ করে (কলামের ক্রম বদলালেও ঠিক থাকে)
+function appendByHeader_(sh, obj) {
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  var row = head.map(function (h) { return obj.hasOwnProperty(h) ? obj[h] : ''; });
+  sh.appendRow(row);
+  return sh.getLastRow();
+}
+
+function colOf_(sh, name) {
+  return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String).indexOf(name) + 1;
 }
 
 // ফর্মুলা ইনজেকশন ঠেকাতে: = + - @ দিয়ে শুরু হলে আগে ' বসে
@@ -102,13 +120,19 @@ function submit_(d) {
   var type = String(d.memberType || '');
   if (!CONFIG.FOLDERS[type]) return { ok: false, error: 'invalid member type' };
 
-  var required = ['nameBn', 'nameEn', 'father', 'mother', 'dob', 'gender', 'blood', 'education', 'profession', 'religion', 'nid', 'phone', 'country'];
+  var required = ['nameBn', 'nameEn', 'father', 'mother', 'dob', 'gender', 'education', 'profession', 'religion', 'country'];
   for (var i = 0; i < required.length; i++) {
     if (!String(d[required[i]] || '').trim()) return { ok: false, error: 'missing ' + required[i] };
   }
   var p = d.perm || {};
   if (!p.div || !p.dist || !p.upa || !p.thana || !p.po || !p.village) return { ok: false, error: 'missing address' };
-  if (!/^(\d{10}|\d{13}|\d{17})$/.test(String(d.nid))) return { ok: false, error: 'invalid nid' };
+
+  // এনআইডি/জন্মনিবন্ধন: সাধারণ = এনআইডি আবশ্যক; জুনিয়র = দুটির একটি আবশ্যক; অন্যরা ঐচ্ছিক
+  var nid = String(d.nid || '').trim(), reg = String(d.birthReg || '').trim();
+  if (nid && !/^(\d{10}|\d{13}|\d{17})$/.test(nid)) return { ok: false, error: 'invalid nid' };
+  if (reg && !/^\d{10,20}$/.test(reg)) return { ok: false, error: 'invalid birth reg' };
+  if (type === 'general' && !nid) return { ok: false, error: 'nid required' };
+  if (type === 'junior' && !nid && !reg) return { ok: false, error: 'nid or birth reg required' };
 
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
@@ -123,17 +147,20 @@ function submit_(d) {
     props.setProperty(key, String(seq));
     var formNo = 'STS-' + t.year + '-' + ('0000' + seq).slice(-4);
 
-    var cur = d.addrSame ? 'স্থায়ী ঠিকানার অনুরূপ' : safe_(d.currentText, 400);
-    sh.appendRow([
-      formNo, t.sheet, CONFIG.TYPE_LABEL[type], CONFIG.FEES[type], '',
-      safe_(d.nameBn, 100), safe_(d.nameEn, 100), safe_(d.father, 100), safe_(d.mother, 100),
-      safe_(d.dob, 12), safe_(d.gender, 10), safe_(d.blood, 20),
-      safe_(d.education, 80), safe_(d.profession, 80), safe_(d.religion, 20),
-      "'" + safe_(d.nid, 20), "'" + safe_(d.phone, 20), d.whatsapp ? "'" + safe_(d.whatsapp, 20) : '', safe_(d.email, 120),
-      safe_(p.div, 40), safe_(p.dist, 40), safe_(p.upa, 60), safe_(p.thana, 60), safe_(p.po, 80), safe_(p.village, 80), safe_(p.para, 80),
-      cur, safe_(d.country, 60), '', 'পিডিএফ অপেক্ষমাণ'
-    ]);
-    var row = sh.getLastRow();
+    var cur = d.addrSame ? 'স্থায়ী ঠিকানার অনুরূপ' : safe_(d.currentText, 500);
+    var rec = {
+      'ফরম নম্বর': formNo, 'জমার সময়': t.sheet, 'সদস্য ধরণ': CONFIG.TYPE_LABEL[type], 'নিবন্ধন ফি (টাকা)': CONFIG.FEES[type], 'সদস্য নম্বর': '',
+      'নাম (বাংলা)': safe_(d.nameBn, 100), 'নাম (ইংরেজি)': safe_(d.nameEn, 100), 'পিতার নাম': safe_(d.father, 100), 'মাতার নাম': safe_(d.mother, 100),
+      'জন্ম তারিখ': safe_(d.dob, 12), 'লিঙ্গ': safe_(d.gender, 10), 'রক্ত গ্রুপ': safe_(d.blood, 20),
+      'শিক্ষাগত যোগ্যতা': safe_(d.education, 80), 'পেশা': safe_(d.profession, 80), 'ধর্ম': safe_(d.religion, 20),
+      'এনআইডি': nid ? "'" + nid : '', 'জন্মনিবন্ধন সনদ নম্বর': reg ? "'" + reg : '',
+      'ফোন': d.phone ? "'" + safe_(d.phone, 20) : '', 'ওয়াটসঅ্যাপ': d.whatsapp ? "'" + safe_(d.whatsapp, 20) : '', 'ইমেইল': safe_(d.email, 120),
+      'স্থায়ী: বিভাগ': safe_(p.div, 40), 'স্থায়ী: জেলা': safe_(p.dist, 40), 'স্থায়ী: উপজেলা/সিটি': safe_(p.upa, 60), 'স্থায়ী: থানা': safe_(p.thana, 60),
+      'স্থায়ী: ইউনিয়ন/পৌরসভা': safe_(p.union, 80), 'স্থায়ী: ওয়ার্ড': safe_(p.ward, 40),
+      'স্থায়ী: পোস্ট অফিস': safe_(p.po, 80), 'স্থায়ী: গ্রাম': safe_(p.village, 80), 'স্থায়ী: পাড়া': safe_(p.para, 80),
+      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ'
+    };
+    var row = appendByHeader_(sh, rec);
 
     // একবার-ব্যবহারযোগ্য টোকেন: শুধু এই আবেদনকারীই পিডিএফ আপলোড করতে পারবে
     var token = Utilities.getUuid();
@@ -164,9 +191,8 @@ function savePdf_(req) {
     .createFile(Utilities.newBlob(bytes, 'application/pdf', req.formNo + '_' + name + '.pdf'));
 
   var sh = sheet_(CONFIG.APPLY_TAB, APPLY_HEADERS);
-  var linkCol = APPLY_HEADERS.indexOf('পিডিএফ লিংক') + 1;
-  sh.getRange(row, linkCol).setValue(file.getUrl());
-  sh.getRange(row, linkCol + 1).setValue('জমা সম্পন্ন');
+  sh.getRange(row, colOf_(sh, 'পিডিএফ লিংক')).setValue(file.getUrl());
+  sh.getRange(row, colOf_(sh, 'অবস্থা')).setValue('জমা সম্পন্ন');
   cache.remove('tok_' + req.formNo);         // একবারই ব্যবহার্য
   return { ok: true, url: file.getUrl() };
 }

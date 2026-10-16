@@ -263,6 +263,7 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
 .f-contact li { display: flex; gap: 10px; align-items: flex-start; }
 .f-contact svg { flex: 0 0 auto; margin-top: 4px; color: var(--gold); }
 .f-contact a { color: #fff; word-break: break-word; }
+.credit { background: #051f12; color: #b9d3c3; text-align: center; font-size: .85rem; padding: 8px 0; letter-spacing: .2px; }
 .copy { border-top: 1px solid rgba(255, 255, 255, .14); padding: 14px 0; font-size: .92rem; text-align: center; }
 
 @media (max-width: 420px) {
@@ -274,3 +275,6 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
 @media print { .site-header, .topbar, .site-footer, .menu-btn { display: none; } }
+
+/* অঙ্গীকারনামায় ৭ সে.মি. ফাঁকা জায়গা (হাতে নাম লেখার জন্য) */
+.pledge-blank { display: inline-block; width: 7cm; max-width: 60%; border-bottom: 2px dotted #444; height: 1.1em; vertical-align: baseline; margin: 0 2px; }

@@ -40,7 +40,7 @@ def home_body():
         + '<dt>মূলনীতি</dt><dd>সৃজনশীল তরুণ সংঘ ছয়টি মূলনীতিকে অনুসরণ করে সমাজকল্যাণমূলক কার্যক্রম পরিচালনা করে। মূলনীতিগুলো হলো- শিক্ষা, ঐক্য, ন্যায্যতা, শান্তি, উন্নয়ন, সৃষ্টিশীলতা।</dd>'
         + '<dt>সদর দপ্তর/কার্যালয়</dt><dd>নয়াবাজার, নোয়াগাঁও, টুকেরবাজার, ৩৯নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, জালালাবাদ, সিলেট, বাংলাদেশ।</dd>'
         + '</dl>')
-    S.append(sec('আমাদের সম্পর্কে', about, href('about'), id_='about', cls='wide'))
+    S.append(sec('আমাদের পথচলা', about, href('about'), id_='about', cls='wide'))
     S.append(sec('আমাদের কার্যক্রম',
                  p('সৃজনশীল তরুণ সংঘ বিভিন্ন সময়ে নিম্নোক্ত কার্যক্রম পরিচালনা করে থাকে:'), href('activities'), id_='activities'))
     S.append(sec('কর্মসূচি',
@@ -67,8 +67,9 @@ def home_body():
                  p('পাঠাগার প্রতিষ্ঠার প্রধান উদ্দেশ্য: জ্ঞানার্জনের সুযোগ সৃষ্টি করা— বই, পত্রিকা, সাময়িকী ও অন্যান্য জ্ঞানমূলক উপকরণ সহজলভ্য করা।')
                  + p('পাঠাগারের দুটি শাখা রয়েছে।')
                  + '<ul class="lead-list"><li><strong>ইসলামিক শাখা:</strong> নোয়াগাঁও কেন্দ্রীয় জামে মসজিদ</li><li><strong>সাধারণ শাখা:</strong> সংগঠনের কার্যালয়।</li></ul>'
+                 + '<p class="more-row">' + more_link(href('library')) + '</p>'
                  + '<p>বইয়ের তালিকা: ' + more_link(href('library', 'books')) + '</p>',
-                 href('library'), id_='library'))
+                 None, id_='library'))
     S.append(sec('ইভেন্ট',
                  p('আমাদের আয়োজন, উদ্যোগ, সভা, সমাবেশ, র‍্যালি, অনুষ্ঠান ইত্যাদি।')
                  + '<ul class="lead-list"><li>' + more_link(href('events', 'upcoming'), 'আপকামিং ইভেন্ট') + '</li><li>' + more_link(href('events', 'held'), 'আয়োজিত ইভেন্ট') + '</li><li>' + more_link(href('events', 'cancelled'), 'বাতিলকৃত ইভেন্ট') + '</li></ul>',
@@ -141,7 +142,7 @@ def hero():
     <h1>সৃজনশীল তরুণ সংঘ</h1>
     <p class="hero-slogan">সামাজিক উন্নয়ন ও ন্যায়বিচার,<br>তারুণ্যের অঙ্গীকার</p>
     <p class="hero-desc">শিক্ষা, স্বাস্থ্য, পরিবেশ, সংস্কৃতি, ক্রীড়া ও সচেতনতার মাধ্যমে সামাজিক ও মানবিক সমস্যার সমাধানে তরুণদের সম্মিলিত উদ্যোগ।</p>
-    <div class="hero-btns"><a class="btn btn-light" href="pages/about.html">আমাদের সম্পর্কে</a><a class="btn btn-ghost" href="pages/membership.html#apply">সদস্য হতে চাই</a></div>
+    <div class="hero-btns"><a class="btn btn-light" href="pages/about.html">আমাদের পথচলা</a><a class="btn btn-ghost" href="pages/membership.html#apply">সদস্য হতে চাই</a></div>
   </div></div>
 </section>
 '''

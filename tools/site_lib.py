@@ -22,7 +22,7 @@ SITE = {
 # ২৪টি মেনু: (slug, নাম)
 MENU = [
     ('need', 'সামাজিক সংগঠনের প্রয়োজনীয়তা'),
-    ('about', 'আমাদের সম্পর্কে'),
+    ('about', 'আমাদের পথচলা'),
     ('activities', 'আমাদের কার্যক্রম'),
     ('programs', 'কর্মসূচি'),
     ('structure', 'সাংগঠনিক কাঠামো'),
@@ -214,6 +214,7 @@ def footer(root):
     </ul>
   </div>
   <div class="copy"><div class="wrap">© %(name)s। সর্বস্বত্ব সংরক্ষিত।</div></div>
+  <div class="credit"><div class="wrap">Design and Developed By Juned Ahmed (JA080)</div></div>
 </footer>
 <script src="%(root)sassets/js/app.js" defer></script>
 %%(extra)s

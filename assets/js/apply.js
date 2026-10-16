@@ -9,6 +9,15 @@
   var FEES = { general: '১,০০০ টাকা', expat: '১,২০০ টাকা', junior: '১০০ টাকা', donor: '২,০০০ টাকা' };
   var TYPE_LABEL = { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', junior: 'জুনিয়র সদস্য', donor: 'দাতা সদস্য' };
   var MAX_PHOTO = 500 * 1024;
+  // সিটি কর্পোরেশনের ওয়ার্ড সংখ্যা
+  var CITY_WARDS = {
+    'ঢাকা দক্ষিণ সিটি কর্পোরেশন': 75, 'ঢাকা উত্তর সিটি কর্পোরেশন': 54, 'গাজীপুর সিটি কর্পোরেশন': 57,
+    'সিলেট সিটি কর্পোরেশন': 42, 'চট্টগ্রাম সিটি কর্পোরেশন': 41, 'রংপুর সিটি কর্পোরেশন': 33,
+    'ময়মনসিংহ সিটি কর্পোরেশন': 33, 'রাজশাহী সিটি কর্পোরেশন': 30, 'খুলনা সিটি কর্পোরেশন': 30,
+    'বরিশাল সিটি কর্পোরেশন': 30, 'নারায়ণগঞ্জ সিটি কর্পোরেশন': 27, 'কুমিল্লা সিটি কর্পোরেশন': 27,
+    'বগুড়া সিটি কর্পোরেশন': 21
+  };
+  var UNION_WARDS = 9;
 
   var $ = function (id) { return document.getElementById(id); };
   var form = $('applyForm');
@@ -23,6 +32,24 @@
   function bn(s) { return String(s).replace(/\d/g, function (d) { return BN[d]; }); }
   function en(s) { return String(s).replace(/[০-৯]/g, function (d) { return BN.indexOf(d); }); }
   function val(id) { var el = $(id); return el ? el.value.trim() : ''; }
+  // ড্রপডাউনে 'অন্য' বাছলে পাশের বক্সের লেখা নেয়
+  function pickVal(id) {
+    var v = val(id);
+    return v === '__other' ? val(id + 'Other') : v;
+  }
+  function wireOther(id) {
+    var sel = $(id), other = $(id + 'Other');
+    sel.addEventListener('change', function () {
+      var on = sel.value === '__other';
+      other.hidden = !on;
+      if (on) other.focus(); else other.value = '';
+    });
+  }
+  function wardOptions(n) {
+    var a = [];
+    for (var i = 1; i <= n; i++) a.push(bn(i) + ' নং ওয়ার্ড');
+    return a;
+  }
   function setStatus(cls, msg) { var s = $('applyStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
 
   function fillSelect(sel, items, placeholder) {
@@ -50,11 +77,30 @@
       dist.disabled = !d;
       dist.dispatchEvent(new Event('change'));
     });
+    var uw = $(p + 'UnionWrap'), ww = $(p + 'WardWrap'), ward = $(p + 'Ward'), wardText = $(p + 'WardText');
+    function syncUnionWard() {
+      var u = upa.value;
+      uw.hidden = ww.hidden = true;
+      wardText.hidden = true; wardText.value = '';
+      ward.hidden = false;
+      if (!u) return;
+      if (/সিটি কর্পোরেশন$/.test(u)) {                       // সিটি কর্পোরেশন: শুধু ওয়ার্ড
+        ww.hidden = false;
+        if (CITY_WARDS[u]) fillSelect(ward, wardOptions(CITY_WARDS[u]), '— নির্বাচন করুন —');
+        else { ward.hidden = true; wardText.hidden = false; }
+      } else {                                                  // উপজেলা: ইউনিয়ন/পৌরসভা + ওয়ার্ড (১–৯)
+        uw.hidden = ww.hidden = false;
+        fillSelect(ward, wardOptions(UNION_WARDS), '— নির্বাচন করুন —');
+      }
+      $(p + 'Union').value = '';
+    }
+    upa.addEventListener('change', syncUnionWard);
     dist.addEventListener('change', function () {
       var z = distObj();
       fillSelect(upa, z ? z.upazilas : [], z ? '— নির্বাচন করুন —' : '— আগে জেলা নির্বাচন করুন —');
       fillSelect(thana, z ? z.thanas : [], z ? '— নির্বাচন করুন —' : '— আগে জেলা নির্বাচন করুন —');
       upa.disabled = thana.disabled = !z;
+      syncUnionWard();
     });
   }
 
@@ -63,15 +109,30 @@
       geo = g;
       wireAddress('perm');
       wireAddress('cur');
-      fillSelect($('country'), g.countries, '— নির্বাচন করুন —');
-      var bd = g.countries.indexOf('বাংলাদেশ');
-      if (bd > -1) $('country').value = 'বাংলাদেশ';
+      fillSelect($('country'), g.countries.filter(function (c) { return c !== 'বাংলাদেশ'; }), '— নির্বাচন করুন —');
+      ['perm', 'cur'].forEach(function (p) { wireOther(p + 'PO'); wireOther(p + 'Village'); wireOther(p + 'Para'); });
     });
   }
 
   // ---------- ইন্টারঅ্যাকশন ----------
+  function syncNidRules() {
+    var t = val('memberType');
+    $('nidReq').hidden = t !== 'general';
+    $('birthRegWrap').hidden = t !== 'junior';
+    if (t !== 'junior') $('birthReg').value = '';
+    $('nidHelp').textContent = t === 'junior' ? 'এনআইডি অথবা জন্মনিবন্ধন সনদ নম্বর — যেকোনো একটি বাধ্যতামূলক'
+      : t === 'general' ? 'সাধারণ সদস্যের জন্য বাধ্যতামূলক' : 'ঐচ্ছিক';
+  }
   $('memberType').addEventListener('change', function () {
     $('fee').value = FEES[this.value] || '';
+    syncNidRules();
+  });
+  syncNidRules();
+
+  $('countryType').addEventListener('change', function () {
+    var ab = this.value === 'abroad';
+    $('countryWrap').hidden = !ab;
+    if (!ab) $('country').value = '';
   });
 
   [['education', 'educationOther'], ['profession', 'professionOther']].forEach(function (pair) {
@@ -87,10 +148,6 @@
     r.addEventListener('change', function () {
       $('curWrap').hidden = form.addrSame.value !== 'diff';
     });
-  });
-
-  $('nameBn').addEventListener('input', function () {
-    $('pledgeName').textContent = this.value.trim() || '………………………';
   });
 
   $('photo').addEventListener('change', function () {
@@ -135,16 +192,20 @@
     if (!val('dob')) return fail('dob', 'জন্ম তারিখ নির্বাচন করুন।');
     if (new Date(val('dob')) > new Date()) return fail('dob', 'জন্ম তারিখ ভবিষ্যতের হতে পারে না।');
     if (!val('gender')) return fail('gender', 'লিঙ্গ নির্বাচন করুন।');
-    if (!val('blood')) return fail('blood', 'রক্ত গ্রুপ নির্বাচন করুন।');
     if (!val('education')) return fail('education', 'শিক্ষাগত যোগ্যতা নির্বাচন করুন।');
     if (val('education') === '__other' && !val('educationOther')) return fail('educationOther', 'শিক্ষাগত যোগ্যতা লিখুন।');
     if (!val('profession')) return fail('profession', 'পেশা নির্বাচন করুন।');
     if (val('profession') === '__other' && !val('professionOther')) return fail('professionOther', 'পেশা লিখুন।');
     if (!val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
+    var type = val('memberType');
     var nid = en(val('nid')).replace(/[\s-]/g, '');
-    if (!/^(\d{10}|\d{13}|\d{17})$/.test(nid)) return fail('nid', 'এনআইডি নম্বর সঠিক নয় (১০, ১৩ বা ১৭ অঙ্ক)।');
+    var reg = en(val('birthReg')).replace(/[\s-]/g, '');
+    if (nid && !/^(\d{10}|\d{13}|\d{17})$/.test(nid)) return fail('nid', 'এনআইডি নম্বর সঠিক নয় (১০, ১৩ বা ১৭ অঙ্ক)।');
+    if (reg && !/^\d{10,20}$/.test(reg)) return fail('birthReg', 'জন্মনিবন্ধন সনদ নম্বর সঠিক নয় (শুধু অঙ্ক)।');
+    if (type === 'general' && !nid) return fail('nid', 'সাধারণ সদস্যের জন্য এনআইডি নম্বর দেওয়া বাধ্যতামূলক।');
+    if (type === 'junior' && !nid && !reg) return fail('nid', 'জুনিয়র সদস্যের জন্য এনআইডি অথবা জন্মনিবন্ধন সনদ নম্বর — যেকোনো একটি দিন।');
     var phone = en(val('phone')).replace(/[\s-]/g, '');
-    if (!/^\+?\d{7,16}$/.test(phone)) return fail('phone', 'ফোন নম্বর সঠিক নয়।');
+    if (phone && !/^\+?\d{7,16}$/.test(phone)) return fail('phone', 'ফোন নম্বর সঠিক নয়।');
     var wa = en(val('whatsapp')).replace(/[\s-]/g, '');
     if (wa && !/^\+?\d{7,16}$/.test(wa)) return fail('whatsapp', 'ওয়াটসঅ্যাপ নম্বর সঠিক নয়।');
     if (val('email') && !$('email').checkValidity()) return fail('email', 'ইমেইল ঠিকানা সঠিক নয়।');
@@ -157,21 +218,33 @@
       if (!val(p + 'Dist')) return fail(p + 'Dist', t + 'জেলা নির্বাচন করুন।');
       if (!val(p + 'Upa')) return fail(p + 'Upa', t + 'উপজেলা/সিটি কর্পোরেশন নির্বাচন করুন।');
       if (!val(p + 'Thana')) return fail(p + 'Thana', t + 'থানা নির্বাচন করুন।');
-      if (!val(p + 'PO')) return fail(p + 'PO', t + 'পোস্ট অফিস লিখুন।');
-      if (!val(p + 'Village')) return fail(p + 'Village', t + 'গ্রাম লিখুন।');
+      if (!$(p + 'UnionWrap').hidden && !val(p + 'Union')) return fail(p + 'Union', t + 'ইউনিয়ন/পৌরসভা লিখুন।');
+      if (!$(p + 'WardWrap').hidden && !pickWard(p)) return fail($(p + 'Ward').hidden ? p + 'WardText' : p + 'Ward', t + 'ওয়ার্ড নির্বাচন করুন।');
+      if (!pickVal(p + 'PO')) return fail(val(p + 'PO') === '__other' ? p + 'POOther' : p + 'PO', t + 'পোস্ট অফিস নির্বাচন করুন বা লিখুন।');
+      if (!pickVal(p + 'Village')) return fail(val(p + 'Village') === '__other' ? p + 'VillageOther' : p + 'Village', t + 'গ্রাম নির্বাচন করুন বা লিখুন।');
+      if (val(p + 'Para') === '__other' && !val(p + 'ParaOther')) return fail(p + 'ParaOther', t + 'পাড়ার নাম লিখুন।');
     }
-    if (!val('country')) return fail('country', 'বর্তমান দেশের নাম নির্বাচন করুন।');
+    if (!val('countryType')) return fail('countryType', 'দেশের নাম নির্বাচন করুন।');
+    if (val('countryType') === 'abroad' && !val('country')) return fail('country', 'প্রবাসের দেশ নির্বাচন করুন।');
     if (!photoDataUrl) return fail('photo', 'আপনার ছবি দিন (সর্বোচ্চ ৫০০ কেভি)।');
     if (!$('agree').checked) return fail('agree', 'অঙ্গীকারনামায় টিক চিহ্ন দিন।');
     return true;
   }
 
   // ---------- তথ্য সংগ্রহ ----------
+  function pickWard(p) { return $(p + 'Ward').hidden ? val(p + 'WardText') : val(p + 'Ward'); }
   function addr(p) {
-    return { div: val(p + 'Div'), dist: val(p + 'Dist'), upa: val(p + 'Upa'), thana: val(p + 'Thana'), po: val(p + 'PO'), village: val(p + 'Village'), para: val(p + 'Para') };
+    return {
+      div: val(p + 'Div'), dist: val(p + 'Dist'), upa: val(p + 'Upa'), thana: val(p + 'Thana'),
+      union: $(p + 'UnionWrap').hidden ? '' : val(p + 'Union'),
+      ward: $(p + 'WardWrap').hidden ? '' : pickWard(p),
+      po: pickVal(p + 'PO'), village: pickVal(p + 'Village'), para: pickVal(p + 'Para')
+    };
   }
   function addrText(a) {
-    return [a.para && 'পাড়া: ' + a.para, 'গ্রাম: ' + a.village, 'পোস্ট অফিস: ' + a.po, 'থানা: ' + a.thana, a.upa, 'জেলা: ' + a.dist, a.div + ' বিভাগ'].filter(Boolean).join(', ');
+    return [a.para && 'পাড়া: ' + a.para, 'গ্রাম: ' + a.village, 'পোস্ট অফিস: ' + a.po,
+      a.union && 'ইউনিয়ন/পৌরসভা: ' + a.union, a.ward && 'ওয়ার্ড: ' + a.ward,
+      'থানা: ' + a.thana, a.upa, 'জেলা: ' + a.dist, a.div + ' বিভাগ'].filter(Boolean).join(', ');
   }
   function collect() {
     var perm = addr('perm');
@@ -194,6 +267,7 @@
       profession: val('profession') === '__other' ? val('professionOther') : val('profession'),
       religion: val('religion'),
       nid: en(val('nid')).replace(/[\s-]/g, ''),
+      birthReg: en(val('birthReg')).replace(/[\s-]/g, ''),
       phone: en(val('phone')).replace(/[\s-]/g, ''),
       whatsapp: en(val('whatsapp')).replace(/[\s-]/g, ''),
       email: val('email'),
@@ -201,7 +275,8 @@
       addrSame: same,
       cur: cur,
       currentText: same ? 'স্থায়ী ঠিকানার অনুরূপ' : addrText(cur),
-      country: val('country'),
+      country: val('countryType') === 'abroad' ? val('country') : 'বাংলাদেশ',
+      countryType: val('countryType') === 'abroad' ? 'প্রবাসী' : 'বাংলাদেশ',
       website: form.website.value
     };
   }
@@ -212,7 +287,20 @@
       .then(function (r) { return r.json(); });
   }
 
-  function shortBlood(b) { var m = /\(([^)]+)\)/.exec(b); return m ? m[1] : b; }
+  // সার্ভারের সময় ("yyyy-MM-dd HH:mm:ss", ঢাকা) → "16/10/2026, 10:14:58 pm"
+  function enStamp(ts) {
+    var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(ts || '');
+    var d, mo, y, h, mi, se;
+    if (m) { y = m[1]; mo = m[2]; d = m[3]; h = +m[4]; mi = m[5]; se = m[6]; }
+    else {
+      var n = new Date(); function z(x) { return ('0' + x).slice(-2); }
+      y = n.getFullYear(); mo = z(n.getMonth() + 1); d = z(n.getDate()); h = n.getHours(); mi = z(n.getMinutes()); se = z(n.getSeconds());
+    }
+    var ap = h >= 12 ? 'pm' : 'am', h12 = h % 12 || 12;
+    return d + '/' + mo + '/' + y + ', ' + ('0' + h12).slice(-2) + ':' + mi + ':' + se + ' ' + ap;
+  }
+
+  function shortBlood(b) { var m = /\(([^)]+)\)/.exec(b || ''); return m ? m[1] : (b || ''); }
 
   function triggerDownload(url, name) {
     var a = document.createElement('a');
@@ -243,9 +331,9 @@
         nameBn: data.nameBn, nameEn: data.nameEn, father: data.father, mother: data.mother,
         dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,
-        nid: bn(data.nid), phone: bn(data.phone), whatsapp: bn(data.whatsapp), email: data.email,
+        nid: bn(data.nid), birthReg: bn(data.birthReg), phone: bn(data.phone), whatsapp: bn(data.whatsapp), email: data.email,
         perm: data.perm, currentText: data.currentText, country: data.country,
-        photoDataUrl: photoDataUrl, timestampBn: res.timestampBn
+        photoDataUrl: photoDataUrl, timestampEn: enStamp(res.timestamp)
       };
       return window.SrijonPDF.build(pdfData);
     }).then(function (pdf) {
