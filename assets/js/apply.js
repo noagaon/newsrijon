@@ -390,13 +390,16 @@
       note.className = 'small muted';
       note.textContent = 'সংগঠনের কাছে পিডিএফ কপি ও ছবি সংরক্ষণ করা হচ্ছে…';
       $('applySuccess').insertBefore(note, $('applySuccess').querySelector('.btn-row'));
+      var why = [];
       function upload(payload, retry) {
         return post(payload).then(function (r) {
-          if (!r || !r.ok) throw new Error((r && r.error) || 'save failed');
+          if (!r || !r.ok) throw new Error((r && r.error) || 'empty response');
           return true;
         }).catch(function (e) {
-          if (window.console) console.error('upload ' + payload.action + ' failed:', e && e.message);
+          var m = String(e && e.message || e);
+          if (window.console) console.error('upload ' + payload.action + ' failed:', m);
           if (retry) return upload(payload, false);
+          why.push(payload.action + ': ' + m.substring(0, 160));
           return false;
         });
       }
@@ -405,6 +408,12 @@
         return upload(photoPayload, true).then(function (okPhoto) {
           note.textContent = okPdf && okPhoto ? '✔ পিডিএফ কপি ও ছবি সংগঠনের কাছে সংরক্ষিত হয়েছে।'
             : 'আপনার আবেদন গৃহীত হয়েছে। ' + (okPdf ? '' : 'পিডিএফ কপি ') + (!okPdf && !okPhoto ? 'ও ' : '') + (okPhoto ? '' : 'ছবি ') + 'সংরক্ষণে সমস্যা হয়েছে; আপনার ডাউনলোড করা কপিটি সংগঠনের কার্যালয়ে জমা দিন।';
+          if (why.length) {
+            var d = document.createElement('p');
+            d.className = 'small muted'; d.style.wordBreak = 'break-word';
+            d.textContent = 'কারিগরি তথ্য (প্রশাসকের জন্য): ' + why.join(' | ');
+            note.parentNode.insertBefore(d, note.nextSibling);
+          }
         });
       });
     }).catch(function (err) {
