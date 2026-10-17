@@ -127,7 +127,7 @@
         return;
       }
       var isVal = tk.style === 'value';
-      ctx.font = isVal ? font(700, 14) : font(500, 13.6);
+      ctx.font = isVal ? font(700, 14) : font(500, 13.6 - 96 / 72);   // অঙ্গীকারনামার লেখা ১ পয়েন্ট ছোট
       ctx.fillStyle = isVal ? INK : '#2e6b2e';
       var w = ctx.measureText(tk.t).width;
       space = ctx.measureText(' ').width + 1;
@@ -164,6 +164,26 @@
     ctx.textAlign = 'left';
   }
 
+  // লেখা হালকা বাঁকা (আর্চ) করে আঁকে: আগে সোজা লেখা অফস্ক্রিন ক্যানভাসে, তারপর ১ px-এর ফালিতে কেটে উপরে-নিচে সরিয়ে বসায়
+  // (যুক্তাক্ষর ভাঙে না); bend = মাঝখান প্রান্তের চেয়ে যত px উঁচু
+  function archText(ctx, text, cx, baseY, bend) {
+    var tw = Math.ceil(ctx.measureText(text).width) + 8;
+    var asc = Math.ceil(parseFloat(ctx.font.match(/([\d.]+)px/)[1]) * 1.25), desc = Math.ceil(asc * 0.5);
+    var off = document.createElement('canvas');
+    var S = SCALE;
+    off.width = tw * S; off.height = (asc + desc) * S;
+    var o = off.getContext('2d');
+    o.scale(S, S);
+    o.font = ctx.font; o.fillStyle = ctx.fillStyle; o.textBaseline = 'alphabetic';
+    o.fillText(text, 4, asc);
+    var x0 = cx - tw / 2, half = tw / 2, step = 1 / S;
+    for (var i = 0; i < off.width; i++) {
+      var xr = (i / S) - half;                         // মাঝখান থেকে দূরত্ব
+      var dy = -bend * (1 - (xr * xr) / (half * half));
+      ctx.drawImage(off, i, 0, 1, off.height, x0 + i / S, baseY - asc + dy, step + 0.02, asc + desc);
+    }
+  }
+
   function draw(canvas, d, logo, photo) {
     var ctx = canvas.getContext('2d');
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
@@ -192,13 +212,13 @@
     ctx.textAlign = 'center';
     ctx.fillStyle = '#000';
     ctx.font = font(500, 14.5);
-    ctx.fillText('বিসমিল্লাহির রাহমানির রাহীম', W / 2, 50);
+    ctx.fillText('বিসমিল্লাহির রাহমানির রাহীম', W / 2, 41);
 
     var title = 'সৃজনশীল তরুণ সংঘ';
     var ts = fitFont(ctx, title, 700, 78, 470, 40);
     ctx.font = font(700, ts - 1.333);              // ১ pt ছোট
     ctx.fillStyle = '#c4551a';
-    ctx.fillText(title, W / 2 - 6, 116);
+    archText(ctx, title, W / 2 - 6, 110, 7);        // আরেকটু উপরে + হালকা বাঁক (মাঝখান ৭ px উঁচু)
 
     ctx.fillStyle = '#000';
     ctx.font = 'bold 31px Georgia, "Times New Roman", Times, serif';
@@ -255,10 +275,11 @@
     var ry = 318;
     ctx.fillStyle = '#000';
     ctx.font = font(700, 14.5);
-    ctx.fillText('ফরম নম্বর:', 32, ry);
+    ctx.fillText('ফরম:', 32, ry);
+    var formBoxX = 32 + ctx.measureText('ফরম:').width + 9;
     ctx.fillText('নিবন্ধন ফি:', 318, ry);
     ctx.fillText('সদস্য নম্বর:', 516, ry);
-    [[93, 296, 189, 26, d.formNo], [391, 296, 78, 26, d.feeText], [594, 296, 176, 26, d.memberNo || '']].forEach(function (b) {
+    [[formBoxX, 296, 282 - formBoxX, 26, d.formNo], [391, 296, 78, 26, d.feeText], [594, 296, 176, 26, d.memberNo || '']].forEach(function (b) {
       ctx.fillStyle = '#fdeccf';
       ctx.fillRect(b[0], b[1], b[2], b[3]);
       ctx.strokeStyle = '#555';
@@ -292,7 +313,7 @@
       tx += lw2 + 6 + 20 + gap;
     });
 
-    var L = 32, R = 772;
+    var L = 32, R = 772, GX = 2 * 96 / 72;           // ২ পয়েন্ট বামে
     var junior = d.memberType === 'junior';
     var p = d.perm;
     // উল্লম্ব ব্যবধান: লাইন বাড়লে সমানুপাতে চেপে মেলানো হয়
@@ -310,8 +331,8 @@
     field(ctx, L, y, '৪। জন্ম তারিখ:', d.dobText, 318);
     // লিঙ্গ
     ctx.fillStyle = LABEL; ctx.font = font(600, 14.5);
-    ctx.fillText('৫। লিঙ্গ: পুরুষ–', 364, y);
-    var gx = 364 + ctx.measureText('৫। লিঙ্গ: পুরুষ–').width + 4;
+    ctx.fillText('৫। লিঙ্গ: পুরুষ–', 364 - GX, y);
+    var gx = 364 - GX + ctx.measureText('৫। লিঙ্গ: পুরুষ–').width + 4;
     checkbox(ctx, gx, y - 16, 20, d.gender === 'পুরুষ');
     ctx.fillStyle = LABEL; ctx.font = font(600, 14.5);
     ctx.fillText('মহিলা–', gx + 28, y);
@@ -321,7 +342,7 @@
     nx(39);
 
     field(ctx, L, y, '৭। শিক্ষাগত যোগ্যতা:', d.education, 318);
-    field(ctx, 364, y, '৮। পেশা:', d.profession, 560);
+    field(ctx, 364 - GX, y, '৮। পেশা:', d.profession, 560);
     field(ctx, 572, y, '৯। ধর্ম:', d.religion, R);
     nx(36);
     field(ctx, L, y, '১০। জাতীয় পরিচয় পত্র (এনআইডি) নম্বর:', d.nid, R); nx(junior ? 34 : 35);
@@ -333,11 +354,11 @@
     field(ctx, L, y, '১৪। স্থায়ী ঠিকানা: পাড়া-', p.para, 238);
     field(ctx, 244, y, 'গ্রাম-', p.village, 484 - 20);
     field(ctx, 470, y, 'পোস্ট অফিস-', p.po, R); nx(34);
+    field(ctx, L + 22, y, 'ইউনিয়ন/ পৌরসভা-', p.union, 430);
+    field(ctx, 440, y, 'ওয়ার্ড-', p.ward, R); nx(34);
     field(ctx, L + 22, y, 'থানা-', p.thana, 250);
     field(ctx, 256, y, 'উপজেলা/ সিটি কর্পোরেশন-', p.upa, 560);
     field(ctx, 566, y, 'জেলা-', p.dist, R); nx(34);
-    field(ctx, L + 22, y, 'ইউনিয়ন/ পৌরসভা-', p.union, 430);
-    field(ctx, 440, y, 'ওয়ার্ড-', p.ward, R); nx(34);
 
     var lines = fieldMulti(ctx, L, y, '১৫। বর্তমান ঠিকানা:', d.currentText, R);
     nx(34); if (lines > 1) y += 26 * k;
@@ -347,7 +368,6 @@
     var pillTop = y + 24, pillH = 26, pillW = 148;
     var boxTop = pillTop + 19;
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2;
-    ctx.strokeRect(26, boxTop, W - 52, 136);
     ctx.fillStyle = '#f8cbad';
     roundRect(ctx, 398 - pillW / 2, pillTop, pillW, pillH, pillH / 2);
     ctx.fill();
@@ -364,24 +384,28 @@
       { gap: CM7 },
       { text: 'এই মর্মে স্বেচ্ছায় ও স্বজ্ঞানে স্বীকার করছি যে, আমার দেওয়া উপরোল্লিখিত তথ্যসমূহ সত্য ও নির্ভুল। আমি অঙ্গীকার করছি যে, আমি "সৃজনশীল তরুণ সংঘ" -এর গঠনতন্ত্র ও কার্যকরী কমিটির সকল সিদ্ধান্ত মেনে চলবো, সংগঠন ও গঠনতন্ত্র বহির্ভূত কোন কাজ করবো না। গঠনতন্ত্র ও সংগঠন বিরোধী কোন কাজে লিপ্ত থাকলে বা প্রমাণিত হলে কর্তৃপক্ষ আমার বিরুদ্ধে যে ব্যবস্থা গ্রহণ করবেন তা মেনে নিতে বাধ্য থাকবো, এতে আমার কোন আপত্তি থাকবে না।', style: 'label' }
     ];
-    drawWrapped(ctx, pledge, 36, boxTop + 30, W - 72, 23);
+    var lastY = drawWrapped(ctx, pledge, 36, boxTop + 30, W - 72, 23);
+    var sigY = lastY + 46;                         // শেষ লাইনের পর ঠিক ১ লাইন ফাঁকা
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2;
+    ctx.strokeRect(26, boxTop, W - 52, sigY - boxTop + 16);
     ctx.fillStyle = '#2e6b2e';
     ctx.font = font(500, 14);
     ctx.textAlign = 'right';
-    ctx.fillText('আবেদনকারীর স্বাক্ষর–', 600, boxTop + 120);
+    ctx.fillText('আবেদনকারীর স্বাক্ষর–', 600, sigY);
     ctx.textAlign = 'left';
-    dotted(ctx, 604, 758, boxTop + 122);
+    dotted(ctx, 604, 758, sigY + 2);
 
     // নিচের স্বাক্ষর
-    sigLine(ctx, 150, 1042, 'সাধারণ সম্পাদক', '#1f4e9e');
-    sigLine(ctx, 397, 1042, 'সদস্যপদ লাভের তারিখ', '#000');
-    sigLine(ctx, 644, 1042, 'সভাপতি', '#1f4e9e');
+    sigLine(ctx, 150, 1062, 'সাধারণ সম্পাদক', '#1f4e9e');
+    sigLine(ctx, 397, 1062, 'সদস্যপদ লাভের তারিখ', '#000');
+    sigLine(ctx, 644, 1062, 'সভাপতি', '#1f4e9e');
 
     // ফুটার: ডাউনলোডের সময় (বাম কোণে, ইংরেজি হরফে)
     ctx.fillStyle = '#444';
     ctx.font = font(500, 11.5);
+    ctx.textAlign = 'center';
+    ctx.fillText('ডাউনলোডের সময়: ' + (d.timestampEn || d.timestampBn || ''), W / 2, 1097);
     ctx.textAlign = 'left';
-    ctx.fillText('ডাউনলোডের সময়: ' + (d.timestampEn || d.timestampBn || ''), 32, 1090);
   }
 
   function canvasToJpeg(canvas) {
