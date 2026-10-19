@@ -149,7 +149,12 @@
     $('feeNote').hidden = !(t && r && r !== 'none');
   }
   $('memberType').addEventListener('change', function () { syncReference(); syncFee(); syncNidRules(); });
-  $('reference').addEventListener('change', syncFee);
+  $('reference').addEventListener('change', function () {
+    syncFee();
+    var on = val('reference') !== 'none';
+    $('refProofWrap').hidden = !on;
+    if (!on) $('refProof').value = ''; else $('refProof').focus();
+  });
   wireOther('religion');
   syncNidRules();
 
@@ -231,6 +236,7 @@
     if (!val('profession')) return fail('profession', 'পেশা নির্বাচন করুন।');
     if (val('profession') === '__other' && !val('professionOther')) return fail('professionOther', 'পেশা লিখুন।');
     if (!val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
+    if (val('reference') !== 'none' && !val('refProof')) return fail('refProof', 'রেফারেন্স প্রমাণক লিখুন।');
     if (val('religion') === '__other' && !val('religionOther')) return fail('religionOther', 'ধর্ম লিখুন।');
     var type = val('memberType');
     var nid = en(val('nid')).replace(/[\s-]/g, '');
@@ -291,6 +297,7 @@
       memberTypeLabel: TYPE_LABEL[val('memberType')],
       reference: val('reference') || 'none',
       referenceLabel: REF_LABEL[val('reference') || 'none'],
+      referenceProof: val('reference') !== 'none' ? val('refProof') : '',
       feeText: feeText(val('memberType'), val('reference')),
       nameBn: val('nameBn'),
       nameEn: val('nameEn').toUpperCase(),
@@ -364,7 +371,7 @@
       serverInfo = res;
       setStatus('info', 'পিডিএফ তৈরি হচ্ছে…');
       var pdfData = {
-        formNo: res.formNo, memberNo: '', feeText: data.feeText, memberType: data.memberType,
+        formNo: res.formNo, memberNo: '', feeText: data.feeText, memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof,
         nameBn: data.nameBn, nameEn: data.nameEn, father: data.father, mother: data.mother,
         dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,

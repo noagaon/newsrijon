@@ -37,7 +37,7 @@ var APPLY_HEADERS = [
   'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'জন্মনিবন্ধন সনদ নম্বর', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
   'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: ইউনিয়ন/পৌরসভা', 'স্থায়ী: ওয়ার্ড',
   'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
-  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা', 'রেফারেন্স', 'ছবি', 'ছবির লিংক'
+  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা', 'রেফারেন্স', 'ছবি', 'ছবির লিংক', 'রেফারেন্স প্রমাণক'
 ];
 var FEEDBACK_HEADERS = ['সময়', 'নাম', 'যোগাযোগ', 'মতামত'];
 
@@ -144,6 +144,8 @@ function submit_(d) {
   var ref = String(d.reference || 'none');
   if (!CONFIG.REF_LABEL[ref]) return { ok: false, error: 'invalid reference' };
   if (ref === type) return { ok: false, error: 'reference not allowed for this type' };
+  var proof = safe_(d.referenceProof, 120);
+  if (ref !== 'none' && !proof) return { ok: false, error: 'reference proof required' };
   var fee = Math.round(CONFIG.FEES[type] * (ref === 'none' ? 1 : 1 - CONFIG.REF_DISCOUNT));
 
   var lock = LockService.getScriptLock();
@@ -170,7 +172,7 @@ function submit_(d) {
       'স্থায়ী: বিভাগ': safe_(p.div, 40), 'স্থায়ী: জেলা': safe_(p.dist, 40), 'স্থায়ী: উপজেলা/সিটি': safe_(p.upa, 60), 'স্থায়ী: থানা': safe_(p.thana, 60),
       'স্থায়ী: ইউনিয়ন/পৌরসভা': safe_(p.union, 80), 'স্থায়ী: ওয়ার্ড': safe_(p.ward, 40),
       'স্থায়ী: পোস্ট অফিস': safe_(p.po, 80), 'স্থায়ী: গ্রাম': safe_(p.village, 80), 'স্থায়ী: পাড়া': safe_(p.para, 80),
-      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'রেফারেন্স': CONFIG.REF_LABEL[ref], 'ছবি': '', 'ছবির লিংক': ''
+      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'রেফারেন্স': CONFIG.REF_LABEL[ref], 'রেফারেন্স প্রমাণক': ref === 'none' ? '' : proof, 'ছবি': '', 'ছবির লিংক': ''
     };
     var row = appendByHeader_(sh, rec);
 

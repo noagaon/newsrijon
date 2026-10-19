@@ -155,12 +155,12 @@
     return 2;
   }
 
-  function sigLine(ctx, cx, y, label, color) {
+  function sigLine(ctx, cx, y, label, color, labelY) {
     dotted(ctx, cx - 105, cx + 105, y);
     ctx.fillStyle = color || '#000';
     ctx.font = font(500, 15);
     ctx.textAlign = 'center';
-    ctx.fillText(label, cx, y + 21);
+    ctx.fillText(label, cx, labelY || (y + 21));
     ctx.textAlign = 'left';
   }
 
@@ -223,20 +223,20 @@
     ctx.fillStyle = '#000';
     ctx.font = 'bold 31px Georgia, "Times New Roman", Times, serif';
     var en = 'SRIJONSHIL TARUN SANGHA';
-    ctx.fillText(en, W / 2 - 6, 168);
+    ctx.fillText(en, W / 2 - 6, 159);
     var enW = ctx.measureText(en).width;
-    ctx.fillRect(W / 2 - 6 - enW / 2, 174, enW, 2.4);
+    ctx.fillRect(W / 2 - 6 - enW / 2, 165, enW, 2.4);
 
     ctx.font = font(600, 15.5);
-    ctx.fillText('নোয়াগাঁও, টুকের বাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।', W / 2 - 6, 204);
+    ctx.fillText('নোয়াগাঁও, টুকের বাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।', W / 2 - 6, 195);
 
     var slogan = 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার';
     ctx.font = font(600, 14.5);
     var sw = ctx.measureText(slogan).width + 26;
     ctx.fillStyle = '#3fe3ea';
-    ctx.fillRect(W / 2 - 6 - sw / 2, 219, sw, 24);
+    ctx.fillRect(W / 2 - 6 - sw / 2, 210, sw, 24);
     ctx.fillStyle = '#0a5a28';
-    ctx.fillText(slogan, W / 2 - 6, 237);
+    ctx.fillText(slogan, W / 2 - 6, 228);
     ctx.textAlign = 'left';
 
     // লোগো
@@ -271,85 +271,64 @@
     ctx.fillText('সদস্য নিবন্ধন ফরম', 398, 280);
     ctx.textAlign = 'left';
 
-    // ফরম নম্বর / ফি / সদস্য নম্বর
-    var ry = 318;
-    ctx.fillStyle = '#000';
-    ctx.font = font(700, 14.5);
-    ctx.fillText('ফরম:', 32, ry);
-    var formBoxX = 32 + ctx.measureText('ফরম:').width + 9;
-    ctx.fillText('নিবন্ধন ফি:', 318, ry);
-    ctx.fillText('সদস্য নম্বর:', 516, ry);
-    [[formBoxX, 296, 282 - formBoxX, 26, d.formNo], [391, 296, 78, 26, d.feeText], [594, 296, 176, 26, d.memberNo || '']].forEach(function (b) {
-      ctx.fillStyle = '#fdeccf';
-      ctx.fillRect(b[0], b[1], b[2], b[3]);
-      ctx.strokeStyle = '#555';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(b[0], b[1], b[2], b[3]);
-      if (b[4]) {
-        ctx.fillStyle = INK;
-        var fs = fitFont(ctx, b[4], 600, 14.5, b[2] - 10, 9);
-        ctx.font = font(600, fs);
-        ctx.fillText(b[4], b[0] + 6, b[1] + 19);
-      }
-    });
-
-    // সদস্য ধরণ
-    var ty = 354;
-    ctx.fillStyle = '#000';
-    ctx.font = font(700, 14.5);
-    ctx.fillText('সদস্য ধরণ:', 32, ty);
-    var types = [['general', '(ক) সাধারণ সদস্য–'], ['expat', '(খ) প্রবাসী সদস্য–'], ['junior', '(গ) জুনিয়র সদস্য–'], ['donor', '(ঘ) দাতা সদস্য–']];
-    var tx = 118;
-    var totalW = 0;
-    ctx.font = font(500, 14.5);
-    types.forEach(function (t) { totalW += ctx.measureText(t[1]).width + 6 + 20; });
-    var gap = (W - 30 - tx - totalW) / 3;
-    types.forEach(function (t) {
+    // উপরের দুই সারি: [ফরম | সদস্য ধরণ | সদস্য নম্বর] এবং [রেফারেন্স | রেফারেন্স প্রমাণক | নিবন্ধন ফি]
+    var TYPE_BN = { general: '(ক) সাধারণ সদস্য', expat: '(খ) প্রবাসী সদস্য', junior: '(গ) জুনিয়র সদস্য', donor: '(ঘ) দাতা সদস্য' };
+    function boxField(x, y, label, value, xEnd, vSize, vWeight) {
       ctx.fillStyle = '#000';
-      ctx.font = font(500, 14.5);
-      ctx.fillText(t[1], tx, ty);
-      var lw2 = ctx.measureText(t[1]).width;
-      checkbox(ctx, tx + lw2 + 5, ty - 16, 20, d.memberType === t[0]);
-      tx += lw2 + 6 + 20 + gap;
-    });
+      ctx.font = font(700, 14.5);
+      ctx.fillText(label, x, y);
+      var bx = x + ctx.measureText(label).width + 7;
+      ctx.fillStyle = '#fdeccf';
+      ctx.fillRect(bx, y - 22, xEnd - bx, 26);
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+      ctx.strokeRect(bx, y - 22, xEnd - bx, 26);
+      if (value) {
+        ctx.fillStyle = INK;
+        var fs = fitFont(ctx, value, vWeight || 600, vSize || 14.5, xEnd - bx - 10, 8.5);
+        ctx.font = font(vWeight || 600, fs);
+        ctx.fillText(value, bx + 6, y - 3);
+      }
+    }
+    var C1 = 32, C2 = 280, C3 = 540;
+    var ry = 318;
+    boxField(C1, ry, 'ফরম:', d.formNo, C2 - 14);
+    boxField(C2, ry, 'সদস্য ধরণ:', TYPE_BN[d.memberType] || '', C3 - 14, 16.5, 700);   // শুধু বাছাইকৃতটি, একটু বড় হরফে
+    boxField(C3, ry, 'সদস্য নম্বর:', d.memberNo || '', 772);
+    var ry2 = ry + 38;
+    boxField(C1, ry2, 'রেফারেন্স:', d.referenceLabel || '', C2 - 14);
+    boxField(C2, ry2, 'রেফারেন্স প্রমাণক:', d.referenceProof || '', C3 - 14);
+    boxField(C3, ry2, 'নিবন্ধন ফি:', d.feeText, 772);
 
-    var L = 32, R = 772, GX = 2 * 96 / 72;           // ২ পয়েন্ট বামে
+    var L = 32, R = 772, X2 = 404;                  // X2: ৩, ৫, ৮, ১১, ১৩ নম্বর ফিল্ডের একই উল্লম্ব রেখা
+    var LE = X2 - 12;                               // বাম ফিল্ডের ডান সীমা
     var junior = d.memberType === 'junior';
     var p = d.perm;
     // উল্লম্ব ব্যবধান: লাইন বাড়লে সমানুপাতে চেপে মেলানো হয়
-    var steps = [35, 33, 38, 39, 36, junior ? 34 : 0, 35, 33, 36, 34, 34, 34, 34];
+    var steps = [35, 33, 38, 39, 36, junior ? 34 : 0, 35, 36, 34, 34, 34, 34];
     var sum = steps.reduce(function (a, b) { return a + b; }, 0);
-    var k = Math.min(1, 440 / sum);
+    var k = Math.min(1.1, 440 / sum);
     var y = 398;
     function nx(g) { y += g * k; }
 
     field(ctx, L, y, '১। নাম (বাংলায়) এনআইডি অনুযায়ী:', d.nameBn, R); nx(35);
     field(ctx, L + 22, y, 'নাম (ইংরেজিতে) এনআইডি অনুযায়ী:', d.nameEn, R); nx(33);
-    field(ctx, L, y, '২। পিতার নাম:', d.father, 396);
-    field(ctx, 408, y, '৩। মাতার নাম:', d.mother, R); nx(38);
+    field(ctx, L, y, '২। পিতার নাম:', d.father, LE);
+    field(ctx, X2, y, '৩। মাতার নাম:', d.mother, R); nx(38);
 
-    field(ctx, L, y, '৪। জন্ম তারিখ:', d.dobText, 318);
-    // লিঙ্গ
-    ctx.fillStyle = LABEL; ctx.font = font(600, 14.5);
-    ctx.fillText('৫। লিঙ্গ: পুরুষ–', 364 - GX, y);
-    var gx = 364 - GX + ctx.measureText('৫। লিঙ্গ: পুরুষ–').width + 4;
-    checkbox(ctx, gx, y - 16, 20, d.gender === 'পুরুষ');
-    ctx.fillStyle = LABEL; ctx.font = font(600, 14.5);
-    ctx.fillText('মহিলা–', gx + 28, y);
-    var gx2 = gx + 28 + ctx.measureText('মহিলা–').width + 4;
-    checkbox(ctx, gx2, y - 16, 20, d.gender === 'মহিলা');
-    field(ctx, gx2 + 38, y, '৬। রক্ত গ্রুপ:', d.blood, R);
+    field(ctx, L, y, '৪। জন্ম তারিখ:', d.dobText, LE);
+    field(ctx, X2, y, '৫। লিঙ্গ:', d.gender, 556);          // শুধু বাছাইকৃত লিঙ্গ
+    field(ctx, 568, y, '৬। রক্ত গ্রুপ:', d.blood, R);
     nx(39);
 
-    field(ctx, L, y, '৭। শিক্ষাগত যোগ্যতা:', d.education, 318);
-    field(ctx, 364 - GX, y, '৮। পেশা:', d.profession, 560);
-    field(ctx, 572, y, '৯। ধর্ম:', d.religion, R);
+    field(ctx, L, y, '৭। শিক্ষাগত যোগ্যতা:', d.education, LE);
+    field(ctx, X2, y, '৮। পেশা:', d.profession, 588);
+    field(ctx, 600, y, '৯। ধর্ম:', d.religion, R);
     nx(36);
-    field(ctx, L, y, '১০। জাতীয় পরিচয় পত্র (এনআইডি) নম্বর:', d.nid, R); nx(junior ? 34 : 35);
+    field(ctx, L, y, '১০। জাতীয় পরিচয় পত্র নম্বর:', d.nid, LE);
+    field(ctx, X2, y, '১১। ফোন নম্বর:', d.phone, R); nx(junior ? 34 : 35);
     if (junior) { field(ctx, L + 22, y, 'জন্মনিবন্ধন সনদ নম্বর:', d.birthReg, R); nx(35); }
-    field(ctx, L, y, '১১। ফোন নম্বর:', d.phone, 430);
-    field(ctx, 440, y, '১২। ওয়াটসঅ্যাপ নম্বর:', d.whatsapp, R); nx(33);
-    field(ctx, L, y, '১৩। ইমেইল আইডি:', d.email, R); nx(36);
+    field(ctx, L, y, '১২। ইমেইল আইডি:', d.email, LE);
+    field(ctx, X2, y, '১৩। ওয়াটসঅ্যাপ নম্বর:', d.whatsapp, R); nx(36);
 
     field(ctx, L, y, '১৪। স্থায়ী ঠিকানা: পাড়া-', p.para, 238);
     field(ctx, 244, y, 'গ্রাম-', p.village, 484 - 20);
@@ -396,9 +375,9 @@
     dotted(ctx, 604, 758, sigY + 2);
 
     // নিচের স্বাক্ষর
-    sigLine(ctx, 150, 1062, 'সাধারণ সম্পাদক', '#1f4e9e');
+    sigLine(ctx, 150, 1062, 'সাধারণ সম্পাদক', '#1f4e9e', 1097);   // 'ডাউনলোডের সময়' লাইনে
     sigLine(ctx, 397, 1062, 'সদস্যপদ লাভের তারিখ', '#000');
-    sigLine(ctx, 644, 1062, 'সভাপতি', '#1f4e9e');
+    sigLine(ctx, 644, 1062, 'সভাপতি', '#1f4e9e', 1097);
 
     // ফুটার: ডাউনলোডের সময় (বাম কোণে, ইংরেজি হরফে)
     ctx.fillStyle = '#444';
