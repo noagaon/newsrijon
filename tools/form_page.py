@@ -76,6 +76,22 @@ def membership_body():
         + '<h3>সদস্যপদের আবেদন ফি</h3><div class="fees">%s</div>' % fee_cards
     )
 
+    permit = '''
+<section class="permit" id="permitBox" aria-labelledby="permitTitle">
+  <h2 id="permitTitle">অনুমতি নিন</h2>
+  <p class="small">আবেদন জমা দিতে সংগঠনের অনুমতি লাগে। নাম ও ফোন নম্বর দিয়ে অনুমতির অনুরোধ পাঠান। অনুমতির অপেক্ষায় না থেকে নিচের ফরমটি এখনই পূরণ করে রাখতে পারেন; অনুমতি পেলে "জমা দিন" বাটন চালু হবে।</p>
+  <div class="row-2">
+    <div class="field"><label for="permitName">১। নাম <span class="req">*</span></label><input id="permitName" type="text" maxlength="100" autocomplete="name"></div>
+    <div class="field"><label for="permitPhone">২। ফোন নম্বর <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"></div>
+  </div>
+  <div class="field cap-row"><label for="capAns">নিরাপত্তা প্রশ্ন: <strong id="capQ">…</strong> = ? <span class="req">*</span></label>
+    <div class="cap-line"><input id="capAns" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><button type="button" class="linklike" id="capRefresh">নতুন প্রশ্ন</button></div></div>
+  <input type="text" id="permitWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <div class="permit-act"><button type="button" class="btn btn-round" id="permitBtn">অনুমতির জন্য পাঠান</button></div>
+  <div id="permitStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+'''
+
     form = '''
 <form id="applyForm" class="form-card apply" novalidate autocomplete="on">
   <div class="form-head">
@@ -176,7 +192,8 @@ def membership_body():
 
   <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div id="applyStatus" class="status" role="status" aria-live="polite"></div>
-  <button class="btn btn-primary btn-lg" type="submit" id="applySubmit">জমা দিন</button>
+  <button class="btn btn-primary btn-lg" type="submit" id="applySubmit" disabled>জমা দিন</button>
+  <p class="small muted" id="submitHint">অনুমতি পাওয়ার পর “জমা দিন” বাটন চালু হবে।</p>
   <p class="small muted">জমা দিলে আপনার আবেদনের একটি পিডিএফ কপি তৈরি হয়ে আপনার ডিভাইসে ডাউনলোড হবে এবং সংগঠনের কাছে সংরক্ষিত হবে।</p>
 </form>
 
@@ -196,7 +213,7 @@ def membership_body():
         'perm': addr_block('perm', 'স্থায়ী ঠিকানা'),
         'cur': addr_block('cur', 'বর্তমান ঠিকানা'),
     }
-    return intro + '<div id="formArea">' + form + '</div>'
+    return intro + '<div id="formArea">' + permit + form + '</div>'
 
 
 FORM_SCRIPTS = '''<script src="../config.js"></script>

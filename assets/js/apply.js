@@ -214,6 +214,71 @@
     img.src = url;
   });
 
+  // ---------- অনুমতি-ব্যবস্থা ----------
+  var KEY = 'srijon_access_rid';
+  var accessId = '', approved = false, pollTimer = null, capId = '';
+  function store(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); } catch (e) {} }
+  function stored() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function pStatus(cls, msg) { var s = $('permitStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
+
+  function setApproved(on) {
+    approved = on;
+    $('applySubmit').disabled = !on;
+    $('submitHint').hidden = on;
+    if (on) $('permitBtn').disabled = true;
+    if (on) pStatus('ok-strong', '✔ অনুমোদন পাওয়া গেছে — ফরম পূরণ শেষে এখন “জমা দিন” চাপতে পারেন।');
+  }
+
+  function loadCaptcha() {
+    $('capQ').textContent = '…'; $('capAns').value = ''; capId = '';
+    return post({ action: 'captcha' }).then(function (r) {
+      if (r && r.ok) { capId = r.cid; $('capQ').textContent = r.q; }
+      else $('capQ').textContent = '?';
+    }).catch(function () { $('capQ').textContent = '?'; });
+  }
+
+  function stopPoll() { if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; } }
+  function poll() {
+    stopPoll();
+    if (!accessId) return;
+    post({ action: 'access_status', rid: accessId }).then(function (r) {
+      if (!r || !r.ok) {
+        if (r && (r.error === 'not found' || r.error === 'bad id')) { accessId = ''; store(''); pStatus('error', 'অনুরোধটি পাওয়া যায়নি। আবার অনুমতির জন্য পাঠান।'); $('permitBtn').disabled = false; return; }
+        throw new Error('status');
+      }
+      if (r.status === 'approved') { stopPoll(); setApproved(true); return; }
+      if (r.status === 'rejected') { stopPoll(); accessId = ''; store(''); setApproved(false); $('permitBtn').disabled = false; pStatus('error', 'দুঃখিত, আপনার অনুরোধ গৃহীত হয়নি। বিস্তারিত জানতে সংগঠনের সাথে যোগাযোগ করুন।'); loadCaptcha(); return; }
+      if (r.status === 'expired' || r.status === 'used') { stopPoll(); accessId = ''; store(''); setApproved(false); $('permitBtn').disabled = false; pStatus('error', 'এই অনুমতির মেয়াদ শেষ বা ব্যবহৃত হয়েছে। নতুন করে অনুমতির জন্য পাঠান।'); loadCaptcha(); return; }
+      pStatus('info', 'অনুমোদনের অপেক্ষায়… আপনি এই সময়ে নিচের ফরম পূরণ করে রাখতে পারেন। অনুমোদন এলে এখানে জানানো হবে।');
+      pollTimer = setTimeout(poll, 6000);
+    }).catch(function () { pollTimer = setTimeout(poll, 9000); });
+  }
+
+  var PERMIT_ERR = {
+    captcha: 'নিরাপত্তা প্রশ্নের উত্তর ঠিক হয়নি। নতুন প্রশ্নের উত্তর দিন।',
+    limit_phone: 'এই ফোন নম্বরে আজ অনেকবার অনুরোধ করা হয়েছে। কিছুক্ষণ পর বা কাল চেষ্টা করুন।',
+    limit_day: 'আজকের অনুরোধের সীমা শেষ। কাল চেষ্টা করুন বা সংগঠনের সাথে যোগাযোগ করুন।'
+  };
+  $('capRefresh').addEventListener('click', loadCaptcha);
+  $('permitBtn').addEventListener('click', function () {
+    var name = val('permitName'), phone = en(val('permitPhone')).replace(/[\s-]/g, '');
+    if (name.length < 2) { pStatus('error', 'আপনার নাম লিখুন।'); $('permitName').focus(); return; }
+    if (!/^\+?\d{7,16}$/.test(phone)) { pStatus('error', 'ফোন নম্বর সঠিক নয়।'); $('permitPhone').focus(); return; }
+    if (!capId || !val('capAns')) { pStatus('error', 'নিরাপত্তা প্রশ্নের উত্তর দিন।'); $('capAns').focus(); return; }
+    var btn = $('permitBtn');
+    btn.disabled = true; pStatus('info', 'অনুরোধ পাঠানো হচ্ছে…');
+    post({ action: 'access_request', name: name, phone: phone, cid: capId, captcha: val('capAns'), website: $('permitWebsite').value }).then(function (r) {
+      if (!r || !r.ok) {
+        var code = r && r.error;
+        pStatus('error', PERMIT_ERR[code] || 'অনুরোধ পাঠানো যায়নি। তথ্য দেখে আবার চেষ্টা করুন।');
+        btn.disabled = false; loadCaptcha(); return;
+      }
+      accessId = r.rid; store(r.rid);
+      pStatus('info', 'আপনার অনুরোধ পাঠানো হয়েছে। অনুমোদনের অপেক্ষায়… আপনি এই সময়ে নিচের ফরম পূরণ করে রাখতে পারেন।');
+      pollTimer = setTimeout(poll, 4000);
+    }).catch(function () { pStatus('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); btn.disabled = false; loadCaptcha(); });
+  });
+
   // ---------- যাচাই ----------
   function fail(id, msg) {
     var el = $(id);
@@ -321,7 +386,8 @@
       currentText: same ? 'স্থায়ী ঠিকানার অনুরূপ' : addrText(cur),
       country: val('countryType') === 'abroad' ? val('country') : 'বাংলাদেশ',
       countryType: val('countryType') === 'abroad' ? 'প্রবাসী' : 'বাংলাদেশ',
-      website: form.website.value
+      website: form.website.value,
+      accessId: accessId
     };
   }
 
@@ -358,6 +424,7 @@
     if (busy) return;
     if (form.website.value) return;                        // হানিপট
     if (!geo) { setStatus('error', 'পেইজ লোড সম্পূর্ণ হয়নি, কিছুক্ষণ পর আবার চেষ্টা করুন।'); return; }
+    if (!approved || !accessId) { setStatus('error', 'অনুমতি পাওয়ার পর জমা দেওয়া যাবে। উপরে “অনুমতি নিন” অংশ দেখুন।'); return; }
     if (!validate()) return;
 
     var data = collect();
@@ -367,7 +434,7 @@
 
     var serverInfo;
     post({ action: 'submit', data: data }).then(function (res) {
-      if (!res || !res.ok) throw new Error((res && res.error) || 'submit failed');
+      if (!res || !res.ok) { var ee = new Error((res && res.error) || 'submit failed'); ee.code = res && res.error; throw ee; }
       serverInfo = res;
       setStatus('info', 'পিডিএফ তৈরি হচ্ছে…');
       var pdfData = {
@@ -387,6 +454,8 @@
       var dl = $('downloadPdf');
       dl.href = url; dl.setAttribute('download', fname);
       form.hidden = true;
+      $('permitBox').hidden = true;
+      store(''); stopPoll();
       $('applySuccess').hidden = false;
       $('applySuccess').scrollIntoView({ behavior: 'smooth', block: 'start' });
       triggerDownload(url, fname);
@@ -427,12 +496,23 @@
       if (serverInfo) {
         setStatus('error', 'আপনার আবেদন গৃহীত হয়েছে (ফরম নম্বর: ' + serverInfo.formNo + ') কিন্তু পিডিএফ তৈরি করা যায়নি। ফরম নম্বরটি সংরক্ষণ করে সংগঠনের সাথে যোগাযোগ করুন।');
       } else {
-        setStatus('error', 'দুঃখিত, আবেদন জমা হয়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।' + (err && err.message && /[a-z]/i.test(err.message) ? '' : ' ' + (err.message || '')));
+        if (err && err.code === 'permission') {
+          approved = false; accessId = ''; store(''); setApproved(false); $('permitBtn').disabled = false; loadCaptcha();
+          setStatus('error', 'আপনার অনুমতি পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে। উপরে নতুন করে অনুমতি নিন; আপনার পূরণ করা ফরম অক্ষত আছে।');
+          pStatus('error', 'অনুমতির মেয়াদ শেষ বা ব্যবহৃত। নতুন করে অনুমতির জন্য পাঠান।');
+        } else if (err && err.code === 'duplicate') {
+          setStatus('error', 'এই এনআইডি/জন্মনিবন্ধন নম্বর দিয়ে ইতোমধ্যে আবেদন করা হয়েছে। প্রয়োজনে সংগঠনের সাথে যোগাযোগ করুন।');
+        } else setStatus('error', 'দুঃখিত, আবেদন জমা হয়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।' + (err && err.message && /[a-z]/i.test(err.message) ? '' : ' ' + (err.message || '')));
       }
     }).then(function () {
-      busy = false; btn.disabled = false;
+      busy = false; btn.disabled = !approved;
     });
   });
+
+  // শুরু: ক্যাপচা লোড, আগের অনুরোধ থাকলে চালিয়ে যাওয়া
+  loadCaptcha();
+  accessId = stored();
+  if (accessId) { $('permitBtn').disabled = true; pStatus('info', 'আপনার আগের অনুরোধের অবস্থা দেখা হচ্ছে…'); poll(); }
 
   loadGeo().catch(function () {
     setStatus('error', 'ঠিকানার তালিকা লোড করা যায়নি। পেইজটি রিফ্রেশ করুন।');

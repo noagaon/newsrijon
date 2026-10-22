@@ -42,6 +42,20 @@
 </div></section>
 <div class="wrap page-body">
 <h2 class="sub-title">অংশগ্রহণ থেকে পরিবর্তনের পথে</h2><p class="lead">একটি সংগঠনের শক্তি শুধু তার নিয়ম-কাঠামো বা কার্যক্রমে নয়; বরং তার সবচেয়ে বড় শক্তি হলো তার সদস্যরা। একজন সদস্য হওয়া মানে শুধু একটি তালিকায় নিজের নাম যুক্ত করা নয়—এটি একটি মূল্যবোধ, দায়িত্ব ও ইতিবাচক পরিবর্তনের সঙ্গে নিজেকে যুক্ত করার অঙ্গীকার।</p><p>আপনি যদি মনে করেন, আপনার সময়, মেধা, অভিজ্ঞতা ও সামর্থ্য কোনো ভালো কাজে অবদান রাখতে পারে, তাহলে সদস্য হওয়ার আবেদন হতে পারে সেই পথচলার প্রথম ধাপ।</p><section class="card "><h3><span class="ico" aria-hidden="true">📝</span>সদস্য হওয়ার আগে কিছু বিষয় মনে রাখা জরুরি—</h3><ul><li>সংগঠনের লক্ষ্য, উদ্দেশ্য ও নীতিমালা ভালোভাবে জানুন।</li><li>নিজের আগ্রহ, দক্ষতা ও সময়ের সঙ্গে সামঞ্জস্য রেখে দায়িত্ব নেওয়ার মানসিকতা তৈরি করুন।</li><li>আবেদনপত্রে সঠিক ও প্রয়োজনীয় তথ্য প্রদান করুন।</li><li>সদস্য হওয়ার পর নিয়মিত অংশগ্রহণ ও দায়িত্বশীলতার মাধ্যমে নিজের ভূমিকা পালন করুন।</li><li>মতের ভিন্নতাকে সম্মান করে দলগতভাবে কাজ করার মানসিকতা রাখুন।</li></ul></section><p>আপনার অংশগ্রহণ হয়তো আজ ছোট মনে হতে পারে, কিন্তু সম্মিলিতভাবে সেই ছোট ছোট অবদানই গড়ে তুলতে পারে একটি শক্তিশালী, মানবিক ও কার্যকর সংগঠন।</p><div class="callout"><p>তাই শুধু সদস্য হওয়ার জন্য নয়—একটি সুন্দর উদ্দেশ্যের অংশ হওয়ার জন্য আবেদন করুন। আপনার সততা, সময় ও সামর্থ্যই হোক আগামীর ইতিবাচক পরিবর্তনের শক্তি।</p></div><h2 class="sub-title" id="apply">আবেদন ফরম</h2><p>সদস্য হতে নির্ধারিত আবেদন ফরম পূরণ করুন।</p><h3>সদস্যপদের আবেদন ফি</h3><div class="fees"><div class="fee"><span>সাধারণ সদস্য</span><strong>১,০০০ টাকা</strong></div><div class="fee"><span>প্রবাসী সদস্য</span><strong>১,২০০ টাকা</strong></div><div class="fee"><span>দাতা সদস্য</span><strong>২,০০০ টাকা</strong></div><div class="fee"><span>জুনিয়র সদস্য</span><strong>১০০ টাকা</strong></div></div><div id="formArea">
+<section class="permit" id="permitBox" aria-labelledby="permitTitle">
+  <h2 id="permitTitle">অনুমতি নিন</h2>
+  <p class="small">আবেদন জমা দিতে সংগঠনের অনুমতি লাগে। নাম ও ফোন নম্বর দিয়ে অনুমতির অনুরোধ পাঠান। অনুমতির অপেক্ষায় না থেকে নিচের ফরমটি এখনই পূরণ করে রাখতে পারেন; অনুমতি পেলে "জমা দিন" বাটন চালু হবে।</p>
+  <div class="row-2">
+    <div class="field"><label for="permitName">১। নাম <span class="req">*</span></label><input id="permitName" type="text" maxlength="100" autocomplete="name"></div>
+    <div class="field"><label for="permitPhone">২। ফোন নম্বর <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"></div>
+  </div>
+  <div class="field cap-row"><label for="capAns">নিরাপত্তা প্রশ্ন: <strong id="capQ">…</strong> = ? <span class="req">*</span></label>
+    <div class="cap-line"><input id="capAns" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><button type="button" class="linklike" id="capRefresh">নতুন প্রশ্ন</button></div></div>
+  <input type="text" id="permitWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <div class="permit-act"><button type="button" class="btn btn-round" id="permitBtn">অনুমতির জন্য পাঠান</button></div>
+  <div id="permitStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+
 <form id="applyForm" class="form-card apply" novalidate autocomplete="on">
   <div class="form-head">
     <img src="../assets/img/logo-small.webp" width="64" height="74" alt="">
@@ -175,7 +189,8 @@
 
   <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div id="applyStatus" class="status" role="status" aria-live="polite"></div>
-  <button class="btn btn-primary btn-lg" type="submit" id="applySubmit">জমা দিন</button>
+  <button class="btn btn-primary btn-lg" type="submit" id="applySubmit" disabled>জমা দিন</button>
+  <p class="small muted" id="submitHint">অনুমতি পাওয়ার পর “জমা দিন” বাটন চালু হবে।</p>
   <p class="small muted">জমা দিলে আপনার আবেদনের একটি পিডিএফ কপি তৈরি হয়ে আপনার ডিভাইসে ডাউনলোড হবে এবং সংগঠনের কাছে সংরক্ষিত হবে।</p>
 </form>
 

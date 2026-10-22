@@ -5,6 +5,9 @@
  *  1) action=submit   : আবেদনের তথ্য শিটে (ট্যাব "আবেদন") যোগ করে; ফরম নম্বর, সময় ও টোকেন ফেরত দেয়
  *  2) action=pdf      : ওয়েবসাইটে তৈরি পিডিএফ সদস্য ধরণ অনুযায়ী নির্দিষ্ট ড্রাইভ ফোল্ডারে রাখে
  *  2খ) action=photo   : আবেদনকারীর ছবি একই ড্রাইভ ফোল্ডারে রাখে এবং শিটে ছবি (থাম্বনেইল) ও লিংক বসায়
+
+ *  0) অনুমতি-ব্যবস্থা: আবেদনের আগে নাম+ফোন দিয়ে অনুমতির অনুরোধ → অনুমোদনকারীদের ইমেইলে এক-ট্যাপ "অনুমোদন দিন/বাতিল করুন" লিংক
+ *     (action=captcha, access_request, access_status; লিংক খুললে doGet?a=decide ...)। অনুমোদিত না হলে submit গ্রহণ হয় না।
  *  3) action=feedback : মতামত শিটে (ট্যাব "মতামত") যোগ করে
  *
  * ডিপ্লয়: Execute as = Me (srijonshil2011@gmail.com), Who has access = Anyone
@@ -28,8 +31,19 @@ var CONFIG = {
   REF_DISCOUNT: 0.2,                                   // রেফারেন্স থাকলে নিবন্ধন ফির ২০% কম
   REF_LABEL: { none: 'কোন রেফারেন্স নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' },
   MAX_PHOTO_BYTES: 8 * 1024 * 1024,
-  MAX_PDF_BYTES: 4 * 1024 * 1024
+  MAX_PDF_BYTES: 4 * 1024 * 1024,
+
+  // অনুমতি-ব্যবস্থা
+  PERMIT_TAB: 'অনুমতি',
+  APPROVERS: ['srijonshil2011@gmail.com', 'noagaon161271@gmail.com'],
+  WEBAPP_URL: 'https://script.google.com/macros/s/AKfycbzTWo1I6LaAeZos36cV8hz2d1YrePtvtdgpfjtkYEhZgkrgEB33i07LHnPonAgwSLM9ew/exec',
+  PERMIT_VALID_HOURS: 24,          // অনুরোধের পর এত ঘণ্টার মধ্যে অনুমোদন ও জমা দিতে হবে
+  PERMIT_MAX_PER_PHONE: 15,        // এক ফোনে ২৪ ঘণ্টায় সর্বোচ্চ অনুরোধ (একই ফোন থেকে একাধিক আবেদন চলে)
+  PERMIT_MAX_PER_DAY: 40           // দিনে মোট অনুরোধ (ইমেইল কোটা বাঁচাতে)
 };
+
+var PERMIT_HEADERS = ['অনুরোধ আইডি', 'অনুরোধের সময়', 'নাম', 'ফোন', 'অবস্থা', 'অনুমোদনকারী', 'সিদ্ধান্তের সময়', 'ফরম নম্বর'];
+var ST = { PENDING: 'অপেক্ষমাণ', APPROVED: 'অনুমোদিত', REJECTED: 'বাতিল', USED: 'ব্যবহৃত', EXPIRED: 'মেয়াদোত্তীর্ণ' };
 
 var APPLY_HEADERS = [
   'ফরম নম্বর', 'জমার সময়', 'সদস্য ধরণ', 'নিবন্ধন ফি (টাকা)', 'সদস্য নম্বর',
@@ -37,12 +51,14 @@ var APPLY_HEADERS = [
   'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'জন্মনিবন্ধন সনদ নম্বর', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
   'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: ইউনিয়ন/পৌরসভা', 'স্থায়ী: ওয়ার্ড',
   'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
-  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা', 'রেফারেন্স', 'ছবি', 'ছবির লিংক', 'রেফারেন্স প্রমাণক'
+  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা', 'রেফারেন্স', 'ছবি', 'ছবির লিংক', 'রেফারেন্স প্রমাণক', 'অনুমোদনকারী'
 ];
 var FEEDBACK_HEADERS = ['সময়', 'নাম', 'যোগাযোগ', 'মতামত'];
 
 // ---------------------------------------------------------------- প্রবেশদ্বার
-function doGet() {
+function doGet(e) {
+  var q = (e && e.parameter) || {};
+  if (q.a === 'decide') return decidePage_(q);
   return json_({ ok: true, service: 'srijonshil-website', time: new Date().toISOString() });
 }
 
@@ -50,6 +66,9 @@ function doPost(e) {
   try {
     var req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     switch (req.action) {
+      case 'captcha':        return json_(captcha_());
+      case 'access_request': return json_(requestAccess_(req));
+      case 'access_status':  return json_(accessStatus_(req));
       case 'submit':   return json_(submit_(req.data || {}));
       case 'pdf':      return json_(savePdf_(req));
       case 'photo':    return json_(savePhoto_(req));
@@ -120,6 +139,192 @@ function nowInfo_() {
   };
 }
 
+// ---------------------------------------------------------------- ০) অনুমতি-ব্যবস্থা
+function enDigits_(s) {
+  var d = '০১২৩৪৫৬৭৮৯';
+  return String(s).replace(/[০-৯]/g, function (c) { return d.indexOf(c); });
+}
+
+function esc_(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function parseTs_(str) {                       // "yyyy-MM-dd HH:mm:ss" (ঢাকা) → মিলিসেকেন্ড; শিট তারিখে বদলে ফেললেও চলে
+  if (str instanceof Date) return str.getTime();
+  var t = new Date(String(str).replace(' ', 'T') + '+06:00').getTime();
+  return isNaN(t) ? 0 : t;
+}
+
+function secret_() {
+  var props = PropertiesService.getScriptProperties();
+  var sec = props.getProperty('hmac_secret');
+  if (!sec) { sec = Utilities.getUuid() + Utilities.getUuid(); props.setProperty('hmac_secret', sec); }
+  return sec;
+}
+
+function sign_(rid, verdict, idx) {
+  var raw = Utilities.computeHmacSha256Signature(rid + '|' + verdict + '|' + idx, secret_());
+  return Utilities.base64EncodeWebSafe(raw).replace(/=+$/, '');
+}
+
+// সংখ্যাভিত্তিক ক্যাপচা: প্রশ্ন সার্ভারে তৈরি, উত্তর সার্ভারেই যাচাই, একবার ব্যবহার্য, ১০ মিনিট মেয়াদ
+function captcha_() {
+  var a = 1 + Math.floor(Math.random() * 9), b = 1 + Math.floor(Math.random() * 9);
+  var plus = Math.random() < 0.5;
+  if (!plus && b > a) { var t = a; a = b; b = t; }
+  var cid = Utilities.getUuid();
+  CacheService.getScriptCache().put('cap_' + cid, String(plus ? a + b : a - b), 600);
+  return { ok: true, cid: cid, q: bnDigits_(a) + (plus ? ' + ' : ' − ') + bnDigits_(b) };
+}
+
+function checkCaptcha_(cid, ans) {
+  var cache = CacheService.getScriptCache();
+  var want = cache.get('cap_' + String(cid || ''));
+  if (!want) return false;
+  cache.remove('cap_' + cid);
+  return enDigits_(String(ans || '')).replace(/\s/g, '') === want;
+}
+
+function findReq_(sh, rid) {
+  var data = sh.getDataRange().getValues();
+  var head = data[0].map(String);
+  var ci = {};
+  head.forEach(function (h, i) { ci[h] = i; });
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][ci['অনুরোধ আইডি']]) === rid) {
+      var rec = {};
+      head.forEach(function (h, j) { rec[h] = data[i][j]; });
+      return { row: i + 1, rec: rec };
+    }
+  }
+  return null;
+}
+
+// মেয়াদ পেরোলে অপেক্ষমাণ/অনুমোদিত অবস্থাকে মেয়াদোত্তীর্ণ ধরা হয়
+function effectiveStatus_(rec) {
+  var st = String(rec['অবস্থা']);
+  if ((st === ST.PENDING || st === ST.APPROVED) &&
+      Date.now() - parseTs_(rec['অনুরোধের সময়']) > CONFIG.PERMIT_VALID_HOURS * 3600 * 1000) return ST.EXPIRED;
+  return st;
+}
+
+function requestAccess_(r) {
+  if (r.website) return { ok: false, error: 'rejected' };
+  if (!checkCaptcha_(r.cid, r.captcha)) return { ok: false, error: 'captcha' };
+  var name = String(r.name || '').replace(/\s+/g, ' ').trim();
+  var phone = enDigits_(String(r.phone || '')).replace(/[\s-]/g, '');
+  if (name.length < 2 || name.length > 100) return { ok: false, error: 'invalid name' };
+  if (!/^\+?\d{7,16}$/.test(phone)) return { ok: false, error: 'invalid phone' };
+
+  var rid = Utilities.getUuid().replace(/-/g, '');
+  var tsStr = nowInfo_().sheet;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var sh = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+    var data = sh.getDataRange().getValues();
+    var head = data[0].map(String), iT = head.indexOf('অনুরোধের সময়'), iP = head.indexOf('ফোন');
+    var since = Date.now() - 24 * 3600 * 1000, total = 0, samePhone = 0;
+    for (var i = 1; i < data.length; i++) {
+      if (parseTs_(data[i][iT]) < since) continue;
+      total++;
+      if (String(data[i][iP]) === phone) samePhone++;
+    }
+    if (samePhone >= CONFIG.PERMIT_MAX_PER_PHONE) return { ok: false, error: 'limit_phone' };
+    if (total >= CONFIG.PERMIT_MAX_PER_DAY) return { ok: false, error: 'limit_day' };
+    appendByHeader_(sh, {
+      'অনুরোধ আইডি': rid, 'অনুরোধের সময়': "'" + tsStr, 'নাম': safe_(name, 100), 'ফোন': "'" + phone,
+      'অবস্থা': ST.PENDING, 'অনুমোদনকারী': '', 'সিদ্ধান্তের সময়': '', 'ফরম নম্বর': ''
+    });
+  } finally {
+    lock.releaseLock();
+  }
+  mailApprovers_(rid, name, phone, tsStr);
+  return { ok: true, rid: rid };
+}
+
+function mailApprovers_(rid, name, phone, tsStr) {
+  CONFIG.APPROVERS.forEach(function (email, idx) {
+    try {
+      var ok = CONFIG.WEBAPP_URL + '?a=decide&rid=' + rid + '&v=approve&u=' + idx + '&sig=' + sign_(rid, 'approve', idx);
+      var no = CONFIG.WEBAPP_URL + '?a=decide&rid=' + rid + '&v=reject&u=' + idx + '&sig=' + sign_(rid, 'reject', idx);
+      var btn = 'display:inline-block;color:#fff;padding:14px 26px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px;margin:6px 8px 6px 0;';
+      var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#111;max-width:520px">' +
+        '<h2 style="color:#0b3d24;margin:0 0 10px">সদস্য আবেদনের অনুমতির অনুরোধ</h2>' +
+        '<p style="margin:0 0 4px"><b>নাম:</b> ' + esc_(name) + '</p>' +
+        '<p style="margin:0 0 4px"><b>ফোন:</b> ' + esc_(phone) + '</p>' +
+        '<p style="margin:0 0 16px"><b>সময়:</b> ' + esc_(tsStr) + '</p>' +
+        '<a href="' + ok + '" style="' + btn + 'background:#157347">✔ অনুমোদন দিন</a>' +
+        '<a href="' + no + '" style="' + btn + 'background:#c0392b">✖ বাতিল করুন</a>' +
+        '<p style="color:#555;font-size:13px;margin-top:16px">যিনি আগে সিদ্ধান্ত নেবেন সেটাই কার্যকর হবে। অনুমতি ' + CONFIG.PERMIT_VALID_HOURS +
+        ' ঘণ্টা বৈধ এবং একটি আবেদনের জন্যই। এই লিংক অন্য কাউকে পাঠাবেন না।</p></div>';
+      MailApp.sendEmail({
+        to: email,
+        subject: 'অনুমতির অনুরোধ: ' + name + ' (' + phone + ')',
+        htmlBody: html,
+        body: 'অনুমতির অনুরোধ — নাম: ' + name + ', ফোন: ' + phone + '\nঅনুমোদন: ' + ok + '\nবাতিল: ' + no,
+        name: 'সৃজনশীল তরুণ সংঘ ওয়েবসাইট'
+      });
+    } catch (err) {
+      console.error('mail failed for ' + email + ': ' + (err && err.message));
+    }
+  });
+}
+
+function accessStatus_(r) {
+  var rid = String(r.rid || '');
+  if (!/^[0-9a-f]{32}$/.test(rid)) return { ok: false, error: 'bad id' };
+  var sh = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+  var f = findReq_(sh, rid);
+  if (!f) return { ok: false, error: 'not found' };
+  var st = effectiveStatus_(f.rec);
+  var code = st === ST.APPROVED ? 'approved' : st === ST.REJECTED ? 'rejected' : st === ST.USED ? 'used' : st === ST.EXPIRED ? 'expired' : 'pending';
+  return { ok: true, status: code };
+}
+
+// অনুমোদনকারীর ইমেইলের লিংক খুললে
+function decidePage_(q) {
+  var rid = String(q.rid || ''), verdict = String(q.v || ''), idx = Number(q.u);
+  var msg, good = false;
+  try {
+    if (!/^[0-9a-f]{32}$/.test(rid) || (verdict !== 'approve' && verdict !== 'reject') || !(idx >= 0 && idx < CONFIG.APPROVERS.length) ||
+        String(q.sig || '') !== sign_(rid, verdict, idx)) {
+      msg = 'লিংকটি সঠিক নয়।';
+    } else {
+      var lock = LockService.getScriptLock();
+      lock.waitLock(30000);
+      try {
+        var sh = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+        var f = findReq_(sh, rid);
+        if (!f) msg = 'অনুরোধটি পাওয়া যায়নি।';
+        else {
+          var st = effectiveStatus_(f.rec);
+          if (st === ST.EXPIRED) msg = 'অনুরোধের মেয়াদ শেষ হয়ে গেছে।';
+          else if (st !== ST.PENDING) {
+            msg = 'এই অনুরোধে ইতোমধ্যে সিদ্ধান্ত নেওয়া হয়েছে: ' + st + (f.rec['অনুমোদনকারী'] ? ' (' + f.rec['অনুমোদনকারী'] + ')' : '') + '।';
+          } else {
+            var nowS = nowInfo_().sheet;
+            sh.getRange(f.row, colOf_(sh, 'অবস্থা')).setValue(verdict === 'approve' ? ST.APPROVED : ST.REJECTED);
+            sh.getRange(f.row, colOf_(sh, 'অনুমোদনকারী')).setValue(CONFIG.APPROVERS[idx]);
+            sh.getRange(f.row, colOf_(sh, 'সিদ্ধান্তের সময়')).setValue("'" + nowS);
+            good = true;
+            msg = (verdict === 'approve' ? '✔ অনুমোদন দেওয়া হয়েছে' : '✖ অনুরোধ বাতিল করা হয়েছে') + ' — ' + esc_(f.rec['নাম']) + ' (' + esc_(f.rec['ফোন']) + ')।';
+          }
+        }
+      } finally {
+        lock.releaseLock();
+      }
+    }
+  } catch (err) {
+    console.error(err && err.stack || err);
+    msg = 'সমস্যা হয়েছে, আবার চেষ্টা করুন।';
+  }
+  var color = good ? '#157347' : '#8a5a00';
+  var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:40px auto;padding:24px;border:2px solid ' + color + ';border-radius:14px;text-align:center">' +
+    '<h2 style="color:' + color + ';line-height:1.5">' + msg + '</h2><p style="color:#555">সৃজনশীল তরুণ সংঘ</p></div>';
+  return HtmlService.createHtmlOutput(html).setTitle('অনুমতি').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
 // ---------------------------------------------------------------- ১) আবেদন জমা
 function submit_(d) {
   if (d.website) return { ok: false, error: 'rejected' };            // হানিপট
@@ -148,10 +353,35 @@ function submit_(d) {
   if (ref !== 'none' && !proof) return { ok: false, error: 'reference proof required' };
   var fee = Math.round(CONFIG.FEES[type] * (ref === 'none' ? 1 : 1 - CONFIG.REF_DISCOUNT));
 
+  var accessId = String(d.accessId || '');
+  if (!/^[0-9a-f]{32}$/.test(accessId)) return { ok: false, error: 'permission' };
+
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
+    // অনুমতি: অনুমোদিত, মেয়াদের মধ্যে ও অব্যবহৃত হতে হবে
+    var psh = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+    var preq = findReq_(psh, accessId);
+    if (!preq || effectiveStatus_(preq.rec) !== ST.APPROVED) return { ok: false, error: 'permission' };
+
     var sh = sheet_(CONFIG.APPLY_TAB, APPLY_HEADERS);
+
+    // একই এনআইডি/জন্মনিবন্ধন নম্বরে দ্বিতীয় আবেদন নয় (বাতিল করা সারি বাদে)
+    var last = sh.getLastRow();
+    if (last > 1) {
+      var stCol = colOf_(sh, 'অবস্থা');
+      var stV = stCol ? sh.getRange(2, stCol, last - 1, 1).getValues() : [];
+      var dupCheck = function (colName, val) {
+        var c = colOf_(sh, colName);
+        if (!c || !val) return false;
+        var vals = sh.getRange(2, c, last - 1, 1).getValues();
+        for (var i = 0; i < vals.length; i++) {
+          if (String(vals[i][0]).replace(/^'/, '').trim() === val && String(stV[i] ? stV[i][0] : '').indexOf('বাতিল') < 0) return true;
+        }
+        return false;
+      };
+      if (dupCheck('এনআইডি', nid) || dupCheck('জন্মনিবন্ধন সনদ নম্বর', reg)) return { ok: false, error: 'duplicate' };
+    }
     var t = nowInfo_();
 
     // ক্রমিক ফরম নম্বর: STS-২০২৬-০০০১ (বছর অনুযায়ী নতুন করে শুরু)
@@ -172,9 +402,11 @@ function submit_(d) {
       'স্থায়ী: বিভাগ': safe_(p.div, 40), 'স্থায়ী: জেলা': safe_(p.dist, 40), 'স্থায়ী: উপজেলা/সিটি': safe_(p.upa, 60), 'স্থায়ী: থানা': safe_(p.thana, 60),
       'স্থায়ী: ইউনিয়ন/পৌরসভা': safe_(p.union, 80), 'স্থায়ী: ওয়ার্ড': safe_(p.ward, 40),
       'স্থায়ী: পোস্ট অফিস': safe_(p.po, 80), 'স্থায়ী: গ্রাম': safe_(p.village, 80), 'স্থায়ী: পাড়া': safe_(p.para, 80),
-      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'রেফারেন্স': CONFIG.REF_LABEL[ref], 'রেফারেন্স প্রমাণক': ref === 'none' ? '' : proof, 'ছবি': '', 'ছবির লিংক': ''
+      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'রেফারেন্স': CONFIG.REF_LABEL[ref], 'রেফারেন্স প্রমাণক': ref === 'none' ? '' : proof, 'অনুমোদনকারী': preq.rec['অনুমোদনকারী'], 'ছবি': '', 'ছবির লিংক': ''
     };
     var row = appendByHeader_(sh, rec);
+    psh.getRange(preq.row, colOf_(psh, 'অবস্থা')).setValue(ST.USED);
+    psh.getRange(preq.row, colOf_(psh, 'ফরম নম্বর')).setValue(formNo);
 
     // একবার-ব্যবহারযোগ্য টোকেন: শুধু এই আবেদনকারীই পিডিএফ আপলোড করতে পারবে
     var token = Utilities.getUuid();
@@ -268,6 +500,9 @@ function savePhoto_(req) {
 function setup() {
   SpreadsheetApp.openById(CONFIG.SHEET_ID).getName();
   sheet_(CONFIG.APPLY_TAB, APPLY_HEADERS);
+  sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+  console.log('ইমেইল পাঠানোর বাকি কোটা আজ: ' + MailApp.getRemainingDailyQuota());
+  secret_();
   Object.keys(CONFIG.FOLDERS).forEach(function (k) {
     try {
       var f = DriveApp.getFolderById(CONFIG.FOLDERS[k]);

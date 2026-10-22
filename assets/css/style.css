@@ -287,3 +287,18 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
   .addr-loc .loc-ward { grid-column: 2; grid-row: 2; }
   .addr-loc.city .loc-ward { grid-column: 1; }
 }
+
+/* অনুমতি নিন অংশ */
+.permit { background: #fff; border: 2px solid var(--g600); border-radius: 18px; padding: 18px 18px 8px; margin: 0 0 22px; box-shadow: var(--shadow); }
+.permit h2 { margin: 0 0 6px; color: var(--g800); font-size: 1.35rem; text-align: center; }
+.permit > .small { text-align: center; margin: 0 0 14px; }
+.cap-row { max-width: 360px; margin-left: auto; margin-right: auto; }
+.cap-line { display: flex; gap: 12px; align-items: center; }
+.cap-line input { max-width: 110px; }
+.linklike { background: none; border: 0; padding: 4px; color: var(--g700, #157347); text-decoration: underline; cursor: pointer; font: inherit; }
+.permit-act { text-align: center; margin: 6px 0 4px; }
+.btn-round { background: var(--g700, #157347); color: #fff; border-radius: 999px; padding: 13px 34px; border: 2px solid var(--g800, #0b3d24); font-size: 1.1rem; }
+.btn-round:hover { filter: brightness(1.08); }
+.btn-round:disabled { opacity: .6; cursor: not-allowed; }
+.status.ok-strong { color: #0b3d24; background: #d9f2e1; border: 1px solid #8fcfa4; padding: 10px 14px; border-radius: 10px; text-align: center; }
+#applySubmit:disabled { opacity: .5; cursor: not-allowed; }
