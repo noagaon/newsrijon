@@ -376,7 +376,7 @@
         dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,
         nid: bn(data.nid), birthReg: bn(data.birthReg), phone: bn(data.phone), whatsapp: bn(data.whatsapp), email: data.email,
-        perm: data.perm, currentText: data.currentText, country: data.country,
+        perm: data.perm, cur: data.cur, currentText: data.currentText, country: data.country,
         photoDataUrl: photoDataUrl, timestampEn: enStamp(res.timestamp)
       };
       return window.SrijonPDF.build(pdfData);
