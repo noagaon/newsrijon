@@ -229,12 +229,19 @@
     if (on) pStatus('ok-strong', '✔ অনুমোদন পাওয়া গেছে — ফরম পূরণ শেষে এখন “জমা দিন” চাপতে পারেন।');
   }
 
+  function pCapClear() { var s = $('permitStatus'); if (s.classList.contains('error') && /নিরাপত্তা প্রশ্ন আনা/.test(s.textContent)) pStatus('', ''); }
   function loadCaptcha() {
     $('capQ').textContent = '…'; $('capAns').value = ''; capId = '';
     return post({ action: 'captcha' }).then(function (r) {
-      if (r && r.ok) { capId = r.cid; $('capQ').textContent = r.q; }
-      else $('capQ').textContent = '?';
-    }).catch(function () { $('capQ').textContent = '?'; });
+      if (r && r.ok) { capId = r.cid; $('capQ').textContent = r.q; pCapClear(); }
+      else {
+        $('capQ').textContent = '?';
+        pStatus('error', 'নিরাপত্তা প্রশ্ন আনা যায়নি' + (r && r.error ? ' (সার্ভারের উত্তর: ' + r.error + ')' : '') + '। “নতুন প্রশ্ন” চাপুন; না হলে সংগঠনের প্রশাসককে জানান (ব্যাকএন্ড হালনাগাদ লাগতে পারে)।');
+      }
+    }).catch(function (e) {
+      $('capQ').textContent = '?';
+      pStatus('error', 'নিরাপত্তা প্রশ্ন আনা যায়নি (সংযোগ ব্যর্থ)। ইন্টারনেট দেখে “নতুন প্রশ্ন” চাপুন।');
+    });
   }
 
   function stopPoll() { if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; } }
