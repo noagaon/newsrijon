@@ -42,7 +42,7 @@ var CONFIG = {
   PERMIT_MAX_PER_DAY: 40           // দিনে মোট অনুরোধ (ইমেইল কোটা বাঁচাতে)
 };
 
-var PERMIT_HEADERS = ['অনুরোধ আইডি', 'অনুরোধের সময়', 'নাম', 'ফোন', 'অবস্থা', 'অনুমোদনকারী', 'সিদ্ধান্তের সময়', 'ফরম নম্বর'];
+var PERMIT_HEADERS = ['অনুরোধ আইডি', 'অনুরোধের সময়', 'নাম', 'ফোন', 'অবস্থা', 'অনুমোদনকারী', 'সিদ্ধান্তের সময়', 'ফরম নম্বর', 'ইমেইল অবস্থা'];
 var ST = { PENDING: 'অপেক্ষমাণ', APPROVED: 'অনুমোদিত', REJECTED: 'বাতিল', USED: 'ব্যবহৃত', EXPIRED: 'মেয়াদোত্তীর্ণ' };
 
 var APPLY_HEADERS = [
@@ -217,7 +217,7 @@ function requestAccess_(r) {
   if (!/^\+?\d{7,16}$/.test(phone)) return { ok: false, error: 'invalid phone' };
 
   var rid = Utilities.getUuid().replace(/-/g, '');
-  var tsStr = nowInfo_().sheet;
+  var tsStr = nowInfo_().sheet, prow = 0;
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
@@ -232,18 +232,23 @@ function requestAccess_(r) {
     }
     if (samePhone >= CONFIG.PERMIT_MAX_PER_PHONE) return { ok: false, error: 'limit_phone' };
     if (total >= CONFIG.PERMIT_MAX_PER_DAY) return { ok: false, error: 'limit_day' };
-    appendByHeader_(sh, {
+    prow = appendByHeader_(sh, {
       'অনুরোধ আইডি': rid, 'অনুরোধের সময়': "'" + tsStr, 'নাম': safe_(name, 100), 'ফোন': "'" + phone,
       'অবস্থা': ST.PENDING, 'অনুমোদনকারী': '', 'সিদ্ধান্তের সময়': '', 'ফরম নম্বর': ''
     });
   } finally {
     lock.releaseLock();
   }
-  mailApprovers_(rid, name, phone, tsStr);
+  var mres = mailApprovers_(rid, name, phone, tsStr);
+  try {
+    var ish = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
+    ish.getRange(prow, colOf_(ish, 'ইমেইল অবস্থা')).setValue(mres);   // ব্যর্থ হলে কারণসহ
+  } catch (e) { console.error('mail status write failed: ' + (e && e.message)); }
   return { ok: true, rid: rid };
 }
 
 function mailApprovers_(rid, name, phone, tsStr) {
+  var results = [];
   CONFIG.APPROVERS.forEach(function (email, idx) {
     try {
       var ok = CONFIG.WEBAPP_URL + '?a=decide&rid=' + rid + '&v=approve&u=' + idx + '&sig=' + sign_(rid, 'approve', idx);
@@ -265,10 +270,19 @@ function mailApprovers_(rid, name, phone, tsStr) {
         body: 'অনুমতির অনুরোধ — নাম: ' + name + ', ফোন: ' + phone + '\nঅনুমোদন: ' + ok + '\nবাতিল: ' + no,
         name: 'সৃজনশীল তরুণ সংঘ ওয়েবসাইট'
       });
+      results.push('পাঠানো হয়েছে: ' + email);
     } catch (err) {
       console.error('mail failed for ' + email + ': ' + (err && err.message));
+      results.push('ব্যর্থ ' + email + ' — ' + String(err && err.message || err).substring(0, 120));
     }
   });
+  return results.join(' | ');
+}
+
+// ইমেইল ঠিকমতো যায় কি না পরীক্ষা: এডিটরে testMail Run করুন; দুই অনুমোদনকারীর ইনবক্সে (বা স্প্যামে) একটি পরীক্ষামূলক মেইল যাবে
+function testMail() {
+  console.log('বাকি দৈনিক কোটা: ' + MailApp.getRemainingDailyQuota());
+  console.log(mailApprovers_('0'.repeat(32), 'পরীক্ষা', '01700000000', nowInfo_().sheet));
 }
 
 function accessStatus_(r) {
