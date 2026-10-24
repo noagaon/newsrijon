@@ -29,7 +29,7 @@ var CONFIG = {
   TYPE_LABEL: { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', junior: 'জুনিয়র সদস্য', donor: 'দাতা সদস্য' },
   FEES: { general: 1000, expat: 1200, junior: 100, donor: 2000 },
   REF_DISCOUNT: 0.2,                                   // রেফারেন্স থাকলে নিবন্ধন ফির ২০% কম
-  REF_LABEL: { none: 'কোন রেফারেন্স নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' },
+  REF_LABEL: { none: 'কোন সূত্র/সুপারিশ নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' },
   MAX_PHOTO_BYTES: 8 * 1024 * 1024,
   MAX_PDF_BYTES: 4 * 1024 * 1024,
 
@@ -51,7 +51,7 @@ var APPLY_HEADERS = [
   'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'জন্মনিবন্ধন সনদ নম্বর', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
   'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: ইউনিয়ন/পৌরসভা', 'স্থায়ী: ওয়ার্ড',
   'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
-  'বর্তমান ঠিকানা', 'দেশ', 'পিডিএফ লিংক', 'অবস্থা', 'রেফারেন্স', 'ছবি', 'ছবির লিংক', 'রেফারেন্স প্রমাণক', 'অনুমোদনকারী'
+  'বর্তমান ঠিকানা', 'বর্তমান বসবাসরত দেশের নাম', 'পিডিএফ লিংক', 'অবস্থা', 'সূত্র/সুপারিশ', 'ছবি', 'ছবির লিংক', 'সূত্র/সুপারিশ প্রমাণক', 'অনুমোদনকারী'
 ];
 var FEEDBACK_HEADERS = ['সময়', 'নাম', 'যোগাযোগ', 'মতামত'];
 
@@ -96,6 +96,14 @@ function sheet_(name, headers) {
   } else {
     // আগের শিটে নতুন কলাম লাগলে শেষে যোগ হয়; পুরোনো কলাম নড়ে না
     var have = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    // নাম বদলানো কলাম: পুরোনো হেডার থাকলে জায়গায়ই নতুন নাম বসে (ডেটা নড়ে না)
+    var RENAMES = { 'রেফারেন্স': 'সূত্র/সুপারিশ', 'রেফারেন্স প্রমাণক': 'সূত্র/সুপারিশ প্রমাণক', 'দেশ': 'বর্তমান বসবাসরত দেশের নাম' };
+    have.forEach(function (h, i) {
+      if (RENAMES[h] && headers.indexOf(RENAMES[h]) >= 0 && have.indexOf(RENAMES[h]) < 0) {
+        sh.getRange(1, i + 1).setValue(RENAMES[h]);
+        have[i] = RENAMES[h];
+      }
+    });
     var missing = headers.filter(function (h) { return have.indexOf(h) < 0; });
     if (missing.length) {
       sh.getRange(1, have.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
@@ -265,7 +273,7 @@ function mailApprovers_(rid, name, phone, tsStr) {
         ' ঘণ্টা বৈধ এবং একটি আবেদনের জন্যই। এই লিংক অন্য কাউকে পাঠাবেন না।</p></div>';
       MailApp.sendEmail({
         to: email,
-        subject: 'অনুমতির অনুরোধ: ' + name + ' (' + phone + ')',
+        subject: 'অনুমতির অনুরোধ: ' + name + ' (' + phone + ') — ' + tsStr.substring(11, 16) + ' #' + rid.substring(0, 4),
         htmlBody: html,
         body: 'অনুমতির অনুরোধ — নাম: ' + name + ', ফোন: ' + phone + '\nঅনুমোদন: ' + ok + '\nবাতিল: ' + no,
         name: 'সৃজনশীল তরুণ সংঘ ওয়েবসাইট'
@@ -276,7 +284,9 @@ function mailApprovers_(rid, name, phone, tsStr) {
       results.push('ব্যর্থ ' + email + ' — ' + String(err && err.message || err).substring(0, 120));
     }
   });
-  return results.join(' | ');
+  var left = '?';
+  try { left = MailApp.getRemainingDailyQuota(); } catch (e) {}
+  return results.join(' | ') + ' (আজকের মেইল কোটা বাকি: ' + left + ')';
 }
 
 // ইমেইল ঠিকমতো যায় কি না পরীক্ষা: এডিটরে testMail Run করুন; দুই অনুমোদনকারীর ইনবক্সে (বা স্প্যামে) একটি পরীক্ষামূলক মেইল যাবে
@@ -383,14 +393,19 @@ function submit_(d) {
     // একই এনআইডি/জন্মনিবন্ধন নম্বরে দ্বিতীয় আবেদন নয় (বাতিল করা সারি বাদে)
     var last = sh.getLastRow();
     if (last > 1) {
-      var stCol = colOf_(sh, 'অবস্থা');
+      var stCol = colOf_(sh, 'অবস্থা'), tyCol = colOf_(sh, 'সদস্য ধরণ');
       var stV = stCol ? sh.getRange(2, stCol, last - 1, 1).getValues() : [];
+      var tyV = tyCol ? sh.getRange(2, tyCol, last - 1, 1).getValues() : [];
+      var myType = CONFIG.TYPE_LABEL[type];
+      // একই সদস্য ধরণে একই এনআইডি/জন্মনিবন্ধন দিয়ে দ্বিতীয় আবেদন নয়; ভিন্ন ধরণে চলবে
       var dupCheck = function (colName, val) {
         var c = colOf_(sh, colName);
         if (!c || !val) return false;
         var vals = sh.getRange(2, c, last - 1, 1).getValues();
         for (var i = 0; i < vals.length; i++) {
-          if (String(vals[i][0]).replace(/^'/, '').trim() === val && String(stV[i] ? stV[i][0] : '').indexOf('বাতিল') < 0) return true;
+          if (String(vals[i][0]).replace(/^'/, '').trim() === val &&
+              String(tyV[i] ? tyV[i][0] : '') === myType &&
+              String(stV[i] ? stV[i][0] : '').indexOf('বাতিল') < 0) return true;
         }
         return false;
       };
@@ -416,7 +431,7 @@ function submit_(d) {
       'স্থায়ী: বিভাগ': safe_(p.div, 40), 'স্থায়ী: জেলা': safe_(p.dist, 40), 'স্থায়ী: উপজেলা/সিটি': safe_(p.upa, 60), 'স্থায়ী: থানা': safe_(p.thana, 60),
       'স্থায়ী: ইউনিয়ন/পৌরসভা': safe_(p.union, 80), 'স্থায়ী: ওয়ার্ড': safe_(p.ward, 40),
       'স্থায়ী: পোস্ট অফিস': safe_(p.po, 80), 'স্থায়ী: গ্রাম': safe_(p.village, 80), 'স্থায়ী: পাড়া': safe_(p.para, 80),
-      'বর্তমান ঠিকানা': cur, 'দেশ': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'রেফারেন্স': CONFIG.REF_LABEL[ref], 'রেফারেন্স প্রমাণক': ref === 'none' ? '' : proof, 'অনুমোদনকারী': preq.rec['অনুমোদনকারী'], 'ছবি': '', 'ছবির লিংক': ''
+      'বর্তমান ঠিকানা': cur, 'বর্তমান বসবাসরত দেশের নাম': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'সূত্র/সুপারিশ': CONFIG.REF_LABEL[ref], 'সূত্র/সুপারিশ প্রমাণক': ref === 'none' ? '' : proof, 'অনুমোদনকারী': preq.rec['অনুমোদনকারী'], 'ছবি': '', 'ছবির লিংক': ''
     };
     var row = appendByHeader_(sh, rec);
     psh.getRange(preq.row, colOf_(psh, 'অবস্থা')).setValue(ST.USED);

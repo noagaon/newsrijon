@@ -8,7 +8,7 @@
   var CFG = window.SRIJON_CONFIG || {};
   var FEE_NUM = { general: 1000, expat: 1200, junior: 100, donor: 2000 };
   var REF_DISCOUNT = 0.2;                                    // রেফারেন্স থাকলে ২০% ছাড়
-  var REF_LABEL = { none: 'কোন রেফারেন্স নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' };
+  var REF_LABEL = { none: 'কোন সূত্র/সুপারিশ নেই', junior: 'জুনিয়র সদস্য ছিলাম', general: 'সাধারণ সদস্য ছিলাম', expat: 'প্রবাসী সদস্য ছিলাম', donor: 'দাতা সদস্য ছিলাম' };
   function feeAmount(t, ref) {
     if (!FEE_NUM[t]) return 0;
     return Math.round(FEE_NUM[t] * (ref && ref !== 'none' ? 1 - REF_DISCOUNT : 1));
@@ -308,7 +308,7 @@
     if (!val('profession')) return fail('profession', 'পেশা নির্বাচন করুন।');
     if (val('profession') === '__other' && !val('professionOther')) return fail('professionOther', 'পেশা লিখুন।');
     if (!val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
-    if (val('reference') !== 'none' && !val('refProof')) return fail('refProof', 'রেফারেন্স প্রমাণক লিখুন।');
+    if (val('reference') !== 'none' && !val('refProof')) return fail('refProof', 'সূত্র/সুপারিশ প্রমাণক লিখুন।');
     if (val('religion') === '__other' && !val('religionOther')) return fail('religionOther', 'ধর্ম লিখুন।');
     var type = val('memberType');
     var nid = en(val('nid')).replace(/[\s-]/g, '');
@@ -337,7 +337,7 @@
       if (!pickVal(p + 'Village')) return fail(val(p + 'Village') === '__other' ? p + 'VillageOther' : p + 'Village', t + 'গ্রাম নির্বাচন করুন বা লিখুন।');
       if (val(p + 'Para') === '__other' && !val(p + 'ParaOther')) return fail(p + 'ParaOther', t + 'পাড়ার নাম লিখুন।');
     }
-    if (!val('countryType')) return fail('countryType', 'দেশের নাম নির্বাচন করুন।');
+    if (!val('countryType')) return fail('countryType', 'বর্তমান বসবাসরত দেশের নাম নির্বাচন করুন।');
     if (val('countryType') === 'abroad' && !val('country')) return fail('country', 'প্রবাসের দেশ নির্বাচন করুন।');
     if (!photoDataUrl) return fail('photo', 'আপনার ছবি দিন।');
     if (!$('agree').checked) return fail('agree', 'অঙ্গীকারনামায় টিক চিহ্ন দিন।');
@@ -508,7 +508,7 @@
           setStatus('error', 'আপনার অনুমতি পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে। উপরে নতুন করে অনুমতি নিন; আপনার পূরণ করা ফরম অক্ষত আছে।');
           pStatus('error', 'অনুমতির মেয়াদ শেষ বা ব্যবহৃত। নতুন করে অনুমতির জন্য পাঠান।');
         } else if (err && err.code === 'duplicate') {
-          setStatus('error', 'এই এনআইডি/জন্মনিবন্ধন নম্বর দিয়ে ইতোমধ্যে আবেদন করা হয়েছে। প্রয়োজনে সংগঠনের সাথে যোগাযোগ করুন।');
+          setStatus('error', 'এই সদস্য ধরণে একই এনআইডি/জন্মনিবন্ধন নম্বর দিয়ে ইতোমধ্যে আবেদন করা হয়েছে। অন্য সদস্য ধরণে আবেদন করা যাবে। প্রয়োজনে সংগঠনের সাথে যোগাযোগ করুন।');
         } else setStatus('error', 'দুঃখিত, আবেদন জমা হয়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।' + (err && err.message && /[a-z]/i.test(err.message) ? '' : ' ' + (err.message || '')));
       }
     }).then(function () {
