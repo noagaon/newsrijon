@@ -433,7 +433,7 @@
       psize -= 0.2;
     }
     ctx.font = font(500, psize);
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = G;
     lay.lines.forEach(function (ln, i) {
       var by = 638 + i * 16.5, cx = 27, last = i === lay.lines.length - 1;
       var ww = 0, nsp = 0;
@@ -446,7 +446,7 @@
         cx += it.w + (j < ln.length - 1 ? lay.sp + (ln[j + 1].t && ln[j].t ? Math.max(0, extra) : 0) : 0);
       });
     });
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = G;
     ctx.font = font(500, 12.4);
     ctx.fillText('আবেদনকারীর স্বাক্ষর–', 303, 719);
     dotted(ctx, 394, 564, 722);
