@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" href="../assets/img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Atma:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
@@ -137,7 +137,7 @@
   </div>
   <div class="row-2 addr-loc" id="permLoc">
     <div class="field loc-upa"><label for="permUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="permUpa" name="permUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-    <div class="field loc-union" id="permUnionWrap" hidden><label for="permUnion">ইউনিয়ন/পৌরসভা <span class="req">*</span></label><input id="permUnion" name="permUnion" type="text" maxlength="80"></div>
+    <div class="field loc-union" id="permUnionWrap" hidden><label for="permUnion">ইউনিয়ন <span class="req">*</span></label><div class="suffix-wrap"><input id="permUnion" name="permUnion" type="text" maxlength="80" placeholder="যেমন: ৬ নং কান্দিগাও"><span class="suffix">ইউনিয়ন পরিষদ</span></div></div>
     <div class="field loc-ward" id="permWardWrap" hidden><label for="permWard">ওয়ার্ড <span class="req">*</span></label><select id="permWard" name="permWard"><option value="">— নির্বাচন করুন —</option></select><input id="permWardText" name="permWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
     <div class="field loc-thana"><label for="permThana">থানা <span class="req">*</span></label><select id="permThana" name="permThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
   </div>
@@ -161,7 +161,7 @@
   </div>
   <div class="row-2 addr-loc" id="curLoc">
     <div class="field loc-upa"><label for="curUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="curUpa" name="curUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-    <div class="field loc-union" id="curUnionWrap" hidden><label for="curUnion">ইউনিয়ন/পৌরসভা <span class="req">*</span></label><input id="curUnion" name="curUnion" type="text" maxlength="80"></div>
+    <div class="field loc-union" id="curUnionWrap" hidden><label for="curUnion">ইউনিয়ন <span class="req">*</span></label><div class="suffix-wrap"><input id="curUnion" name="curUnion" type="text" maxlength="80" placeholder="যেমন: ৬ নং কান্দিগাও"><span class="suffix">ইউনিয়ন পরিষদ</span></div></div>
     <div class="field loc-ward" id="curWardWrap" hidden><label for="curWard">ওয়ার্ড <span class="req">*</span></label><select id="curWard" name="curWard"><option value="">— নির্বাচন করুন —</option></select><input id="curWardText" name="curWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
     <div class="field loc-thana"><label for="curThana">থানা <span class="req">*</span></label><select id="curThana" name="curThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
   </div>

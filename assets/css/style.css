@@ -302,3 +302,7 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
 .btn-round:disabled { opacity: .6; cursor: not-allowed; }
 .status.ok-strong { color: #0b3d24; background: #d9f2e1; border: 1px solid #8fcfa4; padding: 10px 14px; border-radius: 10px; text-align: center; }
 #applySubmit:disabled { opacity: .5; cursor: not-allowed; }
+
+.suffix-wrap{display:flex;align-items:center;gap:8px}
+.suffix-wrap input{flex:1;min-width:0}
+.suffix-wrap .suffix{white-space:nowrap;color:#444;font-size:.95em}

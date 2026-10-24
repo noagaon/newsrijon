@@ -41,7 +41,7 @@ def addr_block(prefix, title):
   </div>
   <div class="row-2 addr-loc" id="%(p)sLoc">
     <div class="field loc-upa"><label for="%(p)sUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="%(p)sUpa" name="%(p)sUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-    <div class="field loc-union" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন/পৌরসভা <span class="req">*</span></label><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80"></div>
+    <div class="field loc-union" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন <span class="req">*</span></label><div class="suffix-wrap"><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80" placeholder="যেমন: ৬ নং কান্দিগাও"><span class="suffix">ইউনিয়ন পরিষদ</span></div></div>
     <div class="field loc-ward" id="%(p)sWardWrap" hidden><label for="%(p)sWard">ওয়ার্ড <span class="req">*</span></label><select id="%(p)sWard" name="%(p)sWard"><option value="">— নির্বাচন করুন —</option></select><input id="%(p)sWardText" name="%(p)sWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
     <div class="field loc-thana"><label for="%(p)sThana">থানা <span class="req">*</span></label><select id="%(p)sThana" name="%(p)sThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
   </div>

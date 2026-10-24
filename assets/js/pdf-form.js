@@ -8,8 +8,10 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#10205a';              // পূরণ করা তথ্যের রং
-  var LABEL = '#111';
+  var INK = '#0a2cff';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (নীল)
+  var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
+  var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
+  var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
 
   function loadImage(src) {
     return new Promise(function (resolve, reject) {
@@ -27,19 +29,28 @@
       document.fonts.load('400 16px "Noto Sans Bengali"', sample),
       document.fonts.load('500 16px "Noto Sans Bengali"', sample),
       document.fonts.load('600 16px "Noto Sans Bengali"', sample),
-      document.fonts.load('700 16px "Noto Sans Bengali"', sample)
+      document.fonts.load('700 16px "Noto Sans Bengali"', sample),
+      document.fonts.load('400 16px "Noto Serif Bengali"', sample),
+      document.fonts.load('500 16px "Noto Serif Bengali"', sample),
+      document.fonts.load('600 16px "Noto Serif Bengali"', sample),
+      document.fonts.load('700 16px "Noto Serif Bengali"', sample),
+      document.fonts.load('400 16px "Atma"', sample),
+      document.fonts.load('500 16px "Atma"', sample),
+      document.fonts.load('600 16px "Atma"', sample),
+      document.fonts.load('700 16px "Atma"', sample)
     ]).catch(function () {});
   }
 
-  function font(weight, size) { return weight + ' ' + size + 'px ' + FONT; }
+  function font(weight, size) { return weight + ' ' + size + 'px ' + FIXF; }      // স্থায়ী লেখা
+  function vfont(weight, size) { return weight + ' ' + size + 'px ' + VALF; }     // পূরণ করা তথ্য
 
   // টেক্সটকে প্রস্থের মধ্যে ধরাতে ফন্ট ছোট করে
-  function fitFont(ctx, text, weight, size, maxW, minSize) {
-    var s = size;
-    ctx.font = font(weight, s);
+  function fitFont(ctx, text, weight, size, maxW, minSize, isVal) {
+    var s = size, mk = isVal ? vfont : font;
+    ctx.font = mk(weight, s);
     while (ctx.measureText(text).width > maxW && s > (minSize || 8)) {
       s -= 0.5;
-      ctx.font = font(weight, s);
+      ctx.font = mk(weight, s);
     }
     return s;
   }
@@ -127,8 +138,8 @@
         return;
       }
       var isVal = tk.style === 'value';
-      ctx.font = isVal ? font(700, 14) : font(500, 13.6 - 96 / 72);   // অঙ্গীকারনামার লেখা ১ পয়েন্ট ছোট
-      ctx.fillStyle = isVal ? INK : '#2e6b2e';
+      ctx.font = isVal ? vfont(700, 14) : font(500, 13.6 - 96 / 72);   // অঙ্গীকারনামার লেখা ১ পয়েন্ট ছোট
+      ctx.fillStyle = isVal ? INK : '#000';
       var w = ctx.measureText(tk.t).width;
       space = ctx.measureText(' ').width + 1;
       if (cx + w > x + maxW) { cx = x; cy += lineH; }
@@ -199,8 +210,8 @@
     dotted(ctx, vx, xEnd, y + 2);
     if (value) {
       ctx.fillStyle = INK;
-      var fs = fitFont(ctx, value, 500, size, xEnd - vx - 1.5, 7);
-      ctx.font = font(500, fs);
+      var fs = fitFont(ctx, value, 500, size, xEnd - vx - 1.5, 7, true);
+      ctx.font = vfont(500, fs);
       ctx.fillText(value, vx + 1, y - 1);
     }
   }
@@ -218,8 +229,8 @@
     ctx.strokeRect(bx, by, bw, bh);
     if (value) {
       ctx.fillStyle = INK;
-      var fs = fitFont(ctx, value, vWeight || 600, vSize || 12.4, bw - 6, 7);
-      ctx.font = font(vWeight || 600, fs);
+      var fs = fitFont(ctx, value, vWeight || 600, vSize || 12.4, bw - 6, 7, true);
+      ctx.font = vfont(vWeight || 600, fs);
       ctx.fillText(value, bx + 3, by + bh - 4.2);
     }
   }
@@ -371,17 +382,24 @@
     // ঠিকানা: উপজেলা হলে ইউনিয়ন + ওয়ার্ড লাইন; সিটি কর্পোরেশন হলে সিটি কর্পোরেশন + ওয়ার্ড লাইন
     function addrBlock(y0, title, a) {
       var yy = y0, city = /সিটি কর্পোরেশন$/.test(a.upa || '');
-      fld(ctx, L, yy, title + ' পাড়া-', a.para, 278);
-      fld(ctx, 292, yy, 'গ্রাম-', a.village, R); yy += P2;
-      fld(ctx, 46, yy, 'পোস্ট অফিস-', a.po, 360); yy += P2;
+      // লাইন ১: পাড়া, গ্রাম, ডাক
+      fld(ctx, L, yy, title + ' পাড়া-', a.para, 262);
+      fld(ctx, 270, yy, 'গ্রাম-', a.village, 420);
+      fld(ctx, 428, yy, 'ডাক-', a.po, R); yy += P2;
+      // লাইন ২: ইউনিয়ন, ওয়ার্ড / সিটি কর্পোরেশন, ওয়ার্ড
       if (city) {
-        fld(ctx, 46, yy, 'সিটি কর্পোরেশন:', a.upa, 360); yy += P2;
-        fld(ctx, 46, yy, 'ওয়ার্ড:', a.ward, 360); yy += P2;
+        fld(ctx, 46, yy, 'সিটি কর্পোরেশন:', a.upa, 360);
+      } else {
+        var un = (a.union || '').trim();
+        if (un && !/ইউনিয়ন পরিষদ$/.test(un)) un += ' ইউনিয়ন পরিষদ';
+        fld(ctx, 46, yy, 'ইউনিয়ন:', un, 360);
+      }
+      fld(ctx, 370, yy, 'ওয়ার্ড:', a.ward, R); yy += P2;
+      // লাইন ৩: থানা, উপজেলা, জেলা
+      if (city) {
         fld(ctx, 46, yy, 'থানা-', a.thana, 300);
         fld(ctx, 312, yy, 'জেলা-', a.dist, R);
       } else {
-        fld(ctx, 46, yy, 'ইউনিয়ন:', a.union, 360); yy += P2;
-        fld(ctx, 46, yy, 'ওয়ার্ড:', a.ward, 360); yy += P2;
         fld(ctx, 46, yy, 'থানা-', a.thana, 200);
         fld(ctx, 212, yy, 'উপজেলা:', a.upa, 400);
         fld(ctx, 412, yy, 'জেলা-', a.dist, R);
@@ -415,7 +433,7 @@
       psize -= 0.2;
     }
     ctx.font = font(500, psize);
-    ctx.fillStyle = G;
+    ctx.fillStyle = '#000';
     lay.lines.forEach(function (ln, i) {
       var by = 638 + i * 16.5, cx = 27, last = i === lay.lines.length - 1;
       var ww = 0, nsp = 0;
@@ -428,7 +446,7 @@
         cx += it.w + (j < ln.length - 1 ? lay.sp + (ln[j + 1].t && ln[j].t ? Math.max(0, extra) : 0) : 0);
       });
     });
-    ctx.fillStyle = G;
+    ctx.fillStyle = '#000';
     ctx.font = font(500, 12.4);
     ctx.fillText('আবেদনকারীর স্বাক্ষর–', 303, 719);
     dotted(ctx, 394, 564, 722);
@@ -445,12 +463,12 @@
     ctx.fillText('সদস্যপদ লাভের তারিখ', CX, 789);
     dotted(ctx, 40, 172, 797.5);
     dotted(ctx, 421, 555, 797);
-    ctx.fillStyle = '#1f4e9e';
+    ctx.fillStyle = '#000';
     ctx.fillText('সাধারণ সম্পাদক', 107.5, 813.5);
     ctx.fillText('সভাপতি', 490, 813.5);
 
     // ফুটার: ডাউনলোডের সময় (মধ্যখানে, ইংরেজি হরফে)
-    ctx.fillStyle = '#222';
+    ctx.fillStyle = '#000';
     ctx.font = font(500, 9.6);
     ctx.fillText('ডাউনলোডের সময়: ' + (d.timestampEn || d.timestampBn || ''), CX, 820.4);
     ctx.textAlign = 'left';

@@ -331,7 +331,7 @@
       if (!val(p + 'Dist')) return fail(p + 'Dist', t + 'জেলা নির্বাচন করুন।');
       if (!val(p + 'Upa')) return fail(p + 'Upa', t + 'উপজেলা/সিটি কর্পোরেশন নির্বাচন করুন।');
       if (!val(p + 'Thana')) return fail(p + 'Thana', t + 'থানা নির্বাচন করুন।');
-      if (!$(p + 'UnionWrap').hidden && !val(p + 'Union')) return fail(p + 'Union', t + 'ইউনিয়ন/পৌরসভা লিখুন।');
+      if (!$(p + 'UnionWrap').hidden && !val(p + 'Union')) return fail(p + 'Union', t + 'ইউনিয়নের নাম লিখুন।');
       if (!$(p + 'WardWrap').hidden && !pickWard(p)) return fail($(p + 'Ward').hidden ? p + 'WardText' : p + 'Ward', t + 'ওয়ার্ড নির্বাচন করুন।');
       if (!pickVal(p + 'PO')) return fail(val(p + 'PO') === '__other' ? p + 'POOther' : p + 'PO', t + 'পোস্ট অফিস নির্বাচন করুন বা লিখুন।');
       if (!pickVal(p + 'Village')) return fail(val(p + 'Village') === '__other' ? p + 'VillageOther' : p + 'Village', t + 'গ্রাম নির্বাচন করুন বা লিখুন।');
@@ -356,7 +356,7 @@
   }
   function addrText(a) {
     return [a.para && 'পাড়া: ' + a.para, 'গ্রাম: ' + a.village, 'পোস্ট অফিস: ' + a.po,
-      a.union && 'ইউনিয়ন/পৌরসভা: ' + a.union, a.ward && 'ওয়ার্ড: ' + a.ward,
+      a.union && 'ইউনিয়ন: ' + a.union + ' ইউনিয়ন পরিষদ', a.ward && 'ওয়ার্ড: ' + a.ward,
       'থানা: ' + a.thana, a.upa, 'জেলা: ' + a.dist, a.div + ' বিভাগ'].filter(Boolean).join(', ');
   }
   function collect() {

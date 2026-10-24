@@ -286,7 +286,7 @@ function mailApprovers_(rid, name, phone, tsStr) {
   });
   var left = '?';
   try { left = MailApp.getRemainingDailyQuota(); } catch (e) {}
-  return results.join(' | ') + ' (আজকের মেইল কোটা বাকি: ' + left + ')';
+  return results.join(' | ');
 }
 
 // ইমেইল ঠিকমতো যায় কি না পরীক্ষা: এডিটরে testMail Run করুন; দুই অনুমোদনকারীর ইনবক্সে (বা স্প্যামে) একটি পরীক্ষামূলক মেইল যাবে
