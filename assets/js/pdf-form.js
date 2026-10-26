@@ -8,7 +8,7 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#7b2cbf';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
+  var INK = '#5a189a';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
   var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
@@ -42,7 +42,8 @@
   }
 
   function font(weight, size) { return weight + ' ' + size + 'px ' + FIXF; }      // স্থায়ী লেখা
-  function vfont(weight, size) { return weight + ' ' + size + 'px ' + VALF; }     // পূরণ করা তথ্য
+  function vfont(weight, size) { return '400 ' + size + 'px ' + VALF; }     // পূরণ করা লেখা সবসময় আনবোল্ড
+  function _unused() {}     // পূরণ করা তথ্য
 
   // টেক্সটকে প্রস্থের মধ্যে ধরাতে ফন্ট ছোট করে
   function fitFont(ctx, text, weight, size, maxW, minSize, isVal) {
@@ -414,15 +415,19 @@
     y = addrBlock(y, '১৫। বর্তমান ঠিকানা:', c) + P1;
     var cLabel = '১৬। বর্তমান বসবাসরত দেশের নাম:';
     var cVal = d.country ? (d.countryType === 'প্রবাসী' ? 'প্রবাসী (' + d.country + ')' : d.country) : '';
-    fld(ctx, L, y, cLabel, cVal, R);
-    if (cVal && d._flag) {                                   // দেশের নামের পাশে পতাকা
+    if (cVal && d._flag) {                                   // দেশের নামের বাঁয়ে পতাকা: প্রবাসী (🏳 দেশ)
+      fld(ctx, L, y, cLabel, '', R);
       ctx.font = font(500, 12.4);
       var vx0 = L + ctx.measureText(cLabel).width + 3;
-      var fsz = fitFont(ctx, cVal, 500, 12.4, R - vx0 - 30, 7, true);
-      ctx.font = vfont(500, fsz);
-      var fx = vx0 + 1 + ctx.measureText(cVal).width + 6, fh = 11, fw = fh * d._flag.width / d._flag.height;
-      ctx.drawImage(d._flag, fx, y - 10, fw, fh);
-    }
+      var pre = d.countryType === 'প্রবাসী' ? 'প্রবাসী (' : '', suf = d.countryType === 'প্রবাসী' ? ')' : '';
+      var fh = 11, fw = fh * d._flag.width / d._flag.height;
+      var fsz = fitFont(ctx, pre + d.country + suf, 500, 12.4, R - vx0 - fw - 8, 7, true);
+      ctx.font = vfont(500, fsz); ctx.fillStyle = INK;
+      var cx0 = vx0 + 1;
+      ctx.fillText(pre, cx0, y - 1); cx0 += ctx.measureText(pre).width + 1;
+      ctx.drawImage(d._flag, cx0, y - 10, fw, fh); cx0 += fw + 3;
+      ctx.fillText(d.country + suf, cx0, y - 1);
+    } else fld(ctx, L, y, cLabel, cVal, R);
 
     // অঙ্গীকারনামা
     ctx.strokeStyle = '#000'; ctx.lineWidth = 0.9;

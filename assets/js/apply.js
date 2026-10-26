@@ -161,7 +161,7 @@
     sel.innerHTML = '';
     var o = document.createElement('option'); o.value = ''; o.textContent = '— তালিকা থেকে বাছাই করুন —'; sel.appendChild(o);
     list.forEach(function (m) {
-      var op = document.createElement('option'); op.value = m.n + ' - ' + m.no; op.textContent = m.n + ' — ' + m.no; sel.appendChild(op);
+      var op = document.createElement('option'); op.value = m.no; op.textContent = m.n + ' — ' + m.no; sel.appendChild(op);
     });
     var ot = document.createElement('option'); ot.value = '__other'; ot.textContent = 'অন্য (নিজে লিখব)'; sel.appendChild(ot);
   }
@@ -235,6 +235,14 @@
   function store(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); } catch (e) {} }
   function stored() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
   function pStatus(cls, msg) { var s = $('permitStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
+
+  // অনুমতির নাম ও ফোন নম্বর মূল ফরমে স্বয়ংক্রিয়ভাবে বসে (ব্যবহারকারী নিজে বদলালে আর ছোঁয়া হয় না)
+  [['permitName', 'nameBn'], ['permitPhone', 'phone']].forEach(function (pr) {
+    var src = $(pr[0]), dst = $(pr[1]);
+    if (!src || !dst) return;
+    dst.addEventListener('input', function () { dst.dataset.touched = '1'; });
+    src.addEventListener('input', function () { if (dst.dataset.touched !== '1') dst.value = src.value; });
+  });
 
   function setApproved(on) {
     approved = on;
