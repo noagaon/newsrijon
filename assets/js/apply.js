@@ -445,7 +445,7 @@
       serverInfo = res;
       setStatus('info', 'পিডিএফ তৈরি হচ্ছে…');
       var pdfData = {
-        formNo: res.formNo, memberNo: '', feeText: data.feeText, memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof,
+        formNo: res.formNo, memberNo: '', feeText: data.feeText, discount: data.reference && data.reference !== 'none', memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof,
         nameBn: data.nameBn, nameEn: data.nameEn, father: data.father, mother: data.mother,
         dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,

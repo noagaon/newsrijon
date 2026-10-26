@@ -290,7 +290,7 @@
     var en = 'SRIJONSHIL TARUN SANGHA', es = 28;
     ctx.font = 'bold ' + es + 'px "Times New Roman", Times, Georgia, serif';
     var enW0 = ctx.measureText(en).width;
-    es = es * 333 / enW0 - 1;                          // নমুনার প্রস্থ থেকে ১ pt ছোট
+    es = es * 333 / enW0 - 2;                          // নমুনার প্রস্থ থেকে ২ pt ছোট
     ctx.font = 'bold ' + es + 'px "Times New Roman", Times, Georgia, serif';
     var enW = ctx.measureText(en).width;
     ctx.fillText(en, CX, 127);
@@ -312,7 +312,7 @@
 
     // লোগো
     if (logo) {
-      var dd = 0.5 * 72 / 25.4;                       // ০.৫ মিমি = ১.৪২ pt (দৈর্ঘ্য ও প্রস্থ দুটোই)
+      var dd = 1.0 * 72 / 25.4;                       // ১.০ মিমি = ২.৮৩ pt (দৈর্ঘ্য ও প্রস্থ দুটোই)
       var lh0 = 109, lw0 = lh0 * logo.width / logo.height, lh = lh0 + dd, lw = lw0 + dd;
       ctx.drawImage(logo, 18 + (108 - lw) / 2, 75 - dd / 2, lw, lh);
     }
@@ -352,28 +352,32 @@
     yBox(ctx, 220, 271.3, 'সূত্র/সুপারিশ প্রমাণক:', 305, 260, 105, 17, d.referenceProof || '');
     yBox(ctx, 422, 271.3, 'নিবন্ধন ফি:', 467, 259, 106, 18, d.feeText || '');
 
+    if (d.discount) {                                   // ছাড় থাকলে ফি ঘরের ঠিক নিচে
+      ctx.fillStyle = '#000'; ctx.font = font(600, 8.4); ctx.textAlign = 'right';
+      ctx.fillText('২০% ছাড়', 573, 286.2); ctx.textAlign = 'left';
+    }
     // মূল ফিল্ড (বাম কলাম x=25, ডান কলাম x=304.5, তৃতীয় কলাম x=455)
     var L = 25, LE = 288, RX = 304.5, R = 568, T3 = 455;
     var junior = d.memberType === 'junior';
     var p = d.perm || {}, c = d.cur || p;
-    var y = 296, P1 = 18.4, P2 = 15.6;
+    var y = 296, P1 = 20.4, P2 = 16.6;
 
     fld(ctx, L, y, '১। নাম (বাংলায়) এনআইডি অনুযায়ী:', d.nameBn, R + 1); y += P1;
     fld(ctx, 39, y, 'নাম (ইংরেজিতে) এনআইডি অনুযায়ী:', d.nameEn, R + 1); y += P1;
     fld(ctx, L, y, '২। পিতা:', d.father, LE);
     fld(ctx, RX, y, '৩। মাতা:', d.mother, R); y += P1;
     // ৪: জুনিয়র সদস্যের এনআইডি না থাকলে জন্মনিবন্ধন সনদ নম্বর
-    var idLabel = '৪। জাতীয় পরিচয় পত্র:', idVal = d.nid;
+    var idLabel = '৪। জাতীয় পরিচয়পত্র:', idVal = d.nid;
     if (junior && d.birthReg) {
       if (!d.nid) { idLabel = '৪। জন্মনিবন্ধন সনদ নম্বর:'; idVal = d.birthReg; }
       else idVal = d.nid + ' / জ.নি. ' + d.birthReg;
     }
-    fld(ctx, L, y, idLabel, idVal, LE);
-    fld(ctx, RX, y, '৫। জন্ম তারিখ:', d.dobText, T3 - 6);
-    fld(ctx, T3, y, '৬। লিঙ্গ:', d.gender, R); y += P1;
-    fld(ctx, L, y, '৭। শিক্ষাগত যোগ্যতা:', d.education, LE);
-    fld(ctx, RX, y, '৮। ধর্ম:', d.religion, T3 - 6);
-    fld(ctx, T3, y, '৯। রক্ত গ্রুপ:', d.blood, R); y += P1;
+    fld(ctx, L, y, '৪। জন্ম তারিখ:', d.dobText, LE);
+    fld(ctx, RX, y, '৫। লিঙ্গ:', d.gender, R); y += P1;
+    fld(ctx, L, y, '৬। রক্ত গ্রুপ:', d.blood, LE);
+    fld(ctx, RX, y, '৭। ধর্ম:', d.religion, R); y += P1;
+    fld(ctx, L, y, '৮। ' + idLabel.replace(/^৪। /, ''), idVal, LE);
+    fld(ctx, RX, y, '৯। শিক্ষাগত যোগ্যতা:', d.education, R); y += P1;
     fld(ctx, L, y, '১০। পেশা:', d.profession, LE);
     fld(ctx, RX, y, '১১। ইমেইল:', d.email, R); y += P1;
     fld(ctx, L, y, '১২। ফোন নম্বর:', d.phone, LE);
