@@ -153,7 +153,22 @@
     syncFee();
     var on = val('reference') !== 'none';
     $('refProofWrap').hidden = !on;
-    if (!on) $('refProof').value = ''; else $('refProof').focus();
+    $('refProof').value = ''; $('refProof').hidden = true;
+    if (on) fillProofList(val('reference'));
+  });
+  function fillProofList(type) {
+    var sel = $('refProofSel'), list = (window.SRIJON_MEMBERS || {})[type] || [];
+    sel.innerHTML = '';
+    var o = document.createElement('option'); o.value = ''; o.textContent = '— তালিকা থেকে বাছাই করুন —'; sel.appendChild(o);
+    list.forEach(function (m) {
+      var op = document.createElement('option'); op.value = m.n + ' - ' + m.no; op.textContent = m.n + ' — ' + m.no; sel.appendChild(op);
+    });
+    var ot = document.createElement('option'); ot.value = '__other'; ot.textContent = 'অন্য (নিজে লিখব)'; sel.appendChild(ot);
+  }
+  $('refProofSel').addEventListener('change', function () {
+    var v = this.value, inp = $('refProof');
+    if (v === '__other') { inp.hidden = false; inp.value = ''; inp.focus(); }
+    else { inp.hidden = true; inp.value = v; }
   });
   wireOther('religion');
   syncNidRules();
@@ -445,7 +460,7 @@
       serverInfo = res;
       setStatus('info', 'পিডিএফ তৈরি হচ্ছে…');
       var pdfData = {
-        formNo: res.formNo, memberNo: '', feeText: data.feeText, discount: data.reference && data.reference !== 'none', memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof,
+        formNo: res.formNo, memberNo: '', feeText: data.feeText, reference: data.reference, discount: data.reference && data.reference !== 'none', memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof, countryType: data.countryType,
         nameBn: data.nameBn, nameEn: data.nameEn, father: data.father, mother: data.mother,
         dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,

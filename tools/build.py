@@ -172,4 +172,8 @@ def build_pages():
 if __name__ == '__main__':
     build_home()
     build_pages()
+    import json as _j
+    write('assets/js/members.js', 'window.SRIJON_MEMBERS=' + _j.dumps(
+        {k: [{'n': n, 'no': no} for (n, no, d) in v] for k, v in pc.MEMBERS.items()},
+        ensure_ascii=False, separators=(',', ':')) + ';\n')
     print('OK: index.html +', len(MENU), 'pages')

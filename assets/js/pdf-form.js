@@ -8,7 +8,7 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#0a2cff';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (নীল)
+  var INK = '#7b2cbf';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
   var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
@@ -346,10 +346,10 @@
     // উপরের দুই সারি
     var TYPE_BN = { general: '(ক) সাধারণ সদস্য', expat: '(খ) প্রবাসী সদস্য', junior: '(গ) জুনিয়র সদস্য', donor: '(ঘ) দাতা সদস্য' };
     yBox(ctx, 27, 246.3, 'ফরম নম্বর:', 70, 235, 126, 17, d.formNo);
-    yBox(ctx, 220, 246.3, 'সদস্য ধরণ:', 268, 235, 141, 17, TYPE_BN[d.memberType] || '', 13.4, 700);
+    yBox(ctx, 220, 246.3, 'সদস্য ধরণ:', 268, 235, 141, 17, TYPE_BN[d.memberType] || '', 13.4, 500);
     yBox(ctx, 420, 246.3, 'সদস্য নম্বর:', 467, 235, 105, 17, d.memberNo || '');
-    yBox(ctx, 25, 271.3, 'সূত্র/সুপারিশ:', 78, 260, 119, 17, d.referenceLabel || '');
-    yBox(ctx, 220, 271.3, 'সূত্র/সুপারিশ প্রমাণক:', 305, 260, 105, 17, d.referenceProof || '');
+    yBox(ctx, 25, 271.3, 'সূত্র/সুপারিশ:', 78, 260, 119, 17, (d.reference === 'none' ? 'X' : d.referenceLabel) || '');
+    yBox(ctx, 220, 271.3, 'সূত্র/সুপারিশ প্রমাণক:', 305, 260, 105, 17, (d.reference === 'none' ? 'X' : d.referenceProof) || '');
     yBox(ctx, 422, 271.3, 'নিবন্ধন ফি:', 467, 259, 106, 18, d.feeText || '');
 
     if (d.discount) {                                   // ছাড় থাকলে ফি ঘরের ঠিক নিচে
@@ -379,8 +379,8 @@
     fld(ctx, L, y, '৮। ' + idLabel.replace(/^৪। /, ''), idVal, LE);
     fld(ctx, RX, y, '৯। শিক্ষাগত যোগ্যতা:', d.education, R); y += P1;
     fld(ctx, L, y, '১০। পেশা:', d.profession, LE);
-    fld(ctx, RX, y, '১১। ইমেইল:', d.email, R); y += P1;
-    fld(ctx, L, y, '১২। ফোন নম্বর:', d.phone, LE);
+    fld(ctx, RX, y, '১১। ফোন নম্বর:', d.phone, R); y += P1;
+    fld(ctx, L, y, '১২। ইমেইল:', d.email, LE);
     fld(ctx, RX, y, '১৩। ওয়াটসঅ্যাপ নম্বর:', d.whatsapp, R); y += P1;
 
     // ঠিকানা: উপজেলা হলে ইউনিয়ন + ওয়ার্ড লাইন; সিটি কর্পোরেশন হলে সিটি কর্পোরেশন + ওয়ার্ড লাইন
@@ -412,7 +412,17 @@
     }
     y = addrBlock(y, '১৪। স্থায়ী ঠিকানা:', p) + P1;
     y = addrBlock(y, '১৫। বর্তমান ঠিকানা:', c) + P1;
-    fld(ctx, L, y, '১৬। বর্তমান বসবাসরত দেশের নাম:', d.country, R);
+    var cLabel = '১৬। বর্তমান বসবাসরত দেশের নাম:';
+    var cVal = d.country ? (d.countryType === 'প্রবাসী' ? 'প্রবাসী (' + d.country + ')' : d.country) : '';
+    fld(ctx, L, y, cLabel, cVal, R);
+    if (cVal && d._flag) {                                   // দেশের নামের পাশে পতাকা
+      ctx.font = font(500, 12.4);
+      var vx0 = L + ctx.measureText(cLabel).width + 3;
+      var fsz = fitFont(ctx, cVal, 500, 12.4, R - vx0 - 30, 7, true);
+      ctx.font = vfont(500, fsz);
+      var fx = vx0 + 1 + ctx.measureText(cVal).width + 6, fh = 11, fw = fh * d._flag.width / d._flag.height;
+      ctx.drawImage(d._flag, fx, y - 10, fw, fh);
+    }
 
     // অঙ্গীকারনামা
     ctx.strokeStyle = '#000'; ctx.lineWidth = 0.9;
@@ -524,15 +534,18 @@
   function build(data, opts) {
     opts = opts || {};
     var logoUrl = opts.logoUrl || new URL('../assets/img/logo.webp', location.href).href;
+    var flagCode = (window.SRIJON_FLAGS || {})[data.country];
     return ensureFonts().then(function () {
       return Promise.all([
         loadImage(logoUrl).catch(function () { return null; }),
-        data.photoDataUrl ? loadImage(data.photoDataUrl).catch(function () { return null; }) : Promise.resolve(null)
+        data.photoDataUrl ? loadImage(data.photoDataUrl).catch(function () { return null; }) : Promise.resolve(null),
+        flagCode ? loadImage(new URL('../assets/flags/' + flagCode + '.png', location.href).href).catch(function () { return null; }) : Promise.resolve(null)
       ]);
     }).then(function (imgs) {
       var canvas = document.createElement('canvas');
       canvas.width = W * SCALE;
       canvas.height = H * SCALE;
+      data._flag = imgs[2];
       draw(canvas, data, imgs[0], imgs[1]);
       return canvasToJpeg(canvas).then(function (jpeg) {
         var bytes = jpegToPdf(jpeg, canvas.width, canvas.height, 'Srijonshil Tarun Sangha - Membership Form');

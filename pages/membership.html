@@ -93,7 +93,7 @@
         <option value="expat">প্রবাসী সদস্য ছিলাম</option>
         <option value="donor">দাতা সদস্য ছিলাম</option>
       </select></div>
-    <div class="field" id="refProofWrap" hidden><label for="refProof">সূত্র/সুপারিশ প্রমাণক <span class="req">*</span></label><input id="refProof" name="refProof" type="text" maxlength="120" placeholder="যেমন: আগের সদস্য নম্বর বা সদস্যের নাম"><small>আপনার আগের সদস্যপদের প্রমাণ নিজ হাতে লিখুন</small></div>
+    <div class="field" id="refProofWrap" hidden><label for="refProof">সূত্র/সুপারিশ প্রমাণক <span class="req">*</span></label><select id="refProofSel"><option value="">— তালিকা থেকে বাছাই করুন —</option></select><input id="refProof" name="refProof" type="text" maxlength="120" placeholder="সদস্যের নাম ও সদস্য নম্বর লিখুন" hidden><small>"সদস্য তালিকা" থেকে আপনার আগের সদস্যপদ বাছাই করুন; তালিকায় না থাকলে "অন্য" বেছে নিজ হাতে লিখুন</small></div>
     <div class="field"><label for="fee">২। নিবন্ধন ফি</label><input id="fee" type="text" readonly placeholder="সদস্য ধরণ নির্বাচন করুন"><small id="feeNote" hidden>সূত্র/সুপারিশের জন্য ২০% ছাড় প্রযোজ্য</small></div>
   </div>
 
@@ -226,6 +226,8 @@
 </footer>
 <script src="../assets/js/app.js" defer></script>
 <script src="../config.js"></script>
+<script src="../assets/js/members.js"></script>
+<script src="../assets/js/flags.js"></script>
 <script src="../assets/js/pdf-form.js" defer></script>
 <script src="../assets/js/apply.js" defer></script>
 </body>
