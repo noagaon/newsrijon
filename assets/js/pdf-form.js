@@ -8,7 +8,7 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#430f78';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
+  var INK = '#2f0a58';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
   var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
@@ -232,7 +232,8 @@
       ctx.fillStyle = INK;
       var fs = fitFont(ctx, value, vWeight || 600, vSize || 12.4, bw - 6, 7, true);
       ctx.font = vfont(vWeight || 600, fs);
-      ctx.fillText(value, bx + 3, by + bh - 4.2);
+      if (value === 'X') { ctx.textAlign = 'center'; ctx.fillText(value, bx + bw / 2, by + bh - 4.2); ctx.textAlign = 'left'; }   // "X" বাক্সের মধ্যখানে
+      else ctx.fillText(value, bx + 3, by + bh - 4.2);
     }
   }
 
