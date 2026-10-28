@@ -8,7 +8,7 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#5a189a';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
+  var INK = '#430f78';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
   var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
@@ -298,7 +298,8 @@
     ctx.fillRect(CX - enW / 2, 130.4, enW, 1.6);
 
     var addrLine = 'নোয়াগাঁও, টুকের বাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।';
-    var as = fitFont(ctx, addrLine, 700, 12.6, 296, 8);    // লোগো (ডানে ~১৩০) ও ছবির (বাঁয়ে ~৪৮০) মাঝে ধরে
+    ctx.font = font(700, 12);
+    var as = 12 * enW / ctx.measureText(addrLine).width;      // ইংরেজি নামের ঠিক সমান প্রস্থে (শুরু ও শেষ এক সরলরেখায়)
     ctx.font = font(700, as);
     ctx.fillText(addrLine, CX, 153);
 
@@ -313,9 +314,8 @@
 
     // লোগো
     if (logo) {
-      var dd = 1.0 * 72 / 25.4;                       // ১.০ মিমি = ২.৮৩ pt (দৈর্ঘ্য ও প্রস্থ দুটোই)
-      var lh0 = 109, lw0 = lh0 * logo.width / logo.height, lh = lh0 + dd, lw = lw0 + dd;
-      ctx.drawImage(logo, 18 + (108 - lw) / 2, 75 - dd / 2, lw, lh);
+      var lw = 3.70 / 2.54 * 72, lh = lw * logo.height / logo.width;   // চওড়া ৩.৭০ সেমি; উচ্চতা অনুপাত ঠিক রেখে
+      ctx.drawImage(logo, 72 - lw / 2, 129.5 - lh / 2, lw, lh);
     }
 
     // ছবির বক্স
@@ -388,9 +388,10 @@
     function addrBlock(y0, title, a) {
       var yy = y0, city = /সিটি কর্পোরেশন$/.test(a.upa || '');
       // লাইন ১: পাড়া, গ্রাম, ডাক
-      fld(ctx, L, yy, title + ' পাড়া-', a.para, 262);
-      fld(ctx, 270, yy, 'গ্রাম-', a.village, 420);
-      fld(ctx, 428, yy, 'ডাক-', a.po, R); yy += P2;
+      var CMX = 1 / 2.54 * 72;                          // ১ সেমি
+      fld(ctx, L, yy, title + ' পাড়া-', a.para, 262 - CMX);
+      fld(ctx, 270 - CMX, yy, 'গ্রাম-', a.village, 420 - CMX);
+      fld(ctx, 428 - CMX, yy, 'ডাক-', a.po, R); yy += P2;
       // লাইন ২: ইউনিয়ন, ওয়ার্ড / সিটি কর্পোরেশন, ওয়ার্ড
       if (city) {
         fld(ctx, 46, yy, 'সিটি কর্পোরেশন:', a.upa, 360);
@@ -468,7 +469,7 @@
     ctx.fillStyle = G;
     ctx.font = font(500, 12.4);
     ctx.fillText('আবেদনকারীর স্বাক্ষর–', 303, 719);
-    dotted(ctx, 394, 564, 722);
+    dotted(ctx, 394, 564, 727);
 
     // সদস্যপদ লাভের তারিখ (ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
