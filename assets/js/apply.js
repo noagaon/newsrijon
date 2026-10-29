@@ -236,14 +236,79 @@
   function stored() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
   function pStatus(cls, msg) { var s = $('permitStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
 
-  // অনুমতির নাম ও ফোন নম্বর মূল ফরমে স্বয়ংক্রিয়ভাবে বসে (ব্যবহারকারী নিজে বদলালে আর ছোঁয়া হয় না)
-  [['permitName', 'nameBn'], ['permitPhone', 'phone']].forEach(function (pr) {
-    var src = $(pr[0]), dst = $(pr[1]);
-    if (!src || !dst) return;
-    dst.addEventListener('input', function () { dst.dataset.touched = '1'; });
-    src.addEventListener('input', function () { if (dst.dataset.touched !== '1') dst.value = src.value; });
-  });
+  // ---------- ভাষার বিধিনিষেধ ----------
+  function restrict(id, hintId, re) {
+    var el = $(id), hint = $(hintId);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      var cleaned = el.value.replace(re, '');
+      hint.hidden = cleaned === el.value;
+      if (cleaned !== el.value) el.value = cleaned;
+    });
+  }
+  restrict('permitName', 'permitNameHint', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
+  restrict('nameBn', 'nameBnHint', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
+  restrict('nameEn', 'nameEnHint', /[^A-Za-z\s.\-']/g);
 
+  // ---------- নামের সাজেশন (ডাটাবেইজ থেকে; শুধু নাম আসে) ----------
+  var dbPick = null, sugTimer = null, sugSeq = 0, sugBox = $('permitSug'), pName = $('permitName');
+  function hideSug() { sugBox.hidden = true; sugBox.innerHTML = ''; }
+  pName.addEventListener('input', function () {
+    if (dbPick && dbPick.n !== pName.value) dbPick = null;
+    clearTimeout(sugTimer);
+    var q = pName.value.trim();
+    if (!q) { hideSug(); return; }
+    sugTimer = setTimeout(function () {
+      var my = ++sugSeq;
+      post({ action: 'suggest', q: q }).then(function (r) {
+        if (my !== sugSeq || !r || !r.ok || !r.items || !r.items.length) { if (my === sugSeq) hideSug(); return; }
+        sugBox.innerHTML = '';
+        r.items.forEach(function (it) {
+          var b = document.createElement('button'); b.type = 'button'; b.textContent = it.n;
+          b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+          b.addEventListener('click', function () { pName.value = it.n; dbPick = it; hideSug(); $('permitPhone').focus(); });
+          sugBox.appendChild(b);
+        });
+        sugBox.hidden = false;
+      }).catch(function () { if (my === sugSeq) hideSug(); });
+    }, 220);
+  });
+  pName.addEventListener('blur', function () { setTimeout(hideSug, 150); });
+
+  // ---------- অনুমতির তথ্য মূল ফরমে বসানো; ব্যবহারকারী কেবল "তথ্য বসানো হয়েছে" দেখে ----------
+  function maskField(id, canUnlock) {
+    var el = $(id); if (!el || el.parentNode.classList.contains('mask-box')) return;
+    var box = document.createElement('div'); box.className = 'mask-box';
+    el.parentNode.insertBefore(box, el); box.appendChild(el);
+    el.classList.add('is-masked'); el.readOnly = true; el.tabIndex = -1;
+    var note = document.createElement('div'); note.className = 'mask-note';
+    note.innerHTML = '<span>✔ তথ্য বসানো হয়েছে</span>';
+    if (canUnlock) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = 'নিজে লিখব';
+      b.addEventListener('click', function () { unmaskField(id, true); });
+      note.appendChild(b);
+    }
+    box.appendChild(note);
+  }
+  function unmaskField(id, clear) {
+    var el = $(id), box = el && el.parentNode;
+    if (!box || !box.classList.contains('mask-box')) return;
+    box.parentNode.insertBefore(el, box); box.remove();
+    el.classList.remove('is-masked'); el.readOnly = false; el.disabled = false; el.tabIndex = 0; delete el.dataset.srv;
+    if (clear) el.value = '';
+    el.focus();
+  }
+  function isSrv(id) { var el = $(id); return !!(el && el.dataset.srv === '1'); }
+  function fillFromPermit(info, save) {
+    $('nameBn').value = info.name; maskField('nameBn', true);
+    $('phone').value = info.phone; maskField('phone', true);
+    [['father', 1], ['mother', 2], ['dob', 4]].forEach(function (f) {
+      var el = $(f[0]);
+      if (info.m & f[1]) { el.value = ''; el.dataset.srv = '1'; maskField(f[0], false); }
+      else if (isSrv(f[0])) unmaskField(f[0], true);
+    });
+    if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, phone: info.phone, m: info.m })); } catch (e) {} }
+  }
   function setApproved(on) {
     approved = on;
     $('applySubmit').disabled = !on;
@@ -297,13 +362,14 @@
     if (!capId || !val('capAns')) { pStatus('error', 'নিরাপত্তা প্রশ্নের উত্তর দিন।'); $('capAns').focus(); return; }
     var btn = $('permitBtn');
     btn.disabled = true; pStatus('info', 'অনুরোধ পাঠানো হচ্ছে…');
-    post({ action: 'access_request', name: name, phone: phone, cid: capId, captcha: val('capAns'), website: $('permitWebsite').value }).then(function (r) {
+    post({ action: 'access_request', name: name, phone: phone, dbRow: dbPick && dbPick.n === name ? dbPick.k : 0, cid: capId, captcha: val('capAns'), website: $('permitWebsite').value }).then(function (r) {
       if (!r || !r.ok) {
         var code = r && r.error;
         pStatus('error', PERMIT_ERR[code] || 'অনুরোধ পাঠানো যায়নি। তথ্য দেখে আবার চেষ্টা করুন।');
         btn.disabled = false; loadCaptcha(); return;
       }
       accessId = r.rid; store(r.rid);
+      fillFromPermit({ name: name, phone: phone, m: r.m || 0 }, true);
       pStatus('info', 'আপনার অনুরোধ পাঠানো হয়েছে। অনুমোদনের অপেক্ষায়… আপনি এই সময়ে নিচের ফরম পূরণ করে রাখতে পারেন।');
       pollTimer = setTimeout(poll, 4000);
     }).catch(function () { pStatus('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); btn.disabled = false; loadCaptcha(); });
@@ -321,10 +387,12 @@
     if (!val('memberType')) return fail('memberType', 'সদস্য ধরণ নির্বাচন করুন।');
     if (!val('nameBn')) return fail('nameBn', 'নাম (বাংলায়) লিখুন।');
     if (!val('nameEn')) return fail('nameEn', 'নাম (ইংরেজিতে) লিখুন।');
-    if (!val('father')) return fail('father', 'পিতার নাম লিখুন।');
-    if (!val('mother')) return fail('mother', 'মাতার নাম লিখুন।');
-    if (!val('dob')) return fail('dob', 'জন্ম তারিখ নির্বাচন করুন।');
-    if (new Date(val('dob')) > new Date()) return fail('dob', 'জন্ম তারিখ ভবিষ্যতের হতে পারে না।');
+    if (!/^[\u0980-\u09FF\u200c\u200d\s.\-]+$/.test(val('nameBn'))) return fail('nameBn', 'নাম (বাংলায়) শুধু বাংলা অক্ষরে লিখুন।');
+    if (!/^[A-Za-z\s.\-']+$/.test(val('nameEn'))) return fail('nameEn', 'নাম (ইংরেজিতে) শুধু ইংরেজি অক্ষরে লিখুন।');
+    if (!isSrv('father') && !val('father')) return fail('father', 'পিতার নাম লিখুন।');
+    if (!isSrv('mother') && !val('mother')) return fail('mother', 'মাতার নাম লিখুন।');
+    if (!isSrv('dob') && !val('dob')) return fail('dob', 'জন্ম তারিখ নির্বাচন করুন।');
+    if (val('dob') && new Date(val('dob')) > new Date()) return fail('dob', 'জন্ম তারিখ ভবিষ্যতের হতে পারে না।');
     if (!val('gender')) return fail('gender', 'লিঙ্গ নির্বাচন করুন।');
     if (!val('education')) return fail('education', 'শিক্ষাগত যোগ্যতা নির্বাচন করুন।');
     if (val('education') === '__other' && !val('educationOther')) return fail('educationOther', 'শিক্ষাগত যোগ্যতা লিখুন।');
@@ -399,7 +467,7 @@
       father: val('father'),
       mother: val('mother'),
       dob: val('dob'),
-      dobText: bn(dob[2] + '/' + dob[1] + '/' + dob[0]),
+      dobText: dob.length === 3 ? bn(dob[2] + '/' + dob[1] + '/' + dob[0]) : '',
       gender: val('gender'),
       blood: val('blood'),
       education: val('education') === '__other' ? val('educationOther') : val('education'),
@@ -469,8 +537,8 @@
       setStatus('info', 'পিডিএফ তৈরি হচ্ছে…');
       var pdfData = {
         formNo: res.formNo, memberNo: '', feeText: data.feeText, reference: data.reference, discount: data.reference && data.reference !== 'none', memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof, countryType: data.countryType,
-        nameBn: data.nameBn, nameEn: data.nameEn, father: data.father, mother: data.mother,
-        dobText: data.dobText, gender: data.gender, blood: shortBlood(data.blood),
+        nameBn: data.nameBn, nameEn: data.nameEn, father: data.father || (res.prefill && res.prefill.father) || '', mother: data.mother || (res.prefill && res.prefill.mother) || '',
+        dobText: data.dobText || (res.prefill && res.prefill.dob ? (function (a) { return bn(a[2] + '/' + a[1] + '/' + a[0]); })(res.prefill.dob.split('-')) : ''), gender: data.gender, blood: shortBlood(data.blood),
         education: data.education, profession: data.profession, religion: data.religion,
         nid: bn(data.nid), birthReg: bn(data.birthReg), phone: bn(data.phone), whatsapp: bn(data.whatsapp), email: data.email,
         perm: data.perm, cur: data.cur, currentText: data.currentText, country: data.country,
@@ -542,6 +610,10 @@
   // শুরু: ক্যাপচা লোড, আগের অনুরোধ থাকলে চালিয়ে যাওয়া
   loadCaptcha();
   accessId = stored();
+  try {
+    var sv = JSON.parse(localStorage.getItem('srijon_access_fill') || 'null');
+    if (sv && sv.rid && sv.rid === accessId) fillFromPermit(sv, false);
+  } catch (e) {}
   if (accessId) { $('permitBtn').disabled = true; pStatus('info', 'আপনার আগের অনুরোধের অবস্থা দেখা হচ্ছে…'); poll(); }
 
   loadGeo().catch(function () {

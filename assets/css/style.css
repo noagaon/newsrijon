@@ -306,3 +306,14 @@ fieldset.addr legend { font-weight: 600; color: var(--g800); padding: 0 8px; }
 .suffix-wrap{display:flex;align-items:center;gap:8px}
 .suffix-wrap input{flex:1;min-width:0}
 .suffix-wrap .suffix{white-space:nowrap;color:#444;font-size:.95em}
+
+.sug-wrap{position:relative}
+.sug{position:absolute;left:0;right:0;top:100%;z-index:30;background:#fff;border:1px solid #9bb59b;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.15);max-height:260px;overflow:auto}
+.sug button{display:block;width:100%;text-align:left;background:none;border:0;padding:10px 12px;font:inherit;cursor:pointer}
+.sug button:hover,.sug button:focus{background:#e8f3e8;outline:none}
+.hint-warn{color:#b3261e}
+small.inl{font-weight:400;color:#555}
+.mask-box{position:relative}
+.mask-box input.is-masked{color:transparent;caret-color:transparent;background:#eef5ee;user-select:none;-webkit-user-select:none}
+.mask-box .mask-note{position:absolute;left:12px;right:8px;top:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#1b6b3a;font-weight:600;pointer-events:none}
+.mask-box .mask-note button{pointer-events:auto;background:none;border:0;color:#0b5ed7;text-decoration:underline;cursor:pointer;font:inherit;font-weight:400}

@@ -41,7 +41,7 @@ def addr_block(prefix, title):
   </div>
   <div class="row-2 addr-loc" id="%(p)sLoc">
     <div class="field loc-upa"><label for="%(p)sUpa">উপজেলা/ সিটি কর্পোরেশন <span class="req">*</span></label><select id="%(p)sUpa" name="%(p)sUpa" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
-    <div class="field loc-union" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন <span class="req">*</span></label><div class="suffix-wrap"><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80" placeholder="যেমন: ৬ নং কান্দিগাও"><span class="suffix">ইউনিয়ন পরিষদ</span></div></div>
+    <div class="field loc-union" id="%(p)sUnionWrap" hidden><label for="%(p)sUnion">ইউনিয়ন <span class="req">*</span></label><div class="suffix-wrap"><input id="%(p)sUnion" name="%(p)sUnion" type="text" maxlength="80" placeholder="যেমন: ৬ নং টুকেরবাজার"><span class="suffix">ইউনিয়ন পরিষদ</span></div></div>
     <div class="field loc-ward" id="%(p)sWardWrap" hidden><label for="%(p)sWard">ওয়ার্ড <span class="req">*</span></label><select id="%(p)sWard" name="%(p)sWard"><option value="">— নির্বাচন করুন —</option></select><input id="%(p)sWardText" name="%(p)sWardText" type="text" maxlength="40" placeholder="ওয়ার্ড নম্বর লিখুন" hidden></div>
     <div class="field loc-thana"><label for="%(p)sThana">থানা <span class="req">*</span></label><select id="%(p)sThana" name="%(p)sThana" required disabled><option value="">— আগে জেলা নির্বাচন করুন —</option></select></div>
   </div>
@@ -81,7 +81,7 @@ def membership_body():
   <h2 id="permitTitle">অনুমতি নিন</h2>
   <p class="small">আবেদন জমা দিতে সংগঠনের অনুমতি লাগে। নাম ও ফোন নম্বর দিয়ে অনুমতির অনুরোধ পাঠান। অনুমতির অপেক্ষায় না থেকে নিচের ফরমটি এখনই পূরণ করে রাখতে পারেন; অনুমতি পেলে "জমা দিন" বাটন চালু হবে।</p>
   <div class="row-2">
-    <div class="field"><label for="permitName">১। নাম <span class="req">*</span></label><input id="permitName" type="text" maxlength="100" autocomplete="name"></div>
+    <div class="field sug-wrap"><label for="permitName">১। নাম (বাংলায়) এনআইডি অনুযায়ী <span class="req">*</span> <small class="inl">(নাম বাংলা ভাষা ব্যতীত অন্য কোন ভাষা ব্যবহার করা যাবে না)</small></label><input id="permitName" type="text" maxlength="100" autocomplete="off" lang="bn"><div class="sug" id="permitSug" role="listbox" hidden></div><small class="hint-warn" id="permitNameHint" hidden>শুধু বাংলা অক্ষর লিখুন।</small></div>
     <div class="field"><label for="permitPhone">২। ফোন নম্বর <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"></div>
   </div>
   <div class="field cap-row"><label for="capAns">নিরাপত্তা প্রশ্ন: <strong id="capQ">…</strong> = ? <span class="req">*</span></label>
@@ -134,8 +134,8 @@ def membership_body():
     <div class="field"><label for="fee">২। নিবন্ধন ফি</label><input id="fee" type="text" readonly placeholder="সদস্য ধরণ নির্বাচন করুন"><small id="feeNote" hidden>সূত্র/সুপারিশের জন্য ২০%% ছাড় প্রযোজ্য</small></div>
   </div>
 
-  <div class="field"><label for="nameBn">৩। নাম (বাংলায়) এনআইডি অনুযায়ী <span class="req">*</span></label><input id="nameBn" name="nameBn" type="text" maxlength="100" required autocomplete="name"></div>
-  <div class="field"><label for="nameEn">৪। নাম (ইংরেজিতে) এনআইডি অনুযায়ী <span class="req">*</span></label><input id="nameEn" name="nameEn" type="text" maxlength="100" required style="text-transform:uppercase"></div>
+  <div class="field"><label for="nameBn">৩। নাম (বাংলায়) এনআইডি অনুযায়ী <span class="req">*</span></label><input id="nameBn" name="nameBn" type="text" maxlength="100" required autocomplete="off" lang="bn"><small class="hint-warn" id="nameBnHint" hidden>শুধু বাংলা অক্ষর লিখুন।</small></div>
+  <div class="field"><label for="nameEn">৪। নাম (ইংরেজিতে) এনআইডি অনুযায়ী <span class="req">*</span></label><input id="nameEn" name="nameEn" type="text" maxlength="100" required style="text-transform:uppercase" lang="en"><small class="hint-warn" id="nameEnHint" hidden>শুধু ইংরেজি অক্ষর লিখুন।</small></div>
   <div class="row-2">
     <div class="field"><label for="father">৫। পিতার নাম <span class="req">*</span></label><input id="father" name="father" type="text" maxlength="100" required></div>
     <div class="field"><label for="mother">৬। মাতার নাম <span class="req">*</span></label><input id="mother" name="mother" type="text" maxlength="100" required></div>
