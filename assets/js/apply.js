@@ -349,7 +349,7 @@
           b.addEventListener('mousedown', function (e) { e.preventDefault(); });
           b.addEventListener('click', function () {
             pName.value = it.n; dbPick = it; hideSug();
-            post({ action: 'pick', k: it.k }).then(function (pr) { if (pr && pr.ok && pr.father && dbPick === it) $('permitFather').value = pr.father; }).catch(function () {});
+            post({ action: 'pick', k: it.k }).then(function (pr) { if (pr && pr.ok && dbPick === it) { if (pr.father) $('permitFather').value = pr.father; } }).catch(function () {});
             $('permitFather').focus();
           });
           sugBox.appendChild(b);
@@ -388,12 +388,18 @@
   function fillFromPermit(info, save) {
     ['nameBn', 'phone', 'father'].forEach(function (id) { unmaskField(id, false); });
     $('nameBn').value = info.name; $('phone').value = info.phone; if (info.father) $('father').value = info.father;
-    [['mother', 2], ['dob', 4], ['gender', 8], ['religion', 16]].forEach(function (f) {
+    if (info.gender) $('gender').value = info.gender;
+    if (info.religion) {
+      var rs = $('religion'), has = Array.prototype.some.call(rs.options, function (o) { return o.value === info.religion; });
+      if (has) { rs.value = info.religion; rs.dispatchEvent(new Event('change')); }
+      else { rs.value = '__other'; rs.dispatchEvent(new Event('change')); $('religionOther').value = info.religion; }
+    }
+    [['mother', 2], ['dob', 4]].forEach(function (f) {
       var el = $(f[0]);
       if (info.m & f[1]) { el.value = ''; el.dataset.srv = '1'; maskField(f[0], false); }
       else if (isSrv(f[0])) unmaskField(f[0], true);
     });
-    if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, father: info.father, phone: info.phone, m: info.m })); } catch (e) {} }
+    if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, father: info.father, phone: info.phone, m: info.m, gender: info.gender, religion: info.religion })); } catch (e) {} }
   }
   function setApproved(on) {
     approved = on;
@@ -457,7 +463,7 @@
         btn.disabled = false; loadCaptcha(); return;
       }
       accessId = r.rid; store(r.rid);
-      fillFromPermit({ name: name, father: r.father || pfather, phone: phone, m: r.m || 0 }, true);
+      fillFromPermit({ name: name, father: r.father || pfather, phone: phone, m: r.m || 0, gender: r.gender || '', religion: r.religion || '' }, true);
       pStatus('info', 'আপনার অনুরোধ পাঠানো হয়েছে। অনুমোদনের অপেক্ষায়… আপনি এই সময়ে নিচের ফরম পূরণ করে রাখতে পারেন।');
       pollTimer = setTimeout(poll, 4000);
     }).catch(function () { pStatus('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); btn.disabled = false; loadCaptcha(); });

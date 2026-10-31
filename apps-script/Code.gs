@@ -314,7 +314,7 @@ function pick_(r) {
   for (var i = 0; i < all.length; i++) if (all[i].r === k) { ok = true; break; }
   if (!ok) return { ok: false, error: 'not found' };
   var rec = dbRecord_(k);
-  return rec ? { ok: true, father: rec.father } : { ok: false, error: 'not found' };
+  return rec ? { ok: true, father: rec.father, gender: rec.gender, religion: rec.religion } : { ok: false, error: 'not found' };
 }
 function suggest_(r) {
   var q = normName_(r.q).substring(0, 30);
@@ -344,8 +344,8 @@ function requestAccess_(r) {
     var all = dbLoad_();
     for (var di = 0; di < all.length; di++) if (all[di].r === dbRef && normName_(all[di].n) === name) { dbRow = dbRef; dbMask = all[di].m; break; }
   }
-  var fatherUse = fatherIn;
-  if (dbRow) { var drec = dbRecord_(dbRow); if (drec && drec.father) fatherUse = drec.father; }
+  var fatherUse = fatherIn, dGender = '', dReligion = '';
+  if (dbRow) { var drec = dbRecord_(dbRow); if (drec) { if (drec.father) fatherUse = drec.father; dGender = drec.gender; dReligion = drec.religion; } }
   if (fatherUse.length < 2 || !BN_NAME_RE.test(fatherUse)) return { ok: false, error: 'invalid father' };
   if (!/^\+?\d{7,16}$/.test(phone)) return { ok: false, error: 'invalid phone' };
 
@@ -377,7 +377,7 @@ function requestAccess_(r) {
     var ish = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
     ish.getRange(prow, colOf_(ish, 'ইমেইল অবস্থা')).setValue(mres);   // ব্যর্থ হলে কারণসহ
   } catch (e) { console.error('mail status write failed: ' + (e && e.message)); }
-  return { ok: true, rid: rid, m: dbMask, father: fatherUse };
+  return { ok: true, rid: rid, m: dbMask, father: fatherUse, gender: dGender, religion: dReligion };
 }
 
 function mailApprovers_(rid, name, phone, tsStr, father) {
