@@ -387,6 +387,16 @@
 
     // ঠিকানা: উপজেলা হলে ইউনিয়ন + ওয়ার্ড লাইন; সিটি কর্পোরেশন হলে সিটি কর্পোরেশন + ওয়ার্ড লাইন
     function addrBlock(y0, title, a) {
+      if (a && a.foreign) {                              // প্রবাসী: দেশভিত্তিক ঠিকানা (৩ লাইন)
+        var fy = y0;
+        fld(ctx, L, fy, title + ' ঠিকানা-', a.line, 440);
+        fld(ctx, 448, fy, 'পোস্টকোড-', a.post, R); fy += P2;
+        fld(ctx, 46, fy, a.l1 + ':', a.v1, 300);
+        fld(ctx, 312, fy, a.l2 + ':', a.v2, R); fy += P2;
+        fld(ctx, 46, fy, a.l3 + ':', a.v3, 300);
+        fld(ctx, 312, fy, 'দেশ-', a.country, R);
+        return fy;
+      }
       var yy = y0, city = /সিটি কর্পোরেশন$/.test(a.upa || '');
       // লাইন ১: পাড়া, গ্রাম, ডাক
       var CMX = 1 / 2.54 * 72;                          // ১ সেমি

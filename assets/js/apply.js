@@ -121,6 +121,7 @@
       wireAddress('perm');
       wireAddress('cur');
       fillSelect($('country'), g.countries.filter(function (c) { return c !== 'বাংলাদেশ'; }), '— নির্বাচন করুন —');
+      fillSelect($('cfCountry'), g.countries.filter(function (c) { return c !== 'বাংলাদেশ'; }), '— নির্বাচন করুন —');
       ['perm', 'cur'].forEach(function (p) { wireOther(p + 'PO'); wireOther(p + 'Village'); wireOther(p + 'Para'); });
     });
   }
@@ -148,7 +149,79 @@
     $('fee').value = feeText(t, r);
     $('feeNote').hidden = !(t && r && r !== 'none');
   }
-  $('memberType').addEventListener('change', function () { syncReference(); syncFee(); syncNidRules(); });
+  $('memberType').addEventListener('change', function () { syncReference(); syncFee(); syncNidRules(); syncExpat(); });
+
+  // ---------- প্রবাসী সদস্য: দেশভিত্তিক বর্তমান ঠিকানা ----------
+  var DEF_LV = ['রাজ্য/প্রদেশ/অঞ্চল (State/Province/Region)', 'জেলা/কাউন্টি (District/County)', 'শহর/নগর (City/Town)'];
+  var GULF = ['প্রদেশ/গভর্নরেট (Governorate/Region)', 'এলাকা/জেলা (Area/District)', 'শহর (City)'];
+  var LV = {
+    us: ['রাজ্য (State)', 'কাউন্টি (County)', 'শহর (City)'],
+    gb: ['দেশ/অঞ্চল (Country/Region)', 'কাউন্টি (County)', 'শহর (City/Town)'],
+    ca: ['প্রদেশ/টেরিটরি (Province/Territory)', 'অঞ্চল/কাউন্টি (Region/County)', 'শহর (City)'],
+    au: ['রাজ্য/টেরিটরি (State/Territory)', 'অঞ্চল (Region/LGA)', 'শহর/শহরতলি (City/Suburb)'],
+    nz: ['অঞ্চল (Region)', 'জেলা (District)', 'শহর (City)'],
+    it: ['অঞ্চল (Regione/Region)', 'প্রদেশ (Provincia)', 'কমুনে/শহর (Comune/City)'],
+    de: ['অঙ্গরাজ্য (Bundesland/State)', 'জেলা (Landkreis/District)', 'শহর (Stadt/City)'],
+    fr: ['অঞ্চল (Région/Region)', 'বিভাগ (Département)', 'কমিউন/শহর (Commune/City)'],
+    es: ['স্বায়ত্তশাসিত অঞ্চল (Comunidad/Region)', 'প্রদেশ (Provincia)', 'শহর (Ciudad/City)'],
+    pt: ['জেলা (Distrito/District)', 'পৌরসভা (Concelho/Municipality)', 'শহর (Cidade/City)'],
+    nl: ['প্রদেশ (Provincie/Province)', 'পৌরসভা (Gemeente/Municipality)', 'শহর (Stad/City)'],
+    be: ['অঞ্চল (Region)', 'প্রদেশ (Province)', 'শহর (City)'],
+    se: ['কাউন্টি (Län/County)', 'পৌরসভা (Kommun)', 'শহর (City)'],
+    no: ['কাউন্টি (Fylke/County)', 'পৌরসভা (Kommune)', 'শহর (City)'],
+    dk: ['অঞ্চল (Region)', 'পৌরসভা (Kommune)', 'শহর (City)'],
+    fi: ['অঞ্চল (Region)', 'পৌরসভা (Kunta)', 'শহর (City)'],
+    gr: ['অঞ্চল (Region)', 'নোমোস/জেলা (Prefecture)', 'শহর (City)'],
+    ru: ['অঞ্চল/প্রজাতন্ত্র (Oblast/Republic)', 'জেলা (District)', 'শহর (City)'],
+    tr: ['প্রদেশ (İl/Province)', 'জেলা (İlçe/District)', 'শহর/মহল্লা (City/Neighbourhood)'],
+    sa: ['অঞ্চল (Region)', 'গভর্নরেট/জেলা (Governorate/District)', 'শহর (City)'],
+    ae: ['আমিরাত (Emirate)', 'এলাকা (Area)', 'শহর (City)'],
+    qa: GULF, kw: ['গভর্নরেট (Governorate)', 'এলাকা (Area)', 'শহর (City)'], om: GULF, bh: GULF, jo: GULF, lb: GULF, iq: GULF, ir: GULF,
+    my: ['রাজ্য (State)', 'জেলা (District)', 'শহর (City)'],
+    sg: ['অঞ্চল (Region)', 'এলাকা (District)', 'শহর (City)'],
+    jp: ['প্রিফেকচার (Prefecture)', 'শহর/ওয়ার্ড (City/Ward)', 'এলাকা (Town)'],
+    kr: ['প্রদেশ/মহানগর (Province/Metropolitan)', 'জেলা (Gu/District)', 'শহর (City)'],
+    cn: ['প্রদেশ (Province)', 'শহর (City)', 'জেলা (District)'],
+    'in': ['রাজ্য (State)', 'জেলা (District)', 'শহর/গ্রাম (City/Village)'],
+    pk: ['প্রদেশ (Province)', 'জেলা (District)', 'শহর (City)'],
+    lk: ['প্রদেশ (Province)', 'জেলা (District)', 'শহর (City)'],
+    np: ['প্রদেশ (Province)', 'জেলা (District)', 'শহর (City)'],
+    id: ['প্রদেশ (Province)', 'রিজেন্সি/সিটি (Regency/City)', 'জেলা (Kecamatan)'],
+    th: ['প্রদেশ (Province)', 'জেলা (District)', 'উপজেলা/শহর (Subdistrict/City)'],
+    za: ['প্রদেশ (Province)', 'জেলা (District)', 'শহর (City)'],
+    ng: ['রাজ্য (State)', 'লোকাল সরকার এলাকা (LGA)', 'শহর (City)'],
+    br: ['রাজ্য (Estado/State)', 'পৌরসভা (Município)', 'শহর (Cidade)'],
+    mx: ['রাজ্য (Estado/State)', 'পৌরসভা (Municipio)', 'শহর (City)'],
+    ar: ['প্রদেশ (Provincia)', 'বিভাগ (Departamento)', 'শহর (City)']
+  };
+  function isExpat() { return val('memberType') === 'expat'; }
+  function cfLevels() {
+    var code = (window.SRIJON_FLAGS || {})[val('cfCountry')];
+    return LV[code] || DEF_LV;
+  }
+  function shortLbl(s) { return String(s).split(' (')[0]; }
+  function syncCfLabels() {
+    var has = !!val('cfCountry'), lv = cfLevels();
+    ['cfL1w', 'cfL2w', 'cfL3w', 'cfLinew', 'cfPostw'].forEach(function (id) { $(id).hidden = !has; });
+    [1, 2, 3].forEach(function (i) { $('cfL' + i + 'l').innerHTML = lv[i - 1] + ' <small>(ঐচ্ছিক)</small>'; });
+    // ১৯ নং ঘরের সাথে মিল রাখা
+    $('countryType').value = has ? 'abroad' : ''; $('countryWrap').hidden = !has; $('country').value = val('cfCountry');
+  }
+  $('cfCountry').addEventListener('change', syncCfLabels);
+  function syncExpat() {
+    var ex = isExpat();
+    $('curForeign').hidden = !ex; $('curRadios').hidden = ex; $('countryRow').hidden = ex;
+    if (ex) { $('curWrap').hidden = true; syncCfLabels(); }
+    else { $('curWrap').hidden = form.addrSame.value !== 'diff'; $('countryType').value = ''; $('countryWrap').hidden = true; $('country').value = ''; }
+  }
+  function foreignAddr() {
+    var lv = cfLevels();
+    return { foreign: true, country: val('cfCountry'), line: val('cfLine'), post: val('cfPost'),
+      l1: shortLbl(lv[0]), v1: val('cfL1'), l2: shortLbl(lv[1]), v2: val('cfL2'), l3: shortLbl(lv[2]), v3: val('cfL3') };
+  }
+  function foreignText(a) {
+    return [a.line, a.v3 && a.l3 + ': ' + a.v3, a.v2 && a.l2 + ': ' + a.v2, a.v1 && a.l1 + ': ' + a.v1, a.post && 'পোস্টকোড: ' + a.post, a.country].filter(Boolean).join(', ');
+  }
   $('reference').addEventListener('change', function () {
     syncFee();
     var on = val('reference') !== 'none';
@@ -238,17 +311,25 @@
 
   // ---------- ভাষার বিধিনিষেধ ----------
   function restrict(id, hintId, re) {
-    var el = $(id), hint = $(hintId);
+    var el = $(id), hint = hintId ? $(hintId) : null;
     if (!el) return;
     el.addEventListener('input', function () {
       var cleaned = el.value.replace(re, '');
-      hint.hidden = cleaned === el.value;
+      if (hint) hint.hidden = cleaned === el.value;
       if (cleaned !== el.value) el.value = cleaned;
     });
   }
   restrict('permitName', 'permitNameHint', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
   restrict('nameBn', 'nameBnHint', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
   restrict('nameEn', 'nameEnHint', /[^A-Za-z\s.\-']/g);
+  restrict('permitFather', 'permitFatherHint', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
+  restrict('father', '', /[^\u0980-\u09FF\u200c\u200d\s.\-]/g);
+  restrict('email', 'emailHint', /[^\x21-\x7E]/g);
+  // সংখ্যার ঘর: বাংলা বা ইংরেজি যেকোনো ভাষায় লেখা যায়, কোডে ইংরেজি অঙ্কে বদলে যায়
+  ['permitPhone', 'phone', 'whatsapp', 'nid', 'birthReg'].forEach(function (id) {
+    var el = $(id); if (!el) return;
+    el.addEventListener('input', function () { var c = en(el.value); if (c !== el.value) el.value = c; });
+  });
 
   // ---------- নামের সাজেশন (ডাটাবেইজ থেকে; শুধু নাম আসে) ----------
   var dbPick = null, sugTimer = null, sugSeq = 0, sugBox = $('permitSug'), pName = $('permitName');
@@ -266,7 +347,11 @@
         r.items.forEach(function (it) {
           var b = document.createElement('button'); b.type = 'button'; b.textContent = it.n;
           b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-          b.addEventListener('click', function () { pName.value = it.n; dbPick = it; hideSug(); $('permitPhone').focus(); });
+          b.addEventListener('click', function () {
+            pName.value = it.n; dbPick = it; hideSug();
+            post({ action: 'pick', k: it.k }).then(function (pr) { if (pr && pr.ok && pr.father && dbPick === it) $('permitFather').value = pr.father; }).catch(function () {});
+            $('permitFather').focus();
+          });
           sugBox.appendChild(b);
         });
         sugBox.hidden = false;
@@ -281,6 +366,7 @@
     var box = document.createElement('div'); box.className = 'mask-box';
     el.parentNode.insertBefore(box, el); box.appendChild(el);
     el.classList.add('is-masked'); el.readOnly = true; el.tabIndex = -1;
+    if (el.tagName === 'SELECT' || el.type === 'date') el.disabled = true;
     var note = document.createElement('div'); note.className = 'mask-note';
     note.innerHTML = '<span>✔ তথ্য বসানো হয়েছে</span>';
     if (canUnlock) {
@@ -300,14 +386,14 @@
   }
   function isSrv(id) { var el = $(id); return !!(el && el.dataset.srv === '1'); }
   function fillFromPermit(info, save) {
-    $('nameBn').value = info.name; maskField('nameBn', true);
-    $('phone').value = info.phone; maskField('phone', true);
-    [['father', 1], ['mother', 2], ['dob', 4]].forEach(function (f) {
+    ['nameBn', 'phone', 'father'].forEach(function (id) { unmaskField(id, false); });
+    $('nameBn').value = info.name; $('phone').value = info.phone; if (info.father) $('father').value = info.father;
+    [['mother', 2], ['dob', 4], ['gender', 8], ['religion', 16]].forEach(function (f) {
       var el = $(f[0]);
       if (info.m & f[1]) { el.value = ''; el.dataset.srv = '1'; maskField(f[0], false); }
       else if (isSrv(f[0])) unmaskField(f[0], true);
     });
-    if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, phone: info.phone, m: info.m })); } catch (e) {} }
+    if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, father: info.father, phone: info.phone, m: info.m })); } catch (e) {} }
   }
   function setApproved(on) {
     approved = on;
@@ -357,19 +443,21 @@
   $('capRefresh').addEventListener('click', loadCaptcha);
   $('permitBtn').addEventListener('click', function () {
     var name = val('permitName'), phone = en(val('permitPhone')).replace(/[\s-]/g, '');
+    var pfather = val('permitFather');
     if (name.length < 2) { pStatus('error', 'আপনার নাম লিখুন।'); $('permitName').focus(); return; }
+    if (pfather.length < 2) { pStatus('error', 'পিতার নাম লিখুন।'); $('permitFather').focus(); return; }
     if (!/^\+?\d{7,16}$/.test(phone)) { pStatus('error', 'ফোন নম্বর সঠিক নয়।'); $('permitPhone').focus(); return; }
     if (!capId || !val('capAns')) { pStatus('error', 'নিরাপত্তা প্রশ্নের উত্তর দিন।'); $('capAns').focus(); return; }
     var btn = $('permitBtn');
     btn.disabled = true; pStatus('info', 'অনুরোধ পাঠানো হচ্ছে…');
-    post({ action: 'access_request', name: name, phone: phone, dbRow: dbPick && dbPick.n === name ? dbPick.k : 0, cid: capId, captcha: val('capAns'), website: $('permitWebsite').value }).then(function (r) {
+    post({ action: 'access_request', name: name, father: pfather, phone: phone, dbRow: dbPick && dbPick.n === name ? dbPick.k : 0, cid: capId, captcha: val('capAns'), website: $('permitWebsite').value }).then(function (r) {
       if (!r || !r.ok) {
         var code = r && r.error;
         pStatus('error', PERMIT_ERR[code] || 'অনুরোধ পাঠানো যায়নি। তথ্য দেখে আবার চেষ্টা করুন।');
         btn.disabled = false; loadCaptcha(); return;
       }
       accessId = r.rid; store(r.rid);
-      fillFromPermit({ name: name, phone: phone, m: r.m || 0 }, true);
+      fillFromPermit({ name: name, father: r.father || pfather, phone: phone, m: r.m || 0 }, true);
       pStatus('info', 'আপনার অনুরোধ পাঠানো হয়েছে। অনুমোদনের অপেক্ষায়… আপনি এই সময়ে নিচের ফরম পূরণ করে রাখতে পারেন।');
       pollTimer = setTimeout(poll, 4000);
     }).catch(function () { pStatus('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); btn.disabled = false; loadCaptcha(); });
@@ -393,14 +481,14 @@
     if (!isSrv('mother') && !val('mother')) return fail('mother', 'মাতার নাম লিখুন।');
     if (!isSrv('dob') && !val('dob')) return fail('dob', 'জন্ম তারিখ নির্বাচন করুন।');
     if (val('dob') && new Date(val('dob')) > new Date()) return fail('dob', 'জন্ম তারিখ ভবিষ্যতের হতে পারে না।');
-    if (!val('gender')) return fail('gender', 'লিঙ্গ নির্বাচন করুন।');
+    if (!isSrv('gender') && !val('gender')) return fail('gender', 'লিঙ্গ নির্বাচন করুন।');
     if (!val('education')) return fail('education', 'শিক্ষাগত যোগ্যতা নির্বাচন করুন।');
     if (val('education') === '__other' && !val('educationOther')) return fail('educationOther', 'শিক্ষাগত যোগ্যতা লিখুন।');
     if (!val('profession')) return fail('profession', 'পেশা নির্বাচন করুন।');
     if (val('profession') === '__other' && !val('professionOther')) return fail('professionOther', 'পেশা লিখুন।');
-    if (!val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
+    if (!isSrv('religion') && !val('religion')) return fail('religion', 'ধর্ম নির্বাচন করুন।');
     if (val('reference') !== 'none' && !val('refProof')) return fail('refProof', 'সূত্র/সুপারিশ প্রমাণক লিখুন।');
-    if (val('religion') === '__other' && !val('religionOther')) return fail('religionOther', 'ধর্ম লিখুন।');
+    if (!isSrv('religion') && val('religion') === '__other' && !val('religionOther')) return fail('religionOther', 'ধর্ম লিখুন।');
     var type = val('memberType');
     var nid = en(val('nid')).replace(/[\s-]/g, '');
     var reg = en(val('birthReg')).replace(/[\s-]/g, '');
@@ -415,7 +503,7 @@
     if (val('email') && !$('email').checkValidity()) return fail('email', 'ইমেইল ঠিকানা সঠিক নয়।');
 
     var blocks = ['perm'];
-    if (form.addrSame.value === 'diff') blocks.push('cur');
+    if (form.addrSame.value === 'diff' && !isExpat()) blocks.push('cur');
     for (var i = 0; i < blocks.length; i++) {
       var p = blocks[i], t = p === 'perm' ? 'স্থায়ী ঠিকানার ' : 'বর্তমান ঠিকানার ';
       if (!val(p + 'Div')) return fail(p + 'Div', t + 'বিভাগ নির্বাচন করুন।');
@@ -428,6 +516,7 @@
       if (!pickVal(p + 'Village')) return fail(val(p + 'Village') === '__other' ? p + 'VillageOther' : p + 'Village', t + 'গ্রাম নির্বাচন করুন বা লিখুন।');
       if (val(p + 'Para') === '__other' && !val(p + 'ParaOther')) return fail(p + 'ParaOther', t + 'পাড়ার নাম লিখুন।');
     }
+    if (isExpat() && !val('cfCountry')) return fail('cfCountry', 'বর্তমান বসবাসের দেশ নির্বাচন করুন।');
     if (!val('countryType')) return fail('countryType', 'বর্তমান বসবাসরত দেশের নাম নির্বাচন করুন।');
     if (val('countryType') === 'abroad' && !val('country')) return fail('country', 'প্রবাসের দেশ নির্বাচন করুন।');
     if (!photoDataUrl) return fail('photo', 'আপনার ছবি দিন।');
@@ -452,8 +541,8 @@
   }
   function collect() {
     var perm = addr('perm');
-    var same = form.addrSame.value !== 'diff';
-    var cur = same ? perm : addr('cur');
+    var ex = isExpat(), same = !ex && form.addrSame.value !== 'diff';
+    var cur = ex ? foreignAddr() : (same ? perm : addr('cur'));
     var dob = val('dob').split('-');                       // yyyy-mm-dd
     return {
       memberType: val('memberType'),
@@ -481,7 +570,7 @@
       perm: perm,
       addrSame: same,
       cur: cur,
-      currentText: same ? 'স্থায়ী ঠিকানার অনুরূপ' : addrText(cur),
+      currentText: same ? 'স্থায়ী ঠিকানার অনুরূপ' : (ex ? foreignText(cur) : addrText(cur)),
       country: val('countryType') === 'abroad' ? val('country') : 'বাংলাদেশ',
       countryType: val('countryType') === 'abroad' ? 'প্রবাসী' : 'বাংলাদেশ',
       website: form.website.value,
@@ -538,9 +627,9 @@
       var pdfData = {
         formNo: res.formNo, memberNo: '', feeText: data.feeText, reference: data.reference, discount: data.reference && data.reference !== 'none', memberType: data.memberType, referenceLabel: data.referenceLabel, referenceProof: data.referenceProof, countryType: data.countryType,
         nameBn: data.nameBn, nameEn: data.nameEn, father: data.father || (res.prefill && res.prefill.father) || '', mother: data.mother || (res.prefill && res.prefill.mother) || '',
-        dobText: data.dobText || (res.prefill && res.prefill.dob ? (function (a) { return bn(a[2] + '/' + a[1] + '/' + a[0]); })(res.prefill.dob.split('-')) : ''), gender: data.gender, blood: shortBlood(data.blood),
-        education: data.education, profession: data.profession, religion: data.religion,
-        nid: bn(data.nid), birthReg: bn(data.birthReg), phone: bn(data.phone), whatsapp: bn(data.whatsapp), email: data.email,
+        dobText: data.dobText || (res.prefill && res.prefill.dob ? (function (a) { return bn(a[2] + '/' + a[1] + '/' + a[0]); })(res.prefill.dob.split('-')) : ''), gender: data.gender || (res.prefill && res.prefill.gender) || '', blood: shortBlood(data.blood),
+        education: data.education, profession: data.profession, religion: data.religion || (res.prefill && res.prefill.religion) || '',
+        nid: data.nid, birthReg: data.birthReg, phone: data.phone, whatsapp: data.whatsapp, email: data.email,
         perm: data.perm, cur: data.cur, currentText: data.currentText, country: data.country,
         photoDataUrl: photoDataUrl, timestampEn: enStamp(res.timestamp)
       };

@@ -80,9 +80,10 @@ def membership_body():
 <section class="permit" id="permitBox" aria-labelledby="permitTitle">
   <h2 id="permitTitle">অনুমতি নিন</h2>
   <p class="small">আবেদন জমা দিতে সংগঠনের অনুমতি লাগে। নাম ও ফোন নম্বর দিয়ে অনুমতির অনুরোধ পাঠান। অনুমতির অপেক্ষায় না থেকে নিচের ফরমটি এখনই পূরণ করে রাখতে পারেন; অনুমতি পেলে "জমা দিন" বাটন চালু হবে।</p>
+  <div class="field sug-wrap"><label for="permitName">১। নাম (বাংলায়) এনআইডি অনুযায়ী: <span class="req">*</span> <small class="inl">(নাম বাংলা ভাষা ব্যতীত অন্য কোন ভাষা ব্যবহার করা যাবে না)</small></label><input id="permitName" type="text" maxlength="100" autocomplete="off" lang="bn"><div class="sug" id="permitSug" role="listbox" hidden></div><small class="hint-warn" id="permitNameHint" hidden>বাংলায় লিখুন</small></div>
   <div class="row-2">
-    <div class="field sug-wrap"><label for="permitName">১। নাম (বাংলায়) এনআইডি অনুযায়ী <span class="req">*</span> <small class="inl">(নাম বাংলা ভাষা ব্যতীত অন্য কোন ভাষা ব্যবহার করা যাবে না)</small></label><input id="permitName" type="text" maxlength="100" autocomplete="off" lang="bn"><div class="sug" id="permitSug" role="listbox" hidden></div><small class="hint-warn" id="permitNameHint" hidden>শুধু বাংলা অক্ষর লিখুন।</small></div>
-    <div class="field"><label for="permitPhone">২। ফোন নম্বর <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"></div>
+    <div class="field"><label for="permitFather">২। পিতার নাম: <span class="req">*</span></label><input id="permitFather" type="text" maxlength="100" autocomplete="off" lang="bn"><small class="hint-warn" id="permitFatherHint" hidden>বাংলায় লিখুন</small></div>
+    <div class="field"><label for="permitPhone">৩। ফোন নম্বর: <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"><small>বাংলা বা ইংরেজি, যেকোনো ভাষায় লিখতে পারবেন</small></div>
   </div>
   <div class="field cap-row"><label for="capAns">নিরাপত্তা প্রশ্ন: <strong id="capQ">…</strong> = ? <span class="req">*</span></label>
     <div class="cap-line"><input id="capAns" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><button type="button" class="linklike" id="capRefresh">নতুন প্রশ্ন</button></div></div>
@@ -162,20 +163,35 @@ def membership_body():
   <div class="row-3">
     <div class="field"><label for="phone">১৪। ফোন নম্বর</label><input id="phone" name="phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"></div>
     <div class="field"><label for="whatsapp">১৫। ওয়াটসঅ্যাপ নম্বর</label><input id="whatsapp" name="whatsapp" type="tel" inputmode="tel" maxlength="20"></div>
-    <div class="field"><label for="email">১৬। ইমেইল ঠিকানা</label><input id="email" name="email" type="email" maxlength="120" autocomplete="email"></div>
+    <div class="field"><label for="email">১৬। ইমেইল ঠিকানা</label><input id="email" name="email" type="email" maxlength="120" autocomplete="email" inputmode="email"><small>ইমেইল শুধু ইংরেজি ভাষায় লিখুন</small><small class="hint-warn" id="emailHint" hidden>ইংরেজিতে লিখুন</small></div>
   </div>
 
   <h3 class="addr-title">১৭। স্থায়ী ঠিকানা</h3>
   %(perm)s
 
   <h3 class="addr-title">১৮। বর্তমান ঠিকানা</h3>
-  <div class="radio-row" role="radiogroup" aria-label="বর্তমান ঠিকানা">
+  <div id="curForeign" hidden>
+    <p class="small muted">প্রবাসী সদস্য — বর্তমান বসবাসের দেশ বাছাই করুন। দেশ অনুযায়ী নিচের ঘরগুলোর নাম বদলে যাবে; যেগুলো আপনার দেশে প্রযোজ্য নয় সেগুলো ফাঁকা রাখতে পারেন।</p>
+    <div class="row-2">
+      <div class="field"><label for="cfCountry">বর্তমান বসবাসের দেশ <span class="req">*</span></label><select id="cfCountry"><option value="">— নির্বাচন করুন —</option></select></div>
+      <div class="field" id="cfL1w" hidden><label for="cfL1" id="cfL1l">রাজ্য/প্রদেশ <small>(ঐচ্ছিক)</small></label><input id="cfL1" type="text" maxlength="80"></div>
+    </div>
+    <div class="row-2">
+      <div class="field" id="cfL2w" hidden><label for="cfL2" id="cfL2l">জেলা/কাউন্টি <small>(ঐচ্ছিক)</small></label><input id="cfL2" type="text" maxlength="80"></div>
+      <div class="field" id="cfL3w" hidden><label for="cfL3" id="cfL3l">শহর/নগর <small>(ঐচ্ছিক)</small></label><input id="cfL3" type="text" maxlength="80"></div>
+    </div>
+    <div class="row-2">
+      <div class="field" id="cfLinew" hidden><label for="cfLine">এলাকা/রাস্তা/বাসার ঠিকানা <small>(ঐচ্ছিক)</small></label><input id="cfLine" type="text" maxlength="120"></div>
+      <div class="field" id="cfPostw" hidden><label for="cfPost">ডাকঘর/পোস্টকোড/জিপ <small>(ঐচ্ছিক)</small></label><input id="cfPost" type="text" maxlength="30"></div>
+    </div>
+  </div>
+  <div class="radio-row" id="curRadios" role="radiogroup" aria-label="বর্তমান ঠিকানা">
     <label class="radio"><input type="radio" name="addrSame" value="same" checked> স্থায়ী ও বর্তমান ঠিকানা একই</label>
     <label class="radio"><input type="radio" name="addrSame" value="diff"> বর্তমান ঠিকানা ভিন্ন</label>
   </div>
   <div id="curWrap" hidden>%(cur)s</div>
 
-  <div class="row-2">
+  <div class="row-2" id="countryRow">
     <div class="field"><label for="countryType">১৯। বর্তমান বসবাসরত দেশের নাম <span class="req">*</span></label><select id="countryType" name="countryType" required><option value="">— নির্বাচন করুন —</option><option value="bd">বাংলাদেশ</option><option value="abroad">প্রবাসী</option></select></div>
     <div class="field" id="countryWrap" hidden><label for="country">প্রবাসের দেশ <span class="req">*</span></label><select id="country" name="country"><option value="">— নির্বাচন করুন —</option></select></div>
   </div>

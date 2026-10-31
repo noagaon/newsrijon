@@ -47,7 +47,7 @@ var CONFIG = {
   PERMIT_MAX_PER_DAY: 40           // দিনে মোট অনুরোধ (ইমেইল কোটা বাঁচাতে)
 };
 
-var PERMIT_HEADERS = ['অনুরোধ আইডি', 'অনুরোধের সময়', 'নাম', 'ফোন', 'অবস্থা', 'অনুমোদনকারী', 'সিদ্ধান্তের সময়', 'ফরম নম্বর', 'ইমেইল অবস্থা', 'ডাটাবেইজ সারি'];
+var PERMIT_HEADERS = ['অনুরোধ আইডি', 'অনুরোধের সময়', 'নাম', 'ফোন', 'অবস্থা', 'অনুমোদনকারী', 'সিদ্ধান্তের সময়', 'ফরম নম্বর', 'ইমেইল অবস্থা', 'ডাটাবেইজ সারি', 'পিতার নাম'];
 var ST = { PENDING: 'অপেক্ষমাণ', APPROVED: 'অনুমোদিত', REJECTED: 'বাতিল', USED: 'ব্যবহৃত', EXPIRED: 'মেয়াদোত্তীর্ণ' };
 
 var APPLY_HEADERS = [
@@ -73,6 +73,7 @@ function doPost(e) {
     switch (req.action) {
       case 'captcha':        return json_(captcha_());
       case 'suggest':        return json_(suggest_(req));
+      case 'pick':           return json_(pick_(req));
       case 'access_request': return json_(requestAccess_(req));
       case 'access_status':  return json_(accessStatus_(req));
       case 'submit':   return json_(submit_(req.data || {}));
@@ -246,20 +247,22 @@ function dbCols_(sh) {
   var top = sh.getRange(1, 1, lr, lc).getValues();
   for (var r = 0; r < top.length; r++) {
     var h = top[r].map(function (x) { return String(x).trim(); });
-    var name = -1, father = -1, mother = -1, dob = -1;
+    var name = -1, father = -1, mother = -1, dob = -1, gender = -1, religion = -1;
     h.forEach(function (t, i) {
       if (t.indexOf('পিতা') >= 0 || t.indexOf('বাবা') >= 0) { if (father < 0) father = i; }
       else if (t.indexOf('মাতা') >= 0 || t.indexOf('মা') === 0 && t.length <= 6) { if (mother < 0) mother = i; }
       else if (t.indexOf('জন্ম') >= 0) { if (dob < 0) dob = i; }
+      else if (t.indexOf('লিঙ্গ') >= 0) { if (gender < 0) gender = i; }
+      else if (t.indexOf('ধর্ম') >= 0) { if (religion < 0) religion = i; }
       else if (t.indexOf('নাম') >= 0 && name < 0) name = i;
     });
-    if (name >= 0 && father >= 0) return { head: r + 1, name: name, father: father, mother: mother, dob: dob };
+    if (name >= 0 && father >= 0) return { head: r + 1, name: name, father: father, mother: mother, dob: dob, gender: gender, religion: religion };
   }
   return null;
 }
-// [{r: সারি নম্বর, n: নাম, m: বিট (১=পিতা ২=মাতা ৪=জন্ম তারিখ আছে)}]
+// [{r: সারি নম্বর, n: নাম, m: বিট (১=পিতা ২=মাতা ৪=জন্ম তারিখ ৮=লিঙ্গ ১৬=ধর্ম আছে)}]
 function dbLoad_() {
-  var cache = CacheService.getScriptCache(), hit = cache.get('dbnames_v1');
+  var cache = CacheService.getScriptCache(), hit = cache.get('dbnames_v2');
   if (hit) { try { return JSON.parse(hit); } catch (e) {} }
   var db = dbSheet_(); if (!db) return [];
   var sh = db.sh, c = db.cols, first = c.head + 1, n = sh.getLastRow() - c.head;
@@ -267,10 +270,11 @@ function dbLoad_() {
   var vals = sh.getRange(first, 1, n, sh.getLastColumn()).getValues(), out = [];
   vals.forEach(function (row, i) {
     var nm = normName_(row[c.name]); if (!nm) return;
-    var m = (String(row[c.father]).trim() ? 1 : 0) | (c.mother >= 0 && String(row[c.mother]).trim() ? 2 : 0) | (c.dob >= 0 && String(row[c.dob]).trim() ? 4 : 0);
+    var m = (String(row[c.father]).trim() ? 1 : 0) | (c.mother >= 0 && String(row[c.mother]).trim() ? 2 : 0) | (c.dob >= 0 && String(row[c.dob]).trim() ? 4 : 0) |
+         (c.gender >= 0 && String(row[c.gender]).trim() ? 8 : 0) | (c.religion >= 0 && String(row[c.religion]).trim() ? 16 : 0);
     out.push({ r: first + i, n: nm, m: m });
   });
-  try { cache.put('dbnames_v1', JSON.stringify(out), 600); } catch (e) {}   // খুব বড় হলে ক্যাশ ছাড়াই চলবে
+  try { cache.put('dbnames_v2', JSON.stringify(out), 600); } catch (e) {}   // খুব বড় হলে ক্যাশ ছাড়াই চলবে
   return out;
 }
 function dobIso_(v) {
@@ -288,8 +292,29 @@ function dbRecord_(row) {
     name: normName_(v[c.name]),
     father: normName_(v[c.father]),
     mother: c.mother >= 0 ? normName_(v[c.mother]) : '',
-    dob: c.dob >= 0 ? dobIso_(v[c.dob]) : ''
+    dob: c.dob >= 0 ? dobIso_(v[c.dob]) : '',
+    gender: c.gender >= 0 ? genderNorm_(v[c.gender]) : '',
+    religion: c.religion >= 0 ? normName_(v[c.religion]) : ''
   };
+}
+function genderNorm_(v) {
+  var s = normName_(v).toLowerCase();
+  if (!s) return '';
+  if (/^(পুরুষ|ছেলে|male|m)$/.test(s)) return 'পুরুষ';
+  if (/^(মহিলা|নারী|মেয়ে|female|f)$/.test(s)) return 'মহিলা';
+  return normName_(v);
+}
+// ব্যবহারকারী নাম বাছাই করলে শুধু পিতার নামটি ফেরত যায় (অনুমতির ঘরে দেখানোর জন্য); হার সীমাবদ্ধ
+function pick_(r) {
+  var cache = CacheService.getScriptCache(), key = 'sug_' + Math.floor(Date.now() / 60000);
+  var cnt = Number(cache.get(key) || 0) + 1;
+  cache.put(key, String(cnt), 120);
+  if (cnt > CONFIG.SUGGEST_MAX_PER_MIN) return { ok: false, error: 'busy' };
+  var k = Number(r.k) || 0, all = dbLoad_(), ok = false;
+  for (var i = 0; i < all.length; i++) if (all[i].r === k) { ok = true; break; }
+  if (!ok) return { ok: false, error: 'not found' };
+  var rec = dbRecord_(k);
+  return rec ? { ok: true, father: rec.father } : { ok: false, error: 'not found' };
 }
 function suggest_(r) {
   var q = normName_(r.q).substring(0, 30);
@@ -311,6 +336,7 @@ function requestAccess_(r) {
   if (!checkCaptcha_(r.cid, r.captcha)) return { ok: false, error: 'captcha' };
   var name = String(r.name || '').replace(/\s+/g, ' ').trim();
   var phone = enDigits_(String(r.phone || '')).replace(/[\s-]/g, '');
+  var fatherIn = normName_(r.father).substring(0, 100);
   if (name.length < 2 || name.length > 100 || !BN_NAME_RE.test(name)) return { ok: false, error: 'invalid name' };
   // ডাটাবেইজ থেকে বাছাই করা নাম মিললে সারি মনে রাখা (নাম বদলানো হলে বাদ)
   var dbRow = 0, dbMask = 0, dbRef = Number(r.dbRow) || 0;
@@ -318,6 +344,9 @@ function requestAccess_(r) {
     var all = dbLoad_();
     for (var di = 0; di < all.length; di++) if (all[di].r === dbRef && normName_(all[di].n) === name) { dbRow = dbRef; dbMask = all[di].m; break; }
   }
+  var fatherUse = fatherIn;
+  if (dbRow) { var drec = dbRecord_(dbRow); if (drec && drec.father) fatherUse = drec.father; }
+  if (fatherUse.length < 2 || !BN_NAME_RE.test(fatherUse)) return { ok: false, error: 'invalid father' };
   if (!/^\+?\d{7,16}$/.test(phone)) return { ok: false, error: 'invalid phone' };
 
   var rid = Utilities.getUuid().replace(/-/g, '');
@@ -338,20 +367,20 @@ function requestAccess_(r) {
     if (total >= CONFIG.PERMIT_MAX_PER_DAY) return { ok: false, error: 'limit_day' };
     prow = appendByHeader_(sh, {
       'অনুরোধ আইডি': rid, 'অনুরোধের সময়': "'" + tsStr, 'নাম': safe_(name, 100), 'ফোন': "'" + phone,
-      'অবস্থা': ST.PENDING, 'অনুমোদনকারী': '', 'সিদ্ধান্তের সময়': '', 'ফরম নম্বর': '', 'ডাটাবেইজ সারি': dbRow || ''
+      'অবস্থা': ST.PENDING, 'অনুমোদনকারী': '', 'সিদ্ধান্তের সময়': '', 'ফরম নম্বর': '', 'ডাটাবেইজ সারি': dbRow || '', 'পিতার নাম': safe_(fatherUse, 100)
     });
   } finally {
     lock.releaseLock();
   }
-  var mres = mailApprovers_(rid, name, phone, tsStr);
+  var mres = mailApprovers_(rid, name, phone, tsStr, fatherUse);
   try {
     var ish = sheet_(CONFIG.PERMIT_TAB, PERMIT_HEADERS);
     ish.getRange(prow, colOf_(ish, 'ইমেইল অবস্থা')).setValue(mres);   // ব্যর্থ হলে কারণসহ
   } catch (e) { console.error('mail status write failed: ' + (e && e.message)); }
-  return { ok: true, rid: rid, m: dbMask };
+  return { ok: true, rid: rid, m: dbMask, father: fatherUse };
 }
 
-function mailApprovers_(rid, name, phone, tsStr) {
+function mailApprovers_(rid, name, phone, tsStr, father) {
   var results = [];
   CONFIG.APPROVERS.forEach(function (email, idx) {
     try {
@@ -361,6 +390,7 @@ function mailApprovers_(rid, name, phone, tsStr) {
       var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#111;max-width:520px">' +
         '<h2 style="color:#0b3d24;margin:0 0 10px">সদস্য আবেদনের অনুমতির অনুরোধ</h2>' +
         '<p style="margin:0 0 4px"><b>নাম:</b> ' + esc_(name) + '</p>' +
+        (father ? '<p style="margin:0 0 4px"><b>পিতার নাম:</b> ' + esc_(father) + '</p>' : '') +
         '<p style="margin:0 0 4px"><b>ফোন:</b> ' + esc_(phone) + '</p>' +
         '<p style="margin:0 0 16px"><b>সময়:</b> ' + esc_(tsStr) + '</p>' +
         '<a href="' + ok + '" style="' + btn + 'background:#157347">✔ অনুমোদন দিন</a>' +
@@ -451,12 +481,13 @@ function submit_(d) {
   var type = String(d.memberType || '');
   if (!CONFIG.FOLDERS[type]) return { ok: false, error: 'invalid member type' };
 
-  var required = ['nameBn', 'nameEn', 'gender', 'education', 'profession', 'religion', 'country'];
+  var required = ['nameBn', 'nameEn', 'education', 'profession', 'country'];
   for (var i = 0; i < required.length; i++) {
     if (!String(d[required[i]] || '').trim()) return { ok: false, error: 'missing ' + required[i] };
   }
   if (!BN_NAME_RE.test(String(d.nameBn))) return { ok: false, error: 'nameBn must be bengali' };
   if (!EN_NAME_RE.test(String(d.nameEn))) return { ok: false, error: 'nameEn must be english' };
+  if (d.email && !/^[\x21-\x7E]+$/.test(String(d.email))) return { ok: false, error: 'email must be english' };
   var p = d.perm || {};
   if (!p.div || !p.dist || !p.upa || !p.thana || !p.po || !p.village) return { ok: false, error: 'missing address' };
 
@@ -489,9 +520,13 @@ function submit_(d) {
     // পিতা/মাতা/জন্ম তারিখ: ডাটাবেইজে থাকলে সেখান থেকে (ব্যবহারকারী দেখে না), না থাকলে ফরমে লেখা মান
     var dbr = Number(preq.rec['ডাটাবেইজ সারি']) > 0 ? dbRecord_(Number(preq.rec['ডাটাবেইজ সারি'])) : null;
     if (dbr && normName_(dbr.name) !== normName_(d.nameBn)) dbr = null;       // নাম বদলালে ডাটাবেইজের তথ্য নয়
-    d.father = (dbr && dbr.father) || String(d.father || '').trim();
+    d.father = (dbr && dbr.father) || String(d.father || '').trim() || String(preq.rec['পিতার নাম'] || '').trim();
     d.mother = (dbr && dbr.mother) || String(d.mother || '').trim();
     d.dob = (dbr && dbr.dob) || String(d.dob || '').trim();
+    d.gender = (dbr && dbr.gender) || String(d.gender || '').trim();
+    d.religion = (dbr && dbr.religion) || String(d.religion || '').trim();
+    if (!d.gender) return { ok: false, error: 'missing gender' };
+    if (!d.religion) return { ok: false, error: 'missing religion' };
     if (!d.father) return { ok: false, error: 'missing father' };
     if (!d.mother) return { ok: false, error: 'missing mother' };
     if (!d.dob) return { ok: false, error: 'missing dob' };
@@ -549,7 +584,7 @@ function submit_(d) {
     var token = Utilities.getUuid();
     CacheService.getScriptCache().put('tok_' + formNo, token + '|' + row + '|' + type, 6 * 60 * 60);
 
-    return { ok: true, formNo: formNo, token: token, timestamp: t.sheet, timestampBn: t.bn, prefill: { father: d.father, mother: d.mother, dob: d.dob } };
+    return { ok: true, formNo: formNo, token: token, timestamp: t.sheet, timestampBn: t.bn, prefill: { father: d.father, mother: d.mother, dob: d.dob, gender: d.gender, religion: d.religion } };
   } finally {
     lock.releaseLock();
   }
