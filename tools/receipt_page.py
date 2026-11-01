@@ -1,58 +1,66 @@
 # -*- coding: utf-8 -*-
-"""সাংগঠনিক চাঁদা: "চাঁদা জমাদানের রসিদ" ফরম (A5 আড়াআড়ি; বাঁয়ে সদস্য কপি, ডানে অফিস কপি)।"""
+"""সাংগঠনিক চাঁদা: "চাঁদা আদায় রসিদ" — প্রদত্ত নমুনা ডিজাইন অনুযায়ী (প্রতি কপি ৮ × ৩.৬ ইঞ্চি, দুই কপি: সদস্য কপি ও অফিস কপি)।"""
 from site_lib import *
 
-FIELDS = [
-    # (id, লেবেল, ধরন, প্লেসহোল্ডার)
-    ('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001'),
-    ('rName', 'সদস্যের নাম', 'text', ''),
-    ('rPhone', 'ফোন নম্বর', 'tel', ''),
-    ('rPeriod', 'চাঁদার সময়কাল (মাস/বছর)', 'text', 'যেমন: জানুয়ারি–মার্চ ২০২৬'),
-    ('rAmount', 'টাকার পরিমাণ (অঙ্কে)', 'text', ''),
-    ('rWords', 'কথায়', 'text', ''),
-    ('rMethod', 'পরিশোধের মাধ্যম', 'select', ''),
-    ('rNote', 'মন্তব্য', 'text', ''),
-]
+TYPES = ['সাধারণ সদস্য', 'প্রবাসী সদস্য', 'জুনিয়র সদস্য', 'দাতা সদস্য']
 METHODS = ['নগদ', 'বিকাশ', 'নগদ (মোবাইল ব্যাংকিং)', 'রকেট', 'ব্যাংক ট্রান্সফার', 'অন্যান্য']
+KINDS = ['মাসিক চাঁদা', 'বার্ষিক চাঁদা', 'এককালীন চাঁদা', 'অন্যান্য']
 
 
-def copy_block(kind, label):
-    """kind: 'member' (ইনপুটসহ) বা 'office' (বাঁয়ের তথ্য প্রতিফলিত)"""
-    rows = []
-    for fid, lab, typ, ph in FIELDS:
-        if kind == 'member':
-            if typ == 'select':
-                ctl = '<select id="%s">%s</select>' % (fid, ''.join('<option>%s</option>' % esc(m) for m in METHODS))
-            else:
-                ctl = '<input id="%s" type="%s" autocomplete="off"%s>' % (fid, typ, (' placeholder="%s"' % esc(ph)) if ph else '')
-        else:
-            ctl = '<span class="mir" data-for="%s"></span>' % fid
-        rows.append('<div class="r-row"><label%s>%s:</label><div class="r-val">%s</div></div>' % (
-            (' for="%s"' % fid) if kind == 'member' else '', esc(lab), ctl))
-    top_no = ('<input id="rNo" type="text" autocomplete="off" aria-label="রসিদ নং">' if kind == 'member' else '<span class="mir" data-for="rNo"></span>')
-    top_dt = ('<input id="rDate" type="date" aria-label="তারিখ"><span class="mir print-only" data-for="rDate"></span>' if kind == 'member' else '<span class="mir" data-for="rDate"></span>')
-    return '''<section class="rcpt %s" aria-label="%s">
-  <header class="r-head">
-    <img src="../assets/img/logo-small.webp" width="52" height="60" alt="">
-    <div class="r-org"><div class="r-bism">বিসমিল্লাহির রাহমানির রাহীম</div><h2>সৃজনশীল তরুণ সংঘ</h2>
-      <div class="r-en">SRIJONSHIL TARUN SANGHA</div>
-      <div class="r-addr">নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।</div></div>
-    <div class="r-tag">%s</div>
-  </header>
-  <div class="r-title"><span>চাঁদা জমাদানের রসিদ</span></div>
-  <div class="r-meta"><div><label for="rNo">রসিদ নং:</label> <span class="r-val">%s</span></div><div><label for="rDate">তারিখ:</label> <span class="r-val">%s</span></div></div>
-  <div class="r-body">%s</div>
-  <footer class="r-sign"><div><span class="r-line"></span>সদস্যের স্বাক্ষর</div><div><span class="r-line"></span>গ্রহণকারীর স্বাক্ষর ও সিল</div></footer>
-</section>''' % (kind, esc(label), esc(label), top_no, top_dt, ''.join(rows))
+def mir(i):
+    return '<span class="v mir" data-for="%s"></span>' % i
+
+
+def box(i):
+    return '<span class="rc-box mir" data-for="%s"></span>' % i
+
+
+def copy(label):
+    return '''<div class="rc-wrap"><section class="rcpt" aria-label="%(l)s">
+  <div class="rc-head">
+    <div class="rc-bism">বিসমিল্লাহির রাহমানির রাহীম</div>
+    <img class="rc-logo" src="../assets/img/logo.webp" alt="">
+    <div class="rc-title"><b>সৃজনশীল তরুণ সংঘ</b><i>SRIJONSHIL TARUN SANGHA</i></div>
+    <div class="rc-addr">নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট। &nbsp;ইমেইল– srijonshil2011@gmail.com</div>
+    <div class="rc-slogan"><span>সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার</span></div>
+    <div class="rc-tag">%(l)s</div>
+  </div>
+  <div class="rc-pill">চাঁদা আদায় রসিদ</div>
+  <div class="rc-boxes">
+    <div><label>রসিদ নম্বর:</label>%(no)s</div><div><label>তারিখ:</label>%(dt)s</div>
+    <div><label>সদস্য ধরণ:</label>%(ty)s</div><div><label>সদস্য নম্বর:</label>%(mn)s</div>
+  </div>
+  <div class="rc-rows">
+    <div class="rc-r"><div class="rc-f"><label>১। প্রদানকারীর নাম:</label>%(nm)s</div><div class="rc-f"><label>২। চাঁদার ধরণ:</label>%(kd)s</div></div>
+    <div class="rc-r"><div class="rc-f"><label>৩। চাঁদার পরিমাণ (অঙ্কে):</label>%(am)s</div><div class="rc-f"><label>৪। চাঁদার পরিমাণ (কথায়):</label>%(wd)s</div></div>
+    <div class="rc-r"><div class="rc-f"><label>৫। চাঁদা প্রদানের মাধ্যম:</label>%(me)s</div></div>
+  </div>
+  <div class="rc-sign"><div>প্রদানকারীর স্বাক্ষর</div><div>আদায়কারীর স্বাক্ষর</div></div>
+</section></div>''' % {'l': esc(label), 'no': box('rNo'), 'dt': box('rDate'), 'ty': box('rType'), 'mn': box('rMemNo'),
+                      'nm': mir('rName'), 'kd': mir('rKind'), 'am': mir('rAmount'), 'wd': mir('rWords'), 'me': mir('rMethod')}
+
+
+def sel(i, label, opts, blank=True):
+    o = ('<option value="">— নির্বাচন করুন —</option>' if blank else '') + ''.join('<option>%s</option>' % esc(x) for x in opts)
+    return '<div class="field"><label for="%s">%s</label><select id="%s">%s</select></div>' % (i, esc(label), i, o)
+
+
+def inp(i, label, typ='text', ph='', cls=''):
+    return '<div class="field %s"><label for="%s">%s</label><input id="%s" type="%s" autocomplete="off"%s></div>' % (
+        cls, i, esc(label), i, typ, (' placeholder="%s"' % esc(ph)) if ph else '')
 
 
 def body():
+    form = ('<div class="form-card rc-form no-print"><div class="grid-form">'
+            + inp('rNo', 'রসিদ নম্বর') + inp('rDate', 'তারিখ', 'date')
+            + sel('rType', 'সদস্য ধরণ', TYPES) + inp('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001')
+            + inp('rName', '১। প্রদানকারীর নাম', cls='span2') + sel('rKind', '২। চাঁদার ধরণ', KINDS)
+            + inp('rAmount', '৩। চাঁদার পরিমাণ (অঙ্কে)', 'text', 'যেমন: 300') + inp('rWords', '৪। চাঁদার পরিমাণ (কথায়)', 'text', 'যেমন: তিনশত টাকা মাত্র')
+            + sel('rMethod', '৫। চাঁদা প্রদানের মাধ্যম', METHODS)
+            + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rPrint">🖨️ প্রিন্ট করুন / পিডিএফ সংরক্ষণ</button>'
+              '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div></div>')
     return (
-        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা নেওয়ার পর সদস্যকে এই রসিদ দেওয়া হয়। নিচের ঘরগুলো পূরণ করুন; পূরণ করলে দুই কপিতেই একই তথ্য আসবে। তারপর "প্রিন্ট করুন" চেপে প্রিন্ট করুন বা "পিডিএফ সংরক্ষণ" দিয়ে সংরক্ষণ করুন।</p>'
-        + '<div class="rcpt-tools no-print"><button type="button" class="btn btn-primary" id="rPrint">🖨️ প্রিন্ট করুন / পিডিএফ সংরক্ষণ</button>'
-          '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
-        + '<div class="rcpt-sheet" id="rSheet">'
-        + copy_block('member', 'সদস্য কপি') + '<div class="r-cut" aria-hidden="true"></div>' + copy_block('office', 'অফিস কপি')
-        + '</div>'
-        + '<p class="small muted no-print">প্রিন্টের সময় কাগজের আকার A5 (আড়াআড়ি) বা A4 বেছে নিন। পিডিএফ করতে প্রিন্ট জানালায় "Save as PDF" বেছে নিন।</p>'
+        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা নেওয়ার পর সদস্যকে এই রসিদ দেওয়া হয়। নিচের ঘরগুলো পূরণ করলে নিচের রসিদে (সদস্য কপি ও অফিস কপি) একই তথ্য আসবে। তারপর "প্রিন্ট করুন" চাপুন; পিডিএফ করতে প্রিন্ট জানালায় "Save as PDF" বেছে নিন।</p>'
+        + form
+        + '<div class="rcpt-sheet" id="rSheet">' + copy('সদস্য কপি') + '<div class="rc-cut" aria-hidden="true"><span>✂ কেটে আলাদা করুন</span></div>' + copy('অফিস কপি') + '</div>'
     )

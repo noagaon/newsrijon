@@ -326,56 +326,48 @@ small.inl{font-weight:400;color:#555}
 .fin-card .btn { align-self: flex-start; margin-top: auto; }
 .fin-ico { font-size: 2rem; line-height: 1; }
 
-/* ---------- চাঁদা জমাদানের রসিদ (A5 আড়াআড়ি, দুই কপি) ---------- */
-.rcpt-tools { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 18px; }
-.rcpt-sheet { display: grid; grid-template-columns: 1fr; gap: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); max-width: 1100px; margin: 0 auto 16px; overflow: hidden; }
-@media (min-width: 900px) { .rcpt-sheet { grid-template-columns: 1fr 0 1fr; aspect-ratio: 210 / 148; } }
-.rcpt { padding: 12px 16px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; line-height: 1.5; position: relative; }
-.rcpt::before { content: ""; position: absolute; inset: 7px; border: 1.5px solid var(--g800); border-radius: 8px; pointer-events: none; }
-.r-cut { border-left: 2px dashed #8a998f; width: 0; position: relative; }
-@media (max-width: 899px) { .r-cut { border-left: 0; border-top: 2px dashed #8a998f; height: 0; width: auto; margin: 4px 14px; } }
-.r-head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 0; position: relative; }
-.r-head img { width: 44px; height: auto; flex: none; }
-.r-org { flex: 1; text-align: center; line-height: 1.25; }
-.r-bism { font-size: 11px; }
-.r-org h2 { margin: 0; font-size: 1.55em; color: #c4551a; letter-spacing: .5px; }
-.r-en { font: 700 12px "Times New Roman", Times, serif; letter-spacing: 1px; }
-.r-addr { font-size: 10.5px; }
-.r-tag { flex: none; align-self: flex-start; background: var(--g800); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-.r-title { text-align: center; margin: 2px 0; }
-.r-title span { display: inline-block; background: #f8cbad; border: 1.2px solid #000; border-radius: 999px; padding: 1px 22px; font-weight: 700; font-size: 1.05em; }
-.r-meta { display: flex; justify-content: space-between; gap: 12px; padding: 0 6px; }
-.r-meta > div { display: flex; align-items: baseline; gap: 6px; flex: 1; }
-.r-meta > div:last-child { justify-content: flex-end; }
-.r-body { display: flex; flex-direction: column; gap: 4px; padding: 0 6px; flex: 1; }
-.r-row { display: flex; align-items: baseline; gap: 6px; }
-.r-row label, .r-meta label { white-space: nowrap; font-weight: 600; margin: 0; }
-.r-val { flex: 1; min-width: 0; border-bottom: 1.2px dotted #222; min-height: 1.6em; }
-.print-only { display: none; }
-.rcpt input, .rcpt select { height: 1.6em; line-height: 1.5; width: 100%; border: 0; background: transparent; font: inherit; color: #1b2b8c; padding: 0 2px; outline: none; }
-.rcpt input:focus, .rcpt select:focus { background: #fffbe0; }
-.rcpt .mir { display: block; color: #1b2b8c; padding: 0 2px; min-height: 1.6em; line-height: 1.5; }
-.rcpt { overflow: hidden; }
-.rcpt select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-.r-sign { display: flex; justify-content: space-between; gap: 20px; padding: 14px 10px 4px; font-size: 12.5px; }
-.r-sign > div { flex: 1; text-align: center; }
-.r-line { display: block; border-top: 1.2px dotted #222; margin-bottom: 2px; }
+/* ---------- চাঁদা আদায় রসিদ (নমুনা ডিজাইন অনুযায়ী; প্রতি কপি ৮ × ৩.৬ ইঞ্চি; দুই কপি উপর-নিচে) ---------- */
+.rc-form { max-width: 820px; margin: 0 auto 18px; }
+.rc-form .grid-form { display: grid; gap: 12px 16px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .rc-form .grid-form { grid-template-columns: 1fr 1fr; } .rc-form .span2 { grid-column: 1 / -1; } }
+.rcpt-tools { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 0; }
+.rcpt-sheet { max-width: 820px; margin: 0 auto 16px; display: flex; flex-direction: column; gap: 14px; }
+.rc-wrap { container-type: inline-size; }
+.rc-cut { text-align: center; font-size: 13px; color: #6b7a71; border-top: 2px dashed #8a998f; line-height: 0; margin: 2px 0; }
+.rc-cut span { background: var(--bg); padding: 0 10px; position: relative; top: -1px; }
+.rcpt { position: relative; background: #fff; color: #000; aspect-ratio: 576 / 259.2; width: 100%; border: .45cqw solid #000; outline: .2cqw solid #000; outline-offset: -1.5cqw; overflow: hidden; font-size: 1.65cqw; line-height: 1.25; }
+.rcpt::before { content: ""; position: absolute; left: 50%; top: 56%; width: 36cqw; aspect-ratio: 900 / 1035; transform: translate(-50%, -50%); background: url(../assets/img/logo.webp) center / contain no-repeat; opacity: .10; pointer-events: none; }
+.rc-head { position: absolute; left: 1.5cqw; right: 1.5cqw; top: 1.5cqw; height: 11.6cqw; background: #e2efda; border-bottom: .15cqw solid #000; text-align: center; }
+.rc-bism { position: absolute; top: .55cqw; left: 0; right: 0; font-size: 1.6cqw; font-weight: 500; }
+.rc-logo { position: absolute; left: 5.4cqw; top: .9cqw; width: 10.2cqw; height: auto; }
+.rc-title { position: absolute; top: 1.6cqw; left: 17cqw; right: 1cqw; display: flex; align-items: baseline; justify-content: center; gap: 1.6cqw; white-space: nowrap; }
+.rc-title b { font-size: 5cqw; color: #c4551a; line-height: 1.15; font-weight: 700; }
+.rc-title i { font: 700 2.8cqw "Times New Roman", Times, serif; letter-spacing: .1cqw; font-style: normal; }
+.rc-addr { position: absolute; top: 7.6cqw; left: 16cqw; right: 1cqw; font-size: 1.7cqw; }
+.rc-slogan { position: absolute; top: 9.6cqw; left: 0; right: 0; }
+.rc-slogan span { background: #1aff1a; padding: 0 .4cqw; font-size: 1.55cqw; font-weight: 500; }
+.rc-pill { position: absolute; top: 15cqw; left: 50%; transform: translateX(-50%); background: #fbe5d6; border: .2cqw solid #000; border-radius: 99cqw; padding: .1cqw 4.6cqw; font-size: 2.45cqw; font-weight: 700; white-space: nowrap; }
+.rc-tag { position: absolute; top: .6cqw; right: .8cqw; background: #14502f; color: #fff; font-size: 1.25cqw; font-weight: 700; padding: .1cqw 1cqw; border-radius: 99cqw; }
+.rc-boxes { position: absolute; top: 19.7cqw; left: 2.4cqw; right: 2.4cqw; display: flex; align-items: center; gap: 2.4cqw; }
+.rc-boxes > div { display: flex; align-items: center; gap: .2cqw; flex: 1; min-width: 0; }
+.rc-boxes label { font-weight: 700; font-size: 1.5cqw; white-space: nowrap; }
+.rc-box { flex: 1; min-width: 0; height: 2.2cqw; border: .12cqw solid #000; background: #fff; padding: 0 .5cqw; display: flex; align-items: center; font-size: 1.5cqw; color: #1b2b8c; overflow: hidden; white-space: nowrap; }
+.rc-rows { position: absolute; top: 23.4cqw; left: 2.4cqw; right: 2.4cqw; display: flex; flex-direction: column; gap: 1.1cqw; }
+.rc-r { display: flex; gap: 2.4cqw; }
+.rc-f { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: .4cqw; }
+.rc-f label { white-space: nowrap; font-size: 1.6cqw; margin: 0; }
+.rc-f .v { flex: 1; min-width: 0; border-bottom: .18cqw dotted #000; min-height: 1.9cqw; color: #1b2b8c; font-size: 1.6cqw; padding: 0 .3cqw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.rc-sign { position: absolute; left: 2.4cqw; right: 2.4cqw; bottom: 3cqw; display: flex; justify-content: space-between; }
+.rc-sign div { width: 22cqw; text-align: center; font-size: 1.6cqw; color: #1f4e9e; }
+.rc-sign div::before { content: ""; display: block; border-top: .22cqw dotted #000; margin: 0 2.4cqw .2cqw; height: 4cqw; }
 @media print {
-  @page { size: A5 landscape; margin: 5mm; }
-  body { background: #fff; font-size: 11pt; }
-  .no-print, .site-header, .site-footer, .page-hero, .crumbs, .nav-toggle { display: none !important; }
+  @page { size: A4 portrait; margin: 4mm; }
+  body { background: #fff; }
+  .no-print, .site-header, .site-footer, .page-hero, .crumbs, .nav-toggle, .rc-form { display: none !important; }
   .wrap { max-width: none !important; padding: 0 !important; }
   .page-body { padding: 0 !important; }
-  .rcpt-sheet { display: grid !important; grid-template-columns: 1fr 0 1fr !important; aspect-ratio: auto !important; width: 100%; height: 138mm; max-width: none; border: 0; box-shadow: none; border-radius: 0; margin: 0; }
-  .r-cut { border-left: 2px dashed #777 !important; border-top: 0 !important; width: 0 !important; height: auto !important; margin: 0 !important; }
-  .rcpt { font-size: 9.5pt; }
-  .rcpt select { background-image: none; }
-  .print-only { display: block !important; }
-  #rDate { display: none !important; }
-  .r-body { gap: 2px; } .rcpt { gap: 3px; padding: 8px 12px; }
-  .rcpt-sheet { overflow: visible; }
+  .rcpt-sheet { width: 202mm; max-width: none; margin: 0 auto; gap: 7mm; }
+  .rc-cut { color: #555; }
+  .rc-cut span { background: #fff; }
+  .rcpt, .rc-head, .rc-tag, .rc-slogan span, .rc-pill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
-.rcpt input[type=text], .rcpt input[type=tel], .rcpt input[type=date], .rcpt select { min-height: 0; height: 1.6em; padding: 0 2px; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; font: inherit; color: #1b2b8c; }
-.rcpt input:focus, .rcpt select:focus { outline: 0; background: #fffbe0; }
-.rcpt input[type=date] { font-size: .95em; }
-@media (min-width: 900px) { .rcpt .print-only { display: none; } }
