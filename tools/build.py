@@ -167,6 +167,8 @@ def build_pages():
         else:
             body = pc.BODY[slug]
         write('pages/%s.html' % slug, page(slug, body, extra))
+    import receipt_page
+    write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support'))
 
 
 if __name__ == '__main__':
