@@ -52,15 +52,17 @@ def inp(i, label, typ='text', ph='', cls=''):
 
 def body():
     form = ('<div class="form-card rc-form no-print"><div class="grid-form">'
-            + inp('rNo', 'রসিদ নম্বর') + inp('rDate', 'তারিখ', 'date')
+            + inp('rNo', 'রসিদ নম্বর (ফাঁকা রাখলে নিজে বসবে)') + inp('rDate', 'তারিখ', 'date')
             + sel('rType', 'সদস্য ধরণ', TYPES) + inp('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001')
             + inp('rName', '১। প্রদানকারীর নাম', cls='span2') + sel('rKind', '২। চাঁদার ধরণ', KINDS)
             + inp('rAmount', '৩। চাঁদার পরিমাণ (অঙ্কে)', 'text', 'যেমন: 300') + inp('rWords', '৪। চাঁদার পরিমাণ (কথায়)', 'text', 'যেমন: তিনশত টাকা মাত্র')
             + sel('rMethod', '৫। চাঁদা প্রদানের মাধ্যম', METHODS)
-            + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rPrint">🖨️ প্রিন্ট করুন / পিডিএফ সংরক্ষণ</button>'
-              '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div></div>')
+            + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rSave">💾 সংরক্ষণ করুন</button><button type="button" class="btn btn-outline" id="rPrint">🖨️ প্রিন্ট করুন / পিডিএফ</button>'
+              '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
+            '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
+            '<div id="rStatus" class="status" role="status" aria-live="polite"></div></div>')
     return (
-        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা নেওয়ার পর সদস্যকে এই রসিদ দেওয়া হয়। নিচের ঘরগুলো পূরণ করলে নিচের রসিদে (সদস্য কপি ও অফিস কপি) একই তথ্য আসবে। তারপর "প্রিন্ট করুন" চাপুন; পিডিএফ করতে প্রিন্ট জানালায় "Save as PDF" বেছে নিন।</p>'
+        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা নেওয়ার পর সদস্যকে এই রসিদ দেওয়া হয়। নিচের ঘরগুলো পূরণ করলে নিচের রসিদে (সদস্য কপি ও অফিস কপি) একই তথ্য আসবে। তারপর "সংরক্ষণ করুন" চাপলে তথ্য সংগঠনের শিটে জমা হবে ও রসিদ নম্বর বসবে; তারপর "প্রিন্ট করুন" চাপুন; পিডিএফ করতে প্রিন্ট জানালায় "Save as PDF" বেছে নিন।</p>'
         + form
         + '<div class="rcpt-sheet" id="rSheet">' + copy('সদস্য কপি') + '<div class="rc-cut" aria-hidden="true"><span>✂ কেটে আলাদা করুন</span></div>' + copy('অফিস কপি') + '</div>'
     )
