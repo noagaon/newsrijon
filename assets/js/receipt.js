@@ -34,9 +34,9 @@
     return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
   }
   function nowText() {
-    var d = new Date(), z = function (n) { return ('0' + n).slice(-2); }, h = d.getHours(), ap = h >= 12 ? 'PM' : 'AM';
+    var d = new Date(), z = function (n) { return ('0' + n).slice(-2); }, h = d.getHours(), ap = h >= 12 ? 'pm' : 'am';
     h = h % 12 || 12;
-    return bn(z(d.getDate()) + '/' + z(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + z(h) + ':' + z(d.getMinutes())) + ' ' + (ap === 'AM' ? 'পূর্বাহ্ণ' : 'অপরাহ্ণ');
+    return z(d.getDate()) + '.' + z(d.getMonth() + 1) + '.' + d.getFullYear() + ', ' + z(h) + ':' + z(d.getMinutes()) + ':' + z(d.getSeconds()) + ' ' + ap;
   }
   function stamp() { Array.prototype.forEach.call(document.querySelectorAll('.r-now'), function (o) { o.textContent = nowText(); }); }
 
@@ -105,8 +105,15 @@
   /* ---------- নম্বর, সংরক্ষণ, প্রিন্ট ---------- */
   function status(cls, msg) { var s = $('rStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
   var saved = false;
-  function dirty() { if (saved) { saved = false; lastPdf = null; $('rSave').disabled = false; } }
+  var rid = '', approved = false, pollTimer = null;
+  function dirty() { if (saved) { saved = false; lastPdf = null; lock(); } }
+  function lock() { approved = false; rid = ''; stopPoll(); $('rSave').disabled = true; $('rPermit').disabled = false; $('rWaBox').hidden = true; }
+  function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
   ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) { $(id).addEventListener('input', dirty); $(id).addEventListener('change', dirty); });
+  ['rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) {
+    function chg() { if (rid && !saved) { lock(); status('error', 'তথ্য বদলানো হয়েছে — আবার "অনুমতি নিন" বোতামে চাপ দিন।'); } }
+    $(id).addEventListener('input', chg); $(id).addEventListener('change', chg);
+  });
   ['rDate', 'rType'].forEach(function (id) { $(id).addEventListener('input', function () { show(id); }); $(id).addEventListener('change', function () { show(id); }); });
   $('rMemNo').addEventListener('change', function () { show('rMemNo'); });
 
@@ -118,21 +125,49 @@
   function nextNo() {
     call({ action: 'receipt_next' }).then(function (r) { if (r && r.ok && !saved) { $('rNo').value = r.no; show('rNo'); } }).catch(function () {});
   }
-  var ERR = { 'missing name': 'চাঁদা প্রদানকারীর নাম লিখুন।', 'invalid amount': 'চাঁদার পরিমাণ (অঙ্কে) শুধু সংখ্যায় লিখুন।', busy: 'অনেক অনুরোধ এসেছে, এক মিনিট পর আবার চেষ্টা করুন।', permission: 'সংরক্ষণের অনুমতি নেই।' };
+  function validate() {
+    if (!$('rName').value.trim()) { status('error', 'চাঁদা প্রদানকারীর নাম লিখুন।'); $('rName').focus(); return false; }
+    if (!$('rKind').value) { status('error', 'চাঁদার ধরণ বাছাই করুন।'); $('rKind').focus(); return false; }
+    if ($('rKind').value === 'অন্যান্য চাঁদা' && !$('rKindOther').value.trim()) { status('error', 'কী চাঁদা তা লিখুন।'); $('rKindOther').focus(); return false; }
+    if (!/\d/.test($('rAmount').value)) { status('error', 'চাঁদার পরিমাণ (অঙ্কে) লিখুন।'); $('rAmount').focus(); return false; }
+    if (!$('rMethod').value) { status('error', 'চাঁদা প্রদানের মাধ্যম বাছাই করুন।'); $('rMethod').focus(); return false; }
+    if ($('rMethod').value === 'মোবাইল ব্যাংকিং এ প্রদান করুন') {
+      if (!$('rMob').value) { status('error', 'মোবাইল ব্যাংকিংয়ের মাধ্যম বাছাই করুন।'); $('rMob').focus(); return false; }
+      if (en($('rAcc').value).replace(/\D/g, '').length !== 11) { status('error', 'অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।'); $('rAcc').focus(); return false; }
+    }
+    return true;
+  }
+  function details() { return { name: $('rName').value, memberNo: $('rMemNo').value, kind: kindText(), amount: $('rAmount').value, method: methodText() }; }
+  function poll() {
+    call({ action: 'receipt_access_status', rid: rid }).then(function (r) {
+      if (!r || !r.ok) { if (r && (r.error === 'not found' || r.error === 'bad id')) { lock(); status('error', 'অনুরোধটি পাওয়া যায়নি। আবার অনুমতি নিন।'); } return; }
+      if (r.status === 'approved') { stopPoll(); approved = true; $('rSave').disabled = false; $('rPermit').disabled = true; $('rWaBox').hidden = true; status('ok-strong', '✔ অনুমতি পাওয়া গেছে। এখন "সংরক্ষণ করুন" বোতামে চাপ দিন।'); }
+      else if (r.status === 'rejected') { lock(); status('error', 'দুঃখিত, অনুমতি দেওয়া হয়নি। বিস্তারিত জানতে সংগঠনের সাথে যোগাযোগ করুন।'); }
+      else if (r.status === 'expired' || r.status === 'used') { lock(); status('error', 'অনুমতির মেয়াদ শেষ বা ব্যবহৃত। আবার অনুমতি নিন।'); }
+    }).catch(function () {});
+  }
+  $('rPermit').addEventListener('click', function () {
+    var cfg = window.SRIJON_CONFIG || {};
+    if (!cfg.RECEIPT_URL) { status('error', 'সংরক্ষণের লিংক এখনো বসানো হয়নি (config.js এর RECEIPT_URL)। প্রশাসককে জানান।'); return; }
+    if (!validate()) return;
+    var btn = $('rPermit'); btn.disabled = true; status('info', 'অনুমতির অনুরোধ পাঠানো হচ্ছে…');
+    call({ action: 'receipt_access', website: $('rWebsite').value, data: details() }).then(function (r) {
+      if (r && r.ok) {
+        rid = r.rid; stopPoll(); pollTimer = setInterval(poll, 5000);
+        var d = details(), msg = 'অনুমতির অনুরোধ — রসিদ\nচাঁদা প্রদানকারী: ' + d.name + (d.memberNo ? ' (' + d.memberNo + ')' : '') + '\nচাঁদার ধরণ: ' + d.kind + '\nপরিমাণ: ' + d.amount + ' টাকা\nমাধ্যম: ' + d.method + '\n(অনুমোদনের লিংক srijonshil2011@gmail.com এ পাঠানো হয়েছে)';
+        $('rWa').href = 'https://wa.me/8801779998997?text=' + encodeURIComponent(msg); $('rWaBox').hidden = false;
+        status('info', 'অনুমতির অনুরোধ srijonshil2011@gmail.com এ পাঠানো হয়েছে। অনুমোদন পেলে "সংরক্ষণ করুন" চালু হবে — পেইজটি খোলা রাখুন।');
+      } else { btn.disabled = false; status('error', r && r.error === 'limit_day' ? 'আজকের অনুরোধের সীমা শেষ। পরে চেষ্টা করুন।' : (ERR[r && r.error] || 'অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।')); }
+    }).catch(function () { btn.disabled = false; status('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); });
+  });
+  var ERR = { 'missing name': 'চাঁদা প্রদানকারীর নাম লিখুন।', 'invalid amount': 'চাঁদার পরিমাণ (অঙ্কে) শুধু সংখ্যায় লিখুন।', busy: 'অনেক অনুরোধ এসেছে, এক মিনিট পর আবার চেষ্টা করুন।', permission: 'সংরক্ষণের অনুমতি নেই।', changed: 'অনুমতির পর তথ্য বদলানো হয়েছে। আবার অনুমতি নিন।', used: 'এই অনুমতি আগেই ব্যবহৃত হয়েছে। আবার অনুমতি নিন।', expired: 'অনুমতির মেয়াদ শেষ। আবার অনুমতি নিন।' };
   $('rSave').addEventListener('click', function () {
     var cfg = window.SRIJON_CONFIG || {};
     if (!cfg.RECEIPT_URL) { status('error', 'সংরক্ষণের লিংক এখনো বসানো হয়নি (config.js এর RECEIPT_URL)। প্রশাসককে জানান।'); return; }
-    if (!$('rName').value.trim()) { status('error', 'চাঁদা প্রদানকারীর নাম লিখুন।'); $('rName').focus(); return; }
-    if (!$('rKind').value) { status('error', 'চাঁদার ধরণ বাছাই করুন।'); $('rKind').focus(); return; }
-    if ($('rKind').value === 'অন্যান্য চাঁদা' && !$('rKindOther').value.trim()) { status('error', 'কী চাঁদা তা লিখুন।'); $('rKindOther').focus(); return; }
-    if (!/\d/.test($('rAmount').value)) { status('error', 'চাঁদার পরিমাণ (অঙ্কে) লিখুন।'); $('rAmount').focus(); return; }
-    if (!$('rMethod').value) { status('error', 'চাঁদা প্রদানের মাধ্যম বাছাই করুন।'); $('rMethod').focus(); return; }
-    if ($('rMethod').value === 'মোবাইল ব্যাংকিং এ প্রদান করুন') {
-      if (!$('rMob').value) { status('error', 'মোবাইল ব্যাংকিংয়ের মাধ্যম বাছাই করুন।'); $('rMob').focus(); return; }
-      if (en($('rAcc').value).replace(/\D/g, '').length !== 11) { status('error', 'অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।'); $('rAcc').focus(); return; }
-    }
+    if (!approved || !rid) { status('error', 'আগে "অনুমতি নিন" বোতামে চাপ দিন; অনুমতি পেলে সংরক্ষণ করা যাবে।'); return; }
+    if (!validate()) return;
     var btn = $('rSave'); btn.disabled = true; status('info', 'সংরক্ষণ হচ্ছে…');
-    call({ action: 'receipt_save', website: $('rWebsite').value, data: {
+    call({ action: 'receipt_save', rid: rid, website: $('rWebsite').value, data: {
       date: $('rDate').value, type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value,
       kind: kindText(), amount: $('rAmount').value, words: $('rWords').value, method: methodText() } })
       .then(function (r) {
@@ -141,7 +176,7 @@
           status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ তৈরি ও জমা হচ্ছে…');
           makePdf().then(function (pdf) {
             lastPdf = { pdf: pdf, no: r.no };
-            return call({ action: 'receipt_pdf', no: r.no, kind: $('rKind').value, name: $('rName').value, pdf: window.SrijonPDF.toBase64(pdf.bytes) });
+            return call({ action: 'receipt_pdf', rid: rid, no: r.no, kind: $('rKind').value, name: $('rName').value, pdf: window.SrijonPDF.toBase64(pdf.bytes) });
           }).then(function (x) {
             status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + (x && x.ok ? ' — পিডিএফ Drive-এ জমা হয়েছে। এখন ডাউনলোড করুন।' : ' — তথ্য সংরক্ষিত, কিন্তু পিডিএফ Drive-এ জমা হয়নি। ডাউনলোড করে রাখুন।'));
           }).catch(function () { status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ জমা হয়নি; ডাউনলোড করে রাখুন।'); });
@@ -155,7 +190,7 @@
     return window.ReceiptPDF.build({
       addr: ADDR, slogan: 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার', no: $('rNo').value, date: bn(q[2] + '/' + q[1] + '/' + q[0]),
       type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value, kind: kindText(),
-      amount: $('rAmount').value ? bn($('rAmount').value) + ' টাকা' : '', words: $('rWords').value, method: methodText(), time: nowText() });
+      amount: $('rAmount').value ? bn($('rAmount').value) + ' টাকা' : '', words: $('rWords').value, method: methodText().replace(/\s*করুন/g, ''), time: nowText() });
   }
   $('rPrint').addEventListener('click', function () {
     if (!saved || !lastPdf) { status('error', 'আগে "সংরক্ষণ করুন" বোতামে চাপ দিন, তারপর ডাউনলোড করুন।'); return; }
@@ -165,7 +200,7 @@
   window.addEventListener('beforeprint', stamp);
   $('rClear').addEventListener('click', function () {
     ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rWords', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) { $(id).value = id === 'rDate' ? today() : ''; });
-    ids.forEach(show); syncKind(); syncMethod(); saved = false; lastPdf = null; $('rSave').disabled = false; status('', ''); $('rNo').value = ''; show('rNo'); nextNo();
+    ids.forEach(show); syncKind(); syncMethod(); saved = false; lastPdf = null; lock(); status('', ''); $('rNo').value = ''; show('rNo'); nextNo();
   });
 
   $('rDate').value = today(); ids.forEach(show); syncKind(); syncMethod(); stamp(); nextNo();

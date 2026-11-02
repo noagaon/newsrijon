@@ -45,15 +45,16 @@
       var ww = 36, hh = ww * logo.height / logo.width;
       ctx.save(); ctx.globalAlpha = .07; ctx.drawImage(logo, X(50 - ww / 2), Y(25.2 - hh / 2), ww * u, hh * u); ctx.restore();
     }
-    ctx.fillStyle = '#e2efda'; ctx.fillRect(X(1.5), Y(1.5), 97 * u, 11.6 * u);
-    ctx.fillStyle = '#000'; ctx.fillRect(X(1.5), Y(1.5 + 11.6 - .15), 97 * u, .15 * u);
+    ctx.fillStyle = '#e2efda'; ctx.fillRect(X(1.5), Y(1.5), 97 * u, 14.1 * u);
+    ctx.fillStyle = '#000'; ctx.fillRect(X(1.5), Y(1.5 + 14.1 - .15), 97 * u, .15 * u);
     text('বিসমিল্লাহির রাহমানির রাহীম', 50, 1.5 + .55 + 1.0, 500, 1.6, '#000', FIXF, 'center');
-    if (logo) { var lw = 10.2, lh = lw * logo.height / logo.width; ctx.drawImage(logo, X(1.5 + 5.4), Y(1.5 + .9), lw * u, lh * u); }
-    var tx = 1.5 + 20;
-    text('সৃজনশীল তরুণ সংঘ', tx, 1.5 + 1.7 + 2.9, 700, 4.5, '#c4551a', FIXF, 'left');
-    var bw = wid('সৃজনশীল তরুণ সংঘ', 700, 4.5, FIXF);
-    text('SRIJONSHIL TARUN SANGHA', tx + bw + 1.2, 1.5 + 1.7 + 3.1, 700, 2.5, '#000', '"Times New Roman",Times,serif', 'left');
-    text('নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।   ইমেইল– srijonshil2011@gmail.com', 1.5 + 19, 1.5 + 7.6 + 1.1, 400, 1.7, '#000', FIXF, 'left', 77);
+    if (logo) { var lw = 9, lh = lw * logo.height / logo.width; ctx.drawImage(logo, X(1.5 + 1.8), Y(1.5 + .9), lw * u, lh * u); }
+    var tx = 1.5 + 13, TF = '"Times New Roman",Times,serif', k = 1;
+    var bw0 = wid('সৃজনশীল তরুণ সংঘ', 700, 4.5, FIXF), ew0 = wid('SRIJONSHIL TARUN SANGHA', 700, 2.5, TF);
+    if (bw0 + 1.2 + ew0 > 96 - tx) k = (96 - tx - 1.2) / (bw0 + ew0);      // বর্ডারের ভেতরে রাখতে ছোট করা
+    text('সৃজনশীল তরুণ সংঘ', tx, 1.5 + 4.5, 700, 4.5 * k, '#c4551a', FIXF, 'left');
+    text('SRIJONSHIL TARUN SANGHA', tx + bw0 * k + 1.2, 1.5 + 4.7, 700, 2.5 * k, '#000', TF, 'left');
+    text('নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।   ইমেইল– srijonshil2011@gmail.com', tx, 1.5 + 8.9, 400, 1.7, '#000', FIXF, 'left', 96 - tx);
     var sl = 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার', sw = wid(sl, 500, 1.55, FIXF) + .8;
     ctx.fillStyle = '#1aff1a'; ctx.fillRect(X(50 - sw / 2), Y(1.5 + 9.6), sw * u, 1.95 * u);
     text(sl, 50, 1.5 + 9.6 + 1.0, 500, 1.55, '#000', FIXF, 'center');
@@ -65,10 +66,10 @@
     // শিরোনাম-পিল
     var pt = 'চাঁদা আদায় রসিদ', pw = wid(pt, 700, 2.45, FIXF) + 9.2, ph = 3.6;
     ctx.fillStyle = '#fbe5d6'; ctx.strokeStyle = '#000'; ctx.lineWidth = .2 * u; ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(X(50 - pw / 2), Y(15), pw * u, ph * u, ph * u / 2) : ctx.rect(X(50 - pw / 2), Y(15), pw * u, ph * u); ctx.fill(); ctx.stroke();
-    text(pt, 50, 15 + ph / 2, 700, 2.45, '#000', FIXF, 'center');
+    ctx.roundRect ? ctx.roundRect(X(50 - pw / 2), Y(17), pw * u, ph * u, ph * u / 2) : ctx.rect(X(50 - pw / 2), Y(17), pw * u, ph * u); ctx.fill(); ctx.stroke();
+    text(pt, 50, 17 + ph / 2, 700, 2.45, '#000', FIXF, 'center');
     // চারটি বাক্স
-    var bx = [['রসিদ নম্বর:', d.no], ['তারিখ:', d.date], ['সদস্য ধরণ:', d.type], ['সদস্য নম্বর:', d.memberNo]], cw = (95.2 - 3 * 2.4) / 4, by = 19.7;
+    var bx = [['রসিদ নম্বর:', d.no], ['তারিখ:', d.date], ['সদস্য ধরণ:', d.type], ['সদস্য নম্বর:', d.memberNo]], cw = (95.2 - 3 * 2.4) / 4, by = 21.7;
     bx.forEach(function (b, i) {
       var x = 2.4 + i * (cw + 2.4), lw2 = wid(b[0], 700, 1.5, FIXF) + .2;
       text(b[0], x, by + 1.1, 700, 1.5, '#000', FIXF, 'left');
@@ -79,7 +80,7 @@
     // সারি
     var rows = [[['১। প্রদানকারীর নাম:', d.name], ['২। চাঁদার ধরণ:', d.kind]], [['৩। চাঁদার পরিমাণ (অঙ্কে):', d.amount], ['৪। চাঁদার পরিমাণ (কথায়):', d.words]], [['৫। চাঁদা প্রদানের মাধ্যম:', d.method]]];
     rows.forEach(function (r, ri) {
-      var y = 23.4 + ri * 3.3, fw = r.length === 1 ? 95.2 : (95.2 - 2.4) / 2;
+      var y = 25.4 + ri * 3.3, fw = r.length === 1 ? 95.2 : (95.2 - 2.4) / 2;
       r.forEach(function (f, i) {
         var x = 2.4 + i * (fw + 2.4), l2 = wid(f[0], 400, 1.6, FIXF) + .4;
         text(f[0], x, y + 1.0, 400, 1.6, '#000', FIXF, 'left');
@@ -88,12 +89,12 @@
       });
     });
     // স্বাক্ষর
-    var sy = H - 4.6 - 2;
+    var sy = H - 4.7 - 1;
     [['প্রদানকারীর স্বাক্ষর', 2.4], ['আদায়কারীর স্বাক্ষর', 100 - 2.4 - 22]].forEach(function (g) {
-      dotted(g[1] + 2.4, g[1] + 22 - 2.4, sy - .35, .22);
+      dotted(g[1] + 2.4, g[1] + 22 - 2.4, sy - .3, .22);
       text(g[0], g[1] + 11, sy + 1.0, 400, 1.6, '#1f4e9e', FIXF, 'center');
     });
-    text('ডাউনলোডের সময়: ' + (d.time || d.now || ''), 50, H - 2 - .7, 400, 1.15, '#333', FIXF, 'center');
+    text('ডাউনলোডের সময়: ' + (d.time || d.now || ''), 50, H - 2.9, 400, 1.15, '#333', FIXF, 'center');
   }
 
   function build(d) {

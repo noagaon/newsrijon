@@ -337,31 +337,31 @@ small.inl{font-weight:400;color:#555}
 .rc-cut span { background: var(--bg); padding: 0 10px; position: relative; top: -1px; }
 .rcpt { position: relative; background: #fff; color: #000; aspect-ratio: 576 / 259.2; width: 100%; border: .45cqw solid #000; outline: .2cqw solid #000; outline-offset: -1.5cqw; overflow: hidden; font-size: 1.65cqw; line-height: 1.25; }
 .rcpt::before { content: ""; position: absolute; left: 50%; top: 56%; width: 36cqw; aspect-ratio: 900 / 1035; transform: translate(-50%, -50%); background: url(../assets/img/logo.webp) center / contain no-repeat; opacity: .10; pointer-events: none; }
-.rc-head { position: absolute; left: 1.5cqw; right: 1.5cqw; top: 1.5cqw; height: 11.6cqw; background: #e2efda; border-bottom: .15cqw solid #000; text-align: center; }
+.rc-head { position: absolute; left: 1.5cqw; right: 1.5cqw; top: 1.5cqw; height: 14.1cqw; background: #e2efda; border-bottom: .15cqw solid #000; text-align: center; }
 .rc-bism { position: absolute; top: .55cqw; left: 0; right: 0; font-size: 1.6cqw; font-weight: 500; }
-.rc-logo { position: absolute; left: 5.4cqw; top: .9cqw; width: 10.2cqw; height: auto; }
-.rc-title { position: absolute; top: 1.7cqw; left: 20cqw; right: 1cqw; display: flex; align-items: baseline; justify-content: flex-start; gap: 1.2cqw; white-space: nowrap; overflow: hidden; }
+.rc-logo { position: absolute; left: 1.8cqw; top: .9cqw; width: 9cqw; height: auto; }
+.rc-title { position: absolute; top: 3.1cqw; left: 13cqw; right: 1cqw; display: flex; align-items: baseline; justify-content: flex-start; gap: 1.2cqw; white-space: nowrap; overflow: hidden; }
 .rc-title b { font-size: 4.5cqw; color: #c4551a; line-height: 1.15; font-weight: 700; }
 .rc-title i { font: 700 2.5cqw "Times New Roman", Times, serif; letter-spacing: .05cqw; font-style: normal; }
-.rc-addr { position: absolute; top: 7.6cqw; left: 19cqw; right: 1cqw; font-size: 1.7cqw; }
+.rc-addr { position: absolute; top: 8.3cqw; left: 13cqw; right: 1cqw; text-align: left; font-size: 1.7cqw; }
 .rc-slogan { position: absolute; top: 9.6cqw; left: 0; right: 0; }
 .rc-slogan span { background: #1aff1a; padding: 0 .4cqw; font-size: 1.55cqw; font-weight: 500; }
-.rc-pill { position: absolute; top: 15cqw; left: 50%; transform: translateX(-50%); background: #fbe5d6; border: .2cqw solid #000; border-radius: 99cqw; padding: .1cqw 4.6cqw; font-size: 2.45cqw; font-weight: 700; white-space: nowrap; }
+.rc-pill { position: absolute; top: 17cqw; left: 50%; transform: translateX(-50%); background: #fbe5d6; border: .2cqw solid #000; border-radius: 99cqw; padding: .1cqw 4.6cqw; font-size: 2.45cqw; font-weight: 700; white-space: nowrap; }
 .rc-tag { position: absolute; top: .6cqw; right: .8cqw; background: #14502f; color: #fff; font-size: 1.25cqw; font-weight: 700; padding: .1cqw 1cqw; border-radius: 99cqw; }
-.rc-boxes { position: absolute; top: 19.7cqw; left: 2.4cqw; right: 2.4cqw; display: flex; align-items: center; gap: 2.4cqw; }
+.rc-boxes { position: absolute; top: 21.7cqw; left: 2.4cqw; right: 2.4cqw; display: flex; align-items: center; gap: 2.4cqw; }
 .rc-boxes > div { display: flex; align-items: center; gap: .2cqw; flex: 1; min-width: 0; }
 .rc-boxes label { font-weight: 700; font-size: 1.5cqw; white-space: nowrap; }
 .rc-box { flex: 1; min-width: 0; height: 2.2cqw; border: .12cqw solid #000; background: #fff; padding: 0 .5cqw; display: flex; align-items: center; font-size: 1.5cqw; color: #1b2b8c; overflow: hidden; white-space: nowrap; }
-.rc-rows { position: absolute; top: 23.4cqw; left: 2.4cqw; right: 2.4cqw; display: flex; flex-direction: column; gap: 1.1cqw; }
+.rc-rows { position: absolute; top: 25.4cqw; left: 2.4cqw; right: 2.4cqw; display: flex; flex-direction: column; gap: 1.1cqw; }
 .rc-r { display: flex; gap: 2.4cqw; }
 .rc-f { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: .4cqw; }
 .rc-f label { white-space: nowrap; font-size: 1.6cqw; margin: 0; }
 .rc-f .v { flex: 1; min-width: 0; border-bottom: .18cqw dotted #000; min-height: 1.9cqw; color: #1b2b8c; font-size: 1.6cqw; padding: 0 .3cqw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.rc-sign { position: absolute; left: 2.4cqw; right: 2.4cqw; bottom: 4.6cqw; display: flex; justify-content: space-between; }
+.rc-sign { position: absolute; left: 2.4cqw; right: 2.4cqw; bottom: 3.7cqw; display: flex; justify-content: space-between; }
 .rc-sign div { width: 22cqw; text-align: center; font-size: 1.6cqw; color: #1f4e9e; }
 .rc-sign div::before { content: ""; display: block; border-top: .22cqw dotted #000; margin: 0 2.4cqw .25cqw; height: 0; }
 
-.rc-foot { position: absolute; left: 0; right: 0; bottom: 2cqw; text-align: center; font-size: 1.15cqw; color: #333; }
+.rc-foot { position: absolute; left: 0; right: 0; bottom: 2.15cqw; text-align: center; font-size: 1.15cqw; color: #333; }
 .rc-form .mob-row { display: flex; gap: 8px; }
 .rc-form .mob-row select { flex: 1; }
 .rc-form .mob-row input { flex: 1; }
