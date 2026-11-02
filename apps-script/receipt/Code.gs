@@ -320,6 +320,13 @@ function next_() {
   return { ok: true, no: 'SF-' + yy + '/' + ('0000' + seq).slice(-4) };
 }
 
+// Drive ঠিক আছে কি না পরীক্ষা: এডিটরে testDrive Run করুন; নিচের "Execution log"-এ ফল দেখাবে
+function testDrive() {
+  var root = DriveApp.getFolderById(CONFIG.ROOT_FOLDER_ID);
+  console.log('মেইন ফোল্ডার পাওয়া গেছে: ' + root.getName());
+  KINDS.forEach(function (k) { console.log((root.getFoldersByName(k).hasNext() ? '✔ আছে: ' : '✖ নেই (নিজে তৈরি হবে): ') + k); });
+}
+
 // এডিটরে একবার Run করুন: ট্যাব তৈরি + শিট/মেইল-অনুমতি
 function setup() {
   permitSheet_(); secret_(); MailApp.getRemainingDailyQuota();
