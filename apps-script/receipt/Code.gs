@@ -324,6 +324,7 @@ function next_() {
 function testDrive() {
   var root = DriveApp.getFolderById(CONFIG.ROOT_FOLDER_ID);
   console.log('মেইন ফোল্ডার পাওয়া গেছে: ' + root.getName());
+  var t = root.createFile('test.txt', 'ok'); console.log('ফাইল লেখা সফল (পূর্ণ Drive অনুমতি ঠিক আছে)'); t.setTrashed(true);
   KINDS.forEach(function (k) { console.log((root.getFoldersByName(k).hasNext() ? '✔ আছে: ' : '✖ নেই (নিজে তৈরি হবে): ') + k); });
 }
 
