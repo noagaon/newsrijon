@@ -323,6 +323,7 @@ function next_() {
 // এডিটরে একবার Run করুন: ট্যাব তৈরি + শিট/মেইল-অনুমতি
 function setup() {
   permitSheet_(); secret_(); MailApp.getRemainingDailyQuota();
+  console.log('Drive ফোল্ডার: ' + DriveApp.getFolderById(CONFIG.ROOT_FOLDER_ID).getName());   // Drive অনুমতি + ফোল্ডার-অ্যাক্সেস যাচাই
   var sh = sheet_();
   console.log('ট্যাব প্রস্তুত: ' + sh.getName() + ' (' + SpreadsheetApp.openById(CONFIG.SHEET_ID).getName() + ')');
 }

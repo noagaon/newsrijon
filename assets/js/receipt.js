@@ -178,7 +178,7 @@
             lastPdf = { pdf: pdf, no: r.no };
             return call({ action: 'receipt_pdf', rid: rid, no: r.no, kind: $('rKind').value, name: $('rName').value, pdf: window.SrijonPDF.toBase64(pdf.bytes) });
           }).then(function (x) {
-            status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + (x && x.ok ? ' — পিডিএফ Drive-এ জমা হয়েছে। এখন ডাউনলোড করুন।' : ' — তথ্য সংরক্ষিত, কিন্তু পিডিএফ Drive-এ জমা হয়নি। ডাউনলোড করে রাখুন।'));
+            status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + (x && x.ok ? ' — পিডিএফ Drive-এ জমা হয়েছে। এখন ডাউনলোড করুন।' : ' — তথ্য সংরক্ষিত, কিন্তু পিডিএফ Drive-এ জমা হয়নি (কারণ: ' + ((x && x.error) || 'সার্ভার সাড়া দেয়নি') + ')। ডাউনলোড করে রাখুন।'));
           }).catch(function () { status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ জমা হয়নি; ডাউনলোড করে রাখুন।'); });
         }
         else { btn.disabled = false; status('error', ERR[r && r.error] || 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।'); }
