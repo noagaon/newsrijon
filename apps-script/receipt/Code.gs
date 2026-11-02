@@ -320,6 +320,13 @@ function next_() {
   return { ok: true, no: 'SF-' + yy + '/' + ('0000' + seq).slice(-4) };
 }
 
+// রসিদ নম্বর আবার ১ (SF-26/0001) থেকে শুরু করতে: আগে শিটের পরীক্ষামূলক সারিগুলো মুছে এডিটরে resetNumber Run করুন
+function resetNumber() {
+  var yy = Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yy');
+  PropertiesService.getScriptProperties().setProperty('sf_' + yy, '0');
+  console.log('এবার পরের রসিদ: ' + next_().no);
+}
+
 // Drive ঠিক আছে কি না পরীক্ষা: এডিটরে testDrive Run করুন; নিচের "Execution log"-এ ফল দেখাবে
 function testDrive() {
   var root = DriveApp.getFolderById(CONFIG.ROOT_FOLDER_ID);
