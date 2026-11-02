@@ -169,7 +169,7 @@ def build_pages():
             body = pc.BODY[slug]
         write('pages/%s.html' % slug, page(slug, body, extra))
     import receipt_page
-    write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
+    write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/receipt-pdf.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
 
 
 if __name__ == '__main__':

@@ -579,5 +579,5 @@
     return btoa(parts.join(''));
   }
 
-  window.SrijonPDF = { build: build, toBase64: toBase64 };
+  window.SrijonPDF = { build: build, toBase64: toBase64, canvasToJpeg: canvasToJpeg, jpegToPdf: jpegToPdf };
 })();

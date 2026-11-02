@@ -8,7 +8,7 @@
  *      action=receipt_next → পরের নম্বর দেখায় (বাড়ায় না)।
  * ডিপ্লয়: Deploy > New deployment > Web app > Execute as = Me, Who has access = Anyone → "Web app URL" টি
  *          ওয়েবসাইটের config.js এর RECEIPT_URL-এ বসাবে।
- * প্রথমবার: এডিটরে setup ফাংশন একবার Run করে অনুমতি (Sheets) দিন।
+ * প্রথমবার: এডিটরে setup ফাংশন একবার Run করে অনুমতি (Sheets + Drive) দিন।
  * কোড বদলালে: Deploy > Manage deployments > Edit > New version > Deploy।
  *
  * নিরাপত্তা: authorized_() ফাংশনে অনুমোদনকারীর ইমেইল-যাচাই বসানো হবে (পরবর্তী ধাপ)। এখন শুধু হানিপট ও হারসীমা আছে।
@@ -17,11 +17,15 @@
 var CONFIG = {
   SHEET_ID: '1J0qRZ_vPAQaFHWWQId1wVRtfH57t04-Pvle0xvgAyPI',
   TAB: 'চাঁদা রসিদ',
+  ROOT_FOLDER_ID: '18IvXNKUbO7oc0Uh6HbFtRRD8eoJEupWR',   // Subscription Fund (ভেতরে চাঁদার ধরণ অনুযায়ী সাব-ফোল্ডার)
+  MAX_PDF_BYTES: 3 * 1024 * 1024,
   MAX_PER_MIN: 30                    // প্রতি মিনিটে সর্বোচ্চ সংরক্ষণ-অনুরোধ (অপব্যবহার ঠেকাতে)
 };
 
 var HEADERS = ['রসিদ নম্বর', 'সংরক্ষণের সময়', 'তারিখ', 'সদস্য ধরণ', 'সদস্য নম্বর', 'প্রদানকারীর নাম',
-  'চাঁদার ধরণ', 'পরিমাণ (অঙ্কে)', 'পরিমাণ (কথায়)', 'প্রদানের মাধ্যম', 'অনুমোদনকারী'];
+  'চাঁদার ধরণ', 'পরিমাণ (অঙ্কে)', 'পরিমাণ (কথায়)', 'প্রদানের মাধ্যম', 'অনুমোদনকারী', 'পিডিএফ লিংক'];
+var KINDS = ['নিবন্ধন ফি', 'মাসিক চাঁদা', 'বার্ষিক চাঁদা', 'বিশেষ চাঁদা', 'অফিস সংস্কার চাঁদা', 'উন্নয়ন চাঁদা', 'মিলাদ মাহফিল চাঁদা',
+  'উৎসব উদযাপন চাঁদা', 'বিবাহ শুভেচ্ছা/অভিনন্দন চাঁদা', 'অন্যান্য চাঁদা'];
 var TYPES = ['সাধারণ সদস্য', 'প্রবাসী সদস্য', 'জুনিয়র সদস্য', 'দাতা সদস্য'];
 
 function doGet() { return json_({ ok: true, service: 'srijonshil-receipt', time: new Date().toISOString() }); }
@@ -30,6 +34,7 @@ function doPost(e) {
   try {
     var req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (req.action === 'receipt_save') return json_(save_(req));
+    if (req.action === 'receipt_pdf') return json_(pdf_(req));
     if (req.action === 'receipt_next') return json_(next_());
     return json_({ ok: false, error: 'unknown action' });
   } catch (err) {
@@ -45,6 +50,10 @@ function authorized_(req) { return { ok: true, approver: '' }; }
 function sheet_() {
   var ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), sh = ss.getSheetByName(CONFIG.TAB);
   if (!sh) sh = ss.insertSheet(CONFIG.TAB);
+  if (sh.getLastRow() > 0) {   // আগের শিটে নতুন কলাম থাকলে শেষে যোগ
+    var have = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    HEADERS.forEach(function (h) { if (have.indexOf(h) < 0) { sh.getRange(1, sh.getLastColumn() + 1).setValue(h).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff'); have.push(h); } });
+  }
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
     sh.setFrozenRows(1);
@@ -96,6 +105,40 @@ function save_(r) {
     };
     sh.appendRow(head.map(function (h) { return rec.hasOwnProperty(h) ? rec[h] : ''; }));
     return { ok: true, no: no };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// রসিদের পিডিএফ: Subscription Fund/<চাঁদার ধরণ>/ ফোল্ডারে রাখে; সাব-ফোল্ডার না থাকলে বানায়
+function pdf_(r) {
+  var auth = authorized_(r);
+  if (!auth.ok) return { ok: false, error: 'permission' };
+  var no = String(r.no || '');
+  if (!/^SF-\d{2}\/\d{4}$/.test(no)) return { ok: false, error: 'bad number' };
+  var bytes = Utilities.base64Decode(String(r.pdf || ''));
+  if (bytes.length < 1000 || bytes.length > CONFIG.MAX_PDF_BYTES) return { ok: false, error: 'bad size' };
+  if (String.fromCharCode(bytes[0] & 255, bytes[1] & 255, bytes[2] & 255, bytes[3] & 255) !== '%PDF') return { ok: false, error: 'not pdf' };
+  var kind = KINDS.indexOf(String(r.kind || '')) >= 0 ? String(r.kind) : 'অন্যান্য চাঁদা';
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var sh = sheet_(), last = sh.getLastRow();
+    if (last < 2) return { ok: false, error: 'not found' };
+    var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    var cNo = head.indexOf('রসিদ নম্বর') + 1, cLink = head.indexOf('পিডিএফ লিংক') + 1;
+    var nos = sh.getRange(2, cNo, last - 1, 1).getValues(), row = 0;
+    for (var i = 0; i < nos.length; i++) if (String(nos[i][0]).replace(/^'/, '').trim() === no) { row = i + 2; break; }
+    if (!row) return { ok: false, error: 'not found' };
+    if (sh.getRange(row, cLink).getValue()) return { ok: false, error: 'already saved' };   // একবারই
+
+    var root = DriveApp.getFolderById(CONFIG.ROOT_FOLDER_ID), it = root.getFoldersByName(kind);
+    var folder = it.hasNext() ? it.next() : root.createFolder(kind);
+    var nm = String(r.name || '').replace(/[\\\/:*?"<>|\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 40);
+    var file = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', no.replace('/', '-') + (nm ? '_' + nm : '') + '.pdf'));
+    sh.getRange(row, cLink).setValue(file.getUrl());
+    return { ok: true, url: file.getUrl() };
   } finally {
     lock.releaseLock();
   }

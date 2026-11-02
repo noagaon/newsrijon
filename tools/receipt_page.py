@@ -67,7 +67,7 @@ def body():
             + '<div class="field" id="rMobW" hidden><label for="rMob">মোবাইল ব্যাংকিং</label><div class="mob-row"><select id="rMob"><option value="">— নির্বাচন করুন —</option>'
               + ''.join('<option>%s</option>' % esc(m) for m in MOBILE) + '</select><input id="rAcc" type="text" inputmode="numeric" maxlength="11" placeholder="অ্যাকাউন্ট নম্বর" autocomplete="off" hidden></div><small class="hint-warn" id="rAccHint" hidden>অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।</small></div>'
             + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rSave">💾 সংরক্ষণ করুন</button>'
-              '<button type="button" class="btn btn-outline" id="rPrint">⬇️ ডাউনলোড / প্রিন্ট (পিডিএফ)</button>'
+              '<button type="button" class="btn btn-outline" id="rPrint">⬇️ পিডিএফ ডাউনলোড</button>'
               '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
               '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
               '<div id="rStatus" class="status" role="status" aria-live="polite"></div></div>')

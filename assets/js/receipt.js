@@ -105,7 +105,7 @@
   /* ---------- নম্বর, সংরক্ষণ, প্রিন্ট ---------- */
   function status(cls, msg) { var s = $('rStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
   var saved = false;
-  function dirty() { if (saved) { saved = false; $('rSave').disabled = false; } }
+  function dirty() { if (saved) { saved = false; lastPdf = null; $('rSave').disabled = false; } }
   ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) { $(id).addEventListener('input', dirty); $(id).addEventListener('change', dirty); });
   ['rDate', 'rType'].forEach(function (id) { $(id).addEventListener('input', function () { show(id); }); $(id).addEventListener('change', function () { show(id); }); });
   $('rMemNo').addEventListener('change', function () { show('rMemNo'); });
@@ -136,15 +136,36 @@
       date: $('rDate').value, type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value,
       kind: kindText(), amount: $('rAmount').value, words: $('rWords').value, method: methodText() } })
       .then(function (r) {
-        if (r && r.ok) { $('rNo').value = r.no; show('rNo'); saved = true; status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — এখন ডাউনলোড/প্রিন্ট করতে পারেন।'); }
+        if (r && r.ok) {
+          $('rNo').value = r.no; show('rNo'); saved = true; stamp();
+          status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ তৈরি ও জমা হচ্ছে…');
+          makePdf().then(function (pdf) {
+            lastPdf = { pdf: pdf, no: r.no };
+            return call({ action: 'receipt_pdf', no: r.no, kind: $('rKind').value, name: $('rName').value, pdf: window.SrijonPDF.toBase64(pdf.bytes) });
+          }).then(function (x) {
+            status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + (x && x.ok ? ' — পিডিএফ Drive-এ জমা হয়েছে। এখন ডাউনলোড করুন।' : ' — তথ্য সংরক্ষিত, কিন্তু পিডিএফ Drive-এ জমা হয়নি। ডাউনলোড করে রাখুন।'));
+          }).catch(function () { status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ জমা হয়নি; ডাউনলোড করে রাখুন।'); });
+        }
         else { btn.disabled = false; status('error', ERR[r && r.error] || 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।'); }
       }).catch(function () { btn.disabled = false; status('error', 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); });
   });
-  $('rPrint').addEventListener('click', function () { stamp(); window.print(); });
+  var lastPdf = null, ADDR = 'নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।  ইমেইল– srijonshil2011@gmail.com';
+  function makePdf() {
+    var q = $('rDate').value.split('-');
+    return window.ReceiptPDF.build({
+      addr: ADDR, slogan: 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার', no: $('rNo').value, date: bn(q[2] + '/' + q[1] + '/' + q[0]),
+      type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value, kind: kindText(),
+      amount: $('rAmount').value ? bn($('rAmount').value) + ' টাকা' : '', words: $('rWords').value, method: methodText(), time: nowText() });
+  }
+  $('rPrint').addEventListener('click', function () {
+    if (!saved || !lastPdf) { status('error', 'আগে "সংরক্ষণ করুন" বোতামে চাপ দিন, তারপর ডাউনলোড করুন।'); return; }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(lastPdf.pdf.blob); a.download = 'Receipt-' + lastPdf.no.replace('/', '-') + '.pdf';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  });
   window.addEventListener('beforeprint', stamp);
   $('rClear').addEventListener('click', function () {
     ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rWords', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) { $(id).value = id === 'rDate' ? today() : ''; });
-    ids.forEach(show); syncKind(); syncMethod(); saved = false; $('rSave').disabled = false; status('', ''); $('rNo').value = ''; show('rNo'); nextNo();
+    ids.forEach(show); syncKind(); syncMethod(); saved = false; lastPdf = null; $('rSave').disabled = false; status('', ''); $('rNo').value = ''; show('rNo'); nextNo();
   });
 
   $('rDate').value = today(); ids.forEach(show); syncKind(); syncMethod(); stamp(); nextNo();
