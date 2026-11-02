@@ -4,8 +4,8 @@
  * স্ক্রিপ্ট আইডি : 1D-IGi0X46tW32bYTsyb6n1PE3W0JUg7fukvUjm2OlTFrEnKdxvAuAXzW
  * স্প্রেডশিট     : 1J0qRZ_vPAQaFHWWQId1wVRtfH57t04-Pvle0xvgAyPI  (ট্যাব "চাঁদা রসিদ" না থাকলে নিজে তৈরি হয়)
  *
- * কাজ: action=receipt_save → রসিদের তথ্য শিটে নতুন সারি; রসিদ নম্বর ফাঁকা থাকলে RC-বছর-০০০১ ক্রমে নিজে দেয়;
- *      একই রসিদ নম্বর দ্বিতীয়বার নেয় না।
+ * কাজ: action=receipt_save → রসিদের তথ্য শিটে নতুন সারি; রসিদ নম্বর সার্ভার নিজে SF-26/0001 ক্রমে দেয় (ব্রাউজারের নম্বর গ্রহণ করে না);
+ *      action=receipt_next → পরের নম্বর দেখায় (বাড়ায় না)।
  * ডিপ্লয়: Deploy > New deployment > Web app > Execute as = Me, Who has access = Anyone → "Web app URL" টি
  *          ওয়েবসাইটের config.js এর RECEIPT_URL-এ বসাবে।
  * প্রথমবার: এডিটরে setup ফাংশন একবার Run করে অনুমতি (Sheets) দিন।
@@ -17,7 +17,7 @@
 var CONFIG = {
   SHEET_ID: '1J0qRZ_vPAQaFHWWQId1wVRtfH57t04-Pvle0xvgAyPI',
   TAB: 'চাঁদা রসিদ',
-  MAX_PER_MIN: 20                    // প্রতি মিনিটে সর্বোচ্চ সংরক্ষণ-অনুরোধ (অপব্যবহার ঠেকাতে)
+  MAX_PER_MIN: 30                    // প্রতি মিনিটে সর্বোচ্চ সংরক্ষণ-অনুরোধ (অপব্যবহার ঠেকাতে)
 };
 
 var HEADERS = ['রসিদ নম্বর', 'সংরক্ষণের সময়', 'তারিখ', 'সদস্য ধরণ', 'সদস্য নম্বর', 'প্রদানকারীর নাম',
@@ -30,6 +30,7 @@ function doPost(e) {
   try {
     var req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (req.action === 'receipt_save') return json_(save_(req));
+    if (req.action === 'receipt_next') return json_(next_());
     return json_({ ok: false, error: 'unknown action' });
   } catch (err) {
     console.error(err && err.stack || err);
@@ -82,16 +83,10 @@ function save_(r) {
   lock.waitLock(30000);
   try {
     var sh = sheet_();
-    var no = safe_(d.no, 30);
-    if (no) {
-      var col = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 1), 1).getValues();
-      for (var i = 0; i < col.length; i++) if (String(col[i][0]).replace(/^'/, '').trim() === no) return { ok: false, error: 'duplicate' };
-    } else {
-      var year = Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy'), props = PropertiesService.getScriptProperties();
-      var seq = Number(props.getProperty('rc_' + year) || 0) + 1;
-      props.setProperty('rc_' + year, String(seq));
-      no = 'RC-' + year + '-' + ('0000' + seq).slice(-4);
-    }
+    var yy = Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yy'), props = PropertiesService.getScriptProperties();
+    var seq = Number(props.getProperty('sf_' + yy) || 0) + 1;
+    props.setProperty('sf_' + yy, String(seq));
+    var no = 'SF-' + yy + '/' + ('0000' + seq).slice(-4);
     var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
     var rec = {
       'রসিদ নম্বর': "'" + no, 'সংরক্ষণের সময়': "'" + Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy-MM-dd HH:mm:ss'),
@@ -104,6 +99,12 @@ function save_(r) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function next_() {
+  var yy = Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yy');
+  var seq = Number(PropertiesService.getScriptProperties().getProperty('sf_' + yy) || 0) + 1;
+  return { ok: true, no: 'SF-' + yy + '/' + ('0000' + seq).slice(-4) };
 }
 
 // এডিটরে একবার Run করুন: ট্যাব তৈরি + শিট-অনুমতি

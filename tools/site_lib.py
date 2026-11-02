@@ -225,7 +225,7 @@ def footer(root):
        'mail': ICONS['mail'], 'email': SITE['email'], 'fb': ICONS['facebook'], 'fbl': SITE['facebook'], 'pin': ICONS['pin']}
 
 
-def page(slug, body, extra_scripts='', title=None, parent=None):
+def page(slug, body, extra_scripts='', title=None, parent=None, crumb=None):
     title = title or MENU_TITLE[slug]
     root = '../'
     out = head(title, root) + header(root, slug)
@@ -236,6 +236,6 @@ def page(slug, body, extra_scripts='', title=None, parent=None):
 <div class="wrap page-body">
 %s
 </div>
-''' % (('<a href="%s.html">%s</a> <span>›</span> ' % (parent, esc(MENU_TITLE[parent]))) if parent else '', esc(title), esc(title), body)
+''' % (('<a href="%s.html">%s</a> <span>›</span> ' % (parent, esc(MENU_TITLE[parent]))) if parent else '', esc(crumb or title), esc(title), body)
     out += footer(root) % {'extra': extra_scripts}
     return out

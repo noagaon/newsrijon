@@ -3,8 +3,10 @@
 from site_lib import *
 
 TYPES = ['সাধারণ সদস্য', 'প্রবাসী সদস্য', 'জুনিয়র সদস্য', 'দাতা সদস্য']
-METHODS = ['নগদ', 'বিকাশ', 'নগদ (মোবাইল ব্যাংকিং)', 'রকেট', 'ব্যাংক ট্রান্সফার', 'অন্যান্য']
-KINDS = ['মাসিক চাঁদা', 'বার্ষিক চাঁদা', 'এককালীন চাঁদা', 'অন্যান্য']
+KINDS = ['নিবন্ধন ফি', 'মাসিক চাঁদা', 'বার্ষিক চাঁদা', 'বিশেষ চাঁদা', 'অফিস সংস্কার চাঁদা', 'উন্নয়ন চাঁদা', 'মিলাদ মাহফিল চাঁদা',
+         'উৎসব উদযাপন চাঁদা', 'বিবাহ শুভেচ্ছা/অভিনন্দন চাঁদা', 'অন্যান্য চাঁদা']
+METHODS = ['নগদ প্রদান করুন', 'মোবাইল ব্যাংকিং এ প্রদান করুন', 'ব্যাংক একাউন্টে প্রদান করুন']
+MOBILE = ['বিকাশ করুন', 'নগদ করুন', 'রকেট করুন', 'অন্যান্য']
 
 
 def mir(i):
@@ -36,33 +38,41 @@ def copy(label):
     <div class="rc-r"><div class="rc-f"><label>৫। চাঁদা প্রদানের মাধ্যম:</label>%(me)s</div></div>
   </div>
   <div class="rc-sign"><div>প্রদানকারীর স্বাক্ষর</div><div>আদায়কারীর স্বাক্ষর</div></div>
+  <div class="rc-foot">ডাউনলোডের সময়: <span class="r-now"></span></div>
 </section></div>''' % {'l': esc(label), 'no': box('rNo'), 'dt': box('rDate'), 'ty': box('rType'), 'mn': box('rMemNo'),
                       'nm': mir('rName'), 'kd': mir('rKind'), 'am': mir('rAmount'), 'wd': mir('rWords'), 'me': mir('rMethod')}
 
 
-def sel(i, label, opts, blank=True):
+def sel(i, label, opts, blank=True, cls=''):
     o = ('<option value="">— নির্বাচন করুন —</option>' if blank else '') + ''.join('<option>%s</option>' % esc(x) for x in opts)
-    return '<div class="field"><label for="%s">%s</label><select id="%s">%s</select></div>' % (i, esc(label), i, o)
+    return '<div class="field %s"><label for="%s">%s</label><select id="%s">%s</select></div>' % (cls, i, esc(label), i, o)
 
 
-def inp(i, label, typ='text', ph='', cls=''):
-    return '<div class="field %s"><label for="%s">%s</label><input id="%s" type="%s" autocomplete="off"%s></div>' % (
-        cls, i, esc(label), i, typ, (' placeholder="%s"' % esc(ph)) if ph else '')
+def inp(i, label, typ='text', ph='', cls='', extra=''):
+    return '<div class="field %s"><label for="%s">%s</label><input id="%s" type="%s" autocomplete="off"%s%s></div>' % (
+        cls, i, esc(label), i, typ, (' placeholder="%s"' % esc(ph)) if ph else '', extra)
 
 
 def body():
     form = ('<div class="form-card rc-form no-print"><div class="grid-form">'
-            + inp('rNo', 'রসিদ নম্বর (ফাঁকা রাখলে নিজে বসবে)') + inp('rDate', 'তারিখ', 'date')
-            + sel('rType', 'সদস্য ধরণ', TYPES) + inp('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001')
-            + inp('rName', '১। প্রদানকারীর নাম', cls='span2') + sel('rKind', '২। চাঁদার ধরণ', KINDS)
-            + inp('rAmount', '৩। চাঁদার পরিমাণ (অঙ্কে)', 'text', 'যেমন: 300') + inp('rWords', '৪। চাঁদার পরিমাণ (কথায়)', 'text', 'যেমন: তিনশত টাকা মাত্র')
-            + sel('rMethod', '৫। চাঁদা প্রদানের মাধ্যম', METHODS)
-            + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rSave">💾 সংরক্ষণ করুন</button><button type="button" class="btn btn-outline" id="rPrint">🖨️ প্রিন্ট করুন / পিডিএফ</button>'
+            + inp('rNo', 'রসিদ নম্বর', extra=' readonly placeholder="স্বয়ংক্রিয়"') + inp('rDate', 'তারিখ', 'date')
+            + sel('rType', 'সদস্য ধরণ', TYPES, cls='span2')
+            + '<div class="field span2 sug-wrap"><label for="rName">চাঁদা প্রদানকারীর নাম</label><input id="rName" type="text" autocomplete="off" placeholder="লিখতে শুরু করুন, তালিকা থেকে বাছাই করতে পারবেন"><div class="sug" id="rSug" role="listbox" hidden></div></div>'
+            + inp('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001', cls='span2')
+            + sel('rKind', 'চাঁদার ধরণ', KINDS)
+            + '<div class="field" id="rKindOtherW" hidden><label for="rKindOther">অন্যান্য চাঁদা — কী চাঁদা?</label><input id="rKindOther" type="text" maxlength="40" autocomplete="off"></div>'
+            + inp('rAmount', 'চাঁদার পরিমাণ (অঙ্কে)', 'text', 'যেমন: 300', extra=' inputmode="numeric"')
+            + inp('rWords', 'চাঁদার পরিমাণ (কথায়)', 'text', 'অঙ্ক লিখলে নিজে বসবে', extra=' readonly')
+            + sel('rMethod', 'চাঁদা প্রদানের মাধ্যম', METHODS, cls='span2')
+            + '<div class="field" id="rMobW" hidden><label for="rMob">মোবাইল ব্যাংকিং</label><div class="mob-row"><select id="rMob"><option value="">— নির্বাচন করুন —</option>'
+              + ''.join('<option>%s</option>' % esc(m) for m in MOBILE) + '</select><input id="rAcc" type="text" inputmode="numeric" maxlength="11" placeholder="অ্যাকাউন্ট নম্বর" autocomplete="off" hidden></div><small class="hint-warn" id="rAccHint" hidden>অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।</small></div>'
+            + '</div><div class="rcpt-tools"><button type="button" class="btn btn-primary" id="rSave">💾 সংরক্ষণ করুন</button>'
+              '<button type="button" class="btn btn-outline" id="rPrint">⬇️ ডাউনলোড / প্রিন্ট (পিডিএফ)</button>'
               '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
-            '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
-            '<div id="rStatus" class="status" role="status" aria-live="polite"></div></div>')
+              '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
+              '<div id="rStatus" class="status" role="status" aria-live="polite"></div></div>')
     return (
-        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা নেওয়ার পর সদস্যকে এই রসিদ দেওয়া হয়। নিচের ঘরগুলো পূরণ করলে নিচের রসিদে (সদস্য কপি ও অফিস কপি) একই তথ্য আসবে। তারপর "সংরক্ষণ করুন" চাপলে তথ্য সংগঠনের শিটে জমা হবে ও রসিদ নম্বর বসবে; তারপর "প্রিন্ট করুন" চাপুন; পিডিএফ করতে প্রিন্ট জানালায় "Save as PDF" বেছে নিন।</p>'
+        '<p class="lead no-print">সাংগঠনিক চাঁদা জমা দিয়ে রসিদ সংগ্রহ করুন। চাঁদা প্রদানের জন্য সদস্যকে এই রসিদটি পূরণ করতে হবে। এটি পূরণ করে সংরক্ষণ করুন বোতামে চাপ দিন এবং সেটি ডাউনলোড করে রাখুন।</p>'
         + form
         + '<div class="rcpt-sheet" id="rSheet">' + copy('সদস্য কপি') + '<div class="rc-cut" aria-hidden="true"><span>✂ কেটে আলাদা করুন</span></div>' + copy('অফিস কপি') + '</div>'
     )

@@ -326,7 +326,7 @@ BODY['support'] = (
       '<p class="small muted">কোন কর্মসূচিতে দিতে চান তা জানিয়ে যোগাযোগ করুন।</p></article>'
     + '<article class="fin-card" id="subscription"><div class="fin-ico" aria-hidden="true">🧾</div><h3>সাংগঠনিক চাঁদা</h3>'
       '<p>সংগঠনের সদস্যদের নিয়মিত চাঁদা, যা দিয়ে সংগঠনের দৈনন্দিন কার্যক্রম পরিচালিত হয়। চাঁদা জমার পর সদস্যকে রসিদ দেওয়া হয়।</p>'
-      '<a class="btn btn-primary" href="subscription-receipt.html">চাঁদা জমাদানের রসিদ</a></article>'
+      '<a class="btn btn-primary" href="subscription-receipt.html">চাঁদা জমা দিন</a></article>'
     + '</div>'
     + '<div class="callout">' + p('আপনার সহযোগিতা—কারও জন্য হতে পারে নতুন আশার শুরু।')
     + '<div class="btn-row">' + btn('ওয়াটসঅ্যাপে যোগাযোগ', SITE['whatsapp_link'], 'primary', ' target="_blank" rel="noopener"') + btn('যোগাযোগের তথ্য', 'contact.html', 'outline') + '</div></div>'
