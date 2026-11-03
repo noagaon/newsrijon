@@ -299,7 +299,7 @@ function pdf_(r) {
     var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
     var cNo = head.indexOf('রসিদ নম্বর') + 1, cLink = head.indexOf('পিডিএফ লিংক') + 1;
     var nos = sh.getRange(2, cNo, last - 1, 1).getValues(), row = 0;
-    for (var i = 0; i < nos.length; i++) if (String(nos[i][0]).replace(/^'/, '').trim() === no) { row = i + 2; break; }
+    for (var i = nos.length - 1; i >= 0; i--) if (String(nos[i][0]).replace(/^'/, '').trim() === no) { row = i + 2; break; }   // নিচ থেকে খুঁজি: একই নম্বরের পুরনো সারি থাকলেও নতুনটি পায়
     if (!row) return { ok: false, error: 'not found' };
     if (sh.getRange(row, cLink).getValue()) return { ok: false, error: 'already saved' };   // একবারই
 
