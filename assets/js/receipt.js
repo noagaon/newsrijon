@@ -23,8 +23,10 @@
     return parts.join(' ');
   }
 
+  var PFX = { 'সাধারণ সদস্য': 'STS/GM/00', 'প্রবাসী সদস্য': 'STS/OM/00', 'জুনিয়র সদস্য': 'STS/JM/00' };
+  function memNoVal() { var v = en($('rMemNo').value).replace(/\s/g, '').toUpperCase(); return /^STS\/[A-Z]{2}\/0{0,2}$/.test(v) ? '' : v; }
   function show(id) {
-    var v = $(id).value || '';
+    var v = id === 'rMemNo' ? memNoVal() : ($(id).value || '');
     if (id === 'rDate' && v) { var q = v.split('-'); v = bn(q[2] + '/' + q[1] + '/' + q[0]); }
     if (id === 'rAmount' && v) v = bn(v) + ' টাকা';
     Array.prototype.forEach.call(document.querySelectorAll('.mir[data-for="' + id + '"]'), function (o) { o.textContent = v; });
@@ -51,6 +53,14 @@
     }
     return m;
   }
+  function collName() { var c = $('rColl').value; return c === 'অন্য' ? $('rCollOther').value.trim() : c; }
+  function syncColl() {
+    $('rCollOtherW').hidden = $('rColl').value !== 'অন্য';
+    var n = collName(), j = n === 'জুনেদ আহমদ';
+    mirror('rCollName', j ? '' : n);
+    Array.prototype.forEach.call(document.querySelectorAll('.rc-sig'), function (im) { im.hidden = !j; });
+  }
+  $('rColl').addEventListener('change', syncColl); $('rCollOther').addEventListener('input', syncColl);
   function mirror(id, v) { Array.prototype.forEach.call(document.querySelectorAll('.mir[data-for="' + id + '"]'), function (o) { o.textContent = v; }); }
   function syncKind() {
     $('rKindOtherW').hidden = $('rKind').value !== 'অন্যান্য চাঁদা';
@@ -80,7 +90,7 @@
   function list() { var m = window.SRIJON_MEMBERS || {}; return m[KEY[$('rType').value]] || []; }
   var sug = $('rSug');
   function closeSug() { sug.hidden = true; sug.innerHTML = ''; }
-  function pick(m) { $('rName').value = m.n; $('rMemNo').value = m.no; show('rName'); show('rMemNo'); closeSug(); dirty(); }
+  function pick(m) { if (!PFX[$('rType').value]) { var t = { GM: 'সাধারণ সদস্য', OM: 'প্রবাসী সদস্য', JM: 'জুনিয়র সদস্য' }[m.no.split('/')[1]]; if (t) { $('rType').value = t; show('rType'); } } $('rName').value = m.n; $('rMemNo').value = m.no; show('rName'); show('rMemNo'); closeSug(); dirty(); }
   $('rName').addEventListener('input', function () {
     show('rName');
     var q = this.value.trim(); sug.innerHTML = '';
@@ -94,22 +104,36 @@
     sug.hidden = false;
   });
   $('rName').addEventListener('blur', function () { setTimeout(closeSug, 150); });
+  var sugNo = $('rSugNo');
+  function closeNo() { sugNo.hidden = true; sugNo.innerHTML = ''; }
+  function allMembers() { var all = window.SRIJON_MEMBERS || {}, out = []; Object.keys(all).forEach(function (k) { out = out.concat(all[k]); }); return out; }
   $('rMemNo').addEventListener('input', function () {
-    var v = en(this.value).trim().toUpperCase(); show('rMemNo');
-    var m = list().filter(function (x) { return x.no === v; })[0];
-    if (!m) { var all = window.SRIJON_MEMBERS || {}; Object.keys(all).some(function (k) { var f = all[k].filter(function (x) { return x.no === v; })[0]; if (f) { m = f; return true; } }); }
-    if (m) { $('rName').value = m.n; show('rName'); }
+    show('rMemNo'); sugNo.innerHTML = '';
+    var v = memNoVal(), pfx = PFX[$('rType').value] || '';
+    if (/^\d{1,4}$/.test(v) && pfx) v = pfx.slice(0, -2) + ('0000' + v).slice(-4);     // শুধু সংখ্যা লিখলেও চলবে
+    if (!v) { closeNo(); return; }
+    var base = list().length ? list() : allMembers();
+    var exact = base.filter(function (x) { return x.no === v; })[0];
+    if (exact) { $('rName').value = exact.n; show('rName'); }
+    var hit = base.filter(function (x) { return x.no.indexOf(v) === 0; }).slice(0, 8);
+    if (!hit.length || (exact && hit.length === 1)) { closeNo(); return; }
+    hit.forEach(function (m) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = m.no + '  (' + m.n + ')';
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); pick(m); closeNo(); }); sugNo.appendChild(b);
+    });
+    sugNo.hidden = false;
   });
-  $('rType').addEventListener('change', function () { $('rName').value = ''; $('rMemNo').value = ''; show('rName'); show('rMemNo'); closeSug(); });
+  $('rMemNo').addEventListener('blur', function () { setTimeout(closeNo, 150); });
+  $('rType').addEventListener('change', function () { $('rName').value = ''; $('rMemNo').value = PFX[$('rType').value] || ''; $('rMemNo').placeholder = PFX[$('rType').value] ? '' : 'প্রথমে সদস্য ধরণ বাছাই করুন'; show('rName'); show('rMemNo'); closeSug(); closeNo(); });
 
   /* ---------- নম্বর, সংরক্ষণ, প্রিন্ট ---------- */
   function status(cls, msg) { var s = $('rStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
   var saved = false;
   var rid = '', approved = false, pollTimer = null;
   function dirty() { if (saved) { saved = false; lastPdf = null; lock(); } }
-  function lock() { approved = false; rid = ''; stopPoll(); $('rSave').disabled = true; $('rPermit').disabled = false; $('rWaBox').hidden = true; }
+  function lock() { approved = false; rid = ''; stopPoll(); $('rSave').disabled = true; $('rPermit').disabled = false; $('rWaBox').hidden = true; $('rPrint').disabled = true; $('rPrint').classList.remove('btn-yellow'); }
   function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
-  ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) { $(id).addEventListener('input', dirty); $(id).addEventListener('change', dirty); });
+  ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc', 'rColl', 'rCollOther'].forEach(function (id) { $(id).addEventListener('input', dirty); $(id).addEventListener('change', dirty); });
   ['rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc'].forEach(function (id) {
     function chg() { if (rid && !saved) { lock(); status('error', 'তথ্য বদলানো হয়েছে — আবার "অনুমতি নিন" বোতামে চাপ দিন।'); } }
     $(id).addEventListener('input', chg); $(id).addEventListener('change', chg);
@@ -135,9 +159,11 @@
       if (!$('rMob').value) { status('error', 'মোবাইল ব্যাংকিংয়ের মাধ্যম বাছাই করুন।'); $('rMob').focus(); return false; }
       if (en($('rAcc').value).replace(/\D/g, '').length !== 11) { status('error', 'অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।'); $('rAcc').focus(); return false; }
     }
+    if (!$('rColl').value) { status('error', 'আদায়কারীর নাম বাছাই করুন।'); $('rColl').focus(); return false; }
+    if ($('rColl').value === 'অন্য' && !$('rCollOther').value.trim()) { status('error', 'আদায়কারীর নাম লিখুন।'); $('rCollOther').focus(); return false; }
     return true;
   }
-  function details() { return { name: $('rName').value, memberNo: $('rMemNo').value, kind: kindText(), amount: $('rAmount').value, method: methodText() }; }
+  function details() { return { name: $('rName').value, memberNo: memNoVal(), kind: kindText(), amount: $('rAmount').value, method: methodText() }; }
   function poll() {
     call({ action: 'receipt_access_status', rid: rid }).then(function (r) {
       if (!r || !r.ok) { if (r && (r.error === 'not found' || r.error === 'bad id')) { lock(); status('error', 'অনুরোধটি পাওয়া যায়নি। আবার অনুমতি নিন।'); } return; }
@@ -168,14 +194,16 @@
     if (!validate()) return;
     var btn = $('rSave'); btn.disabled = true; status('info', 'সংরক্ষণ হচ্ছে…');
     call({ action: 'receipt_save', rid: rid, website: $('rWebsite').value, data: {
-      date: $('rDate').value, type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value,
+      date: $('rDate').value, type: $('rType').value, memberNo: memNoVal(), collector: collName(), name: $('rName').value,
       kind: kindText(), amount: $('rAmount').value, words: $('rWords').value, method: methodText() } })
       .then(function (r) {
         if (r && r.ok) {
           $('rNo').value = r.no; show('rNo'); saved = true; stamp();
           status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ তৈরি ও জমা হচ্ছে…');
+          $('rPrint').disabled = false; $('rPrint').classList.add('btn-yellow'); $('rPermit').disabled = true;
           makePdf().then(function (pdf) {
             lastPdf = { pdf: pdf, no: r.no };
+            saveFile(pdf, r.no);          // ফোনে নিজে ডাউনলোড শুরু
             return call({ action: 'receipt_pdf', rid: rid, no: r.no, kind: $('rKind').value, name: $('rName').value, pdf: window.SrijonPDF.toBase64(pdf.bytes) });
           }).then(function (x) {
             status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + (x && x.ok ? ' — পিডিএফ Drive-এ জমা হয়েছে। এখন ডাউনলোড করুন।' : ' — তথ্য সংরক্ষিত, কিন্তু পিডিএফ Drive-এ জমা হয়নি (কারণ: ' + ((x && x.error) || 'সার্ভার সাড়া দেয়নি') + ')। ডাউনলোড করে রাখুন।'));
@@ -189,8 +217,12 @@
     var q = $('rDate').value.split('-');
     return window.ReceiptPDF.build({
       addr: ADDR, slogan: 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার', no: $('rNo').value, date: bn(q[2] + '/' + q[1] + '/' + q[0]),
-      type: $('rType').value, memberNo: $('rMemNo').value, name: $('rName').value, kind: kindText(),
+      type: $('rType').value, memberNo: memNoVal(), collector: collName(), name: $('rName').value, kind: kindText(),
       amount: $('rAmount').value ? bn($('rAmount').value) + ' টাকা' : '', words: $('rWords').value, method: methodText().replace(/\s*করুন/g, ''), time: nowText() });
+  }
+  function saveFile(pdf, no) {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(pdf.blob); a.download = 'Receipt-' + no.replace('/', '-') + '.pdf';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
   }
   $('rPrint').addEventListener('click', function () {
     if (!saved || !lastPdf) { status('error', 'আগে "সংরক্ষণ করুন" বোতামে চাপ দিন, তারপর ডাউনলোড করুন।'); return; }
@@ -203,5 +235,5 @@
     ids.forEach(show); syncKind(); syncMethod(); saved = false; lastPdf = null; lock(); status('', ''); $('rNo').value = ''; show('rNo'); nextNo();
   });
 
-  $('rDate').value = today(); ids.forEach(show); syncKind(); syncMethod(); stamp(); nextNo();
+  $('rDate').value = today(); ids.forEach(show); syncKind(); syncMethod(); syncColl(); stamp(); nextNo();
 })();

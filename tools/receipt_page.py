@@ -6,6 +6,7 @@ TYPES = ['সাধারণ সদস্য', 'প্রবাসী সদস�
 KINDS = ['নিবন্ধন ফি', 'মাসিক চাঁদা', 'বার্ষিক চাঁদা', 'বিশেষ চাঁদা', 'অফিস সংস্কার চাঁদা', 'উন্নয়ন চাঁদা', 'মিলাদ মাহফিল চাঁদা',
          'উৎসব উদযাপন চাঁদা', 'বিবাহ শুভেচ্ছা/অভিনন্দন চাঁদা', 'অন্যান্য চাঁদা']
 METHODS = ['নগদ প্রদান করুন', 'মোবাইল ব্যাংকিং এ প্রদান করুন', 'ব্যাংক একাউন্টে প্রদান করুন']
+COLLECTORS = ['জুনেদ আহমদ', 'কবির আহমদ', 'অন্য']
 MOBILE = ['বিকাশ করুন', 'নগদ করুন', 'রকেট করুন', 'অন্যান্য']
 
 
@@ -37,7 +38,7 @@ def copy(label):
     <div class="rc-r"><div class="rc-f"><label>৩। চাঁদার পরিমাণ (অঙ্কে):</label>%(am)s</div><div class="rc-f"><label>৪। চাঁদার পরিমাণ (কথায়):</label>%(wd)s</div></div>
     <div class="rc-r"><div class="rc-f"><label>৫। চাঁদা প্রদানের মাধ্যম:</label>%(me)s</div></div>
   </div>
-  <div class="rc-sign"><div>প্রদানকারীর স্বাক্ষর</div><div>আদায়কারীর স্বাক্ষর</div></div>
+  <div class="rc-sign"><div>প্রদানকারীর স্বাক্ষর</div><div class="rc-coll">আদায়কারীর স্বাক্ষর<img class="rc-sig" alt="" hidden src="../assets/img/sign-juned.png"><span class="rc-cname mir" data-for="rCollName"></span></div></div>
   <div class="rc-foot">ডাউনলোডের সময়: <span class="r-now"></span></div>
 </section></div>''' % {'l': esc(label), 'no': box('rNo'), 'dt': box('rDate'), 'ty': box('rType'), 'mn': box('rMemNo'),
                       'nm': mir('rName'), 'kd': mir('rKind'), 'am': mir('rAmount'), 'wd': mir('rWords'), 'me': mir('rMethod')}
@@ -58,7 +59,7 @@ def body():
             + inp('rNo', 'রসিদ নম্বর', extra=' readonly placeholder="স্বয়ংক্রিয়"') + inp('rDate', 'তারিখ', 'date')
             + sel('rType', 'সদস্য ধরণ', TYPES, cls='span2')
             + '<div class="field span2 sug-wrap"><label for="rName">চাঁদা প্রদানকারীর নাম</label><input id="rName" type="text" autocomplete="off" placeholder="লিখতে শুরু করুন, তালিকা থেকে বাছাই করতে পারবেন"><div class="sug" id="rSug" role="listbox" hidden></div></div>'
-            + inp('rMemNo', 'সদস্য নম্বর', 'text', 'যেমন: STS/GM/0001', cls='span2')
+            + '<div class="field span2 sug-wrap"><label for="rMemNo">সদস্য নম্বর</label><input id="rMemNo" type="text" autocomplete="off" placeholder="প্রথমে সদস্য ধরণ বাছাই করুন"><div class="sug" id="rSugNo" role="listbox" hidden></div></div>'
             + sel('rKind', 'চাঁদার ধরণ', KINDS)
             + '<div class="field" id="rKindOtherW" hidden><label for="rKindOther">অন্যান্য চাঁদা — কী চাঁদা?</label><input id="rKindOther" type="text" maxlength="40" autocomplete="off"></div>'
             + inp('rAmount', 'চাঁদার পরিমাণ (অঙ্কে)', 'text', 'যেমন: 300', extra=' inputmode="numeric"')
@@ -66,9 +67,11 @@ def body():
             + sel('rMethod', 'চাঁদা প্রদানের মাধ্যম', METHODS, cls='span2')
             + '<div class="field" id="rMobW" hidden><label for="rMob">মোবাইল ব্যাংকিং</label><div class="mob-row"><select id="rMob"><option value="">— নির্বাচন করুন —</option>'
               + ''.join('<option>%s</option>' % esc(m) for m in MOBILE) + '</select><input id="rAcc" type="text" inputmode="numeric" maxlength="11" placeholder="অ্যাকাউন্ট নম্বর" autocomplete="off" hidden></div><small class="hint-warn" id="rAccHint" hidden>অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।</small></div>'
+            + sel('rColl', 'আদায়কারীর নাম', COLLECTORS, cls='span2')
+            + '<div class="field span2" id="rCollOtherW" hidden><label for="rCollOther">আদায়কারীর নাম লিখুন</label><input id="rCollOther" type="text" maxlength="40" autocomplete="off"></div>'
             + '</div><div class="rcpt-tools"><button type="button" class="btn btn-outline" id="rPermit">🔑 অনুমতি নিন</button>'
               '<button type="button" class="btn btn-primary" id="rSave" disabled>💾 সংরক্ষণ করুন</button>'
-              '<button type="button" class="btn btn-outline" id="rPrint">⬇️ পিডিএফ ডাউনলোড</button>'
+              '<button type="button" class="btn btn-outline" id="rPrint" disabled>⬇️ পিডিএফ ডাউনলোড করুন</button>'
               '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
               '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
               '<div id="rStatus" class="status" role="status" aria-live="polite"></div>'

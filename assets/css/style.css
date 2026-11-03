@@ -343,8 +343,8 @@ small.inl{font-weight:400;color:#555}
 .rc-title { position: absolute; top: 3.1cqw; left: 13cqw; right: 1cqw; display: flex; align-items: baseline; justify-content: flex-start; gap: 1.2cqw; white-space: nowrap; overflow: hidden; }
 .rc-title b { font-size: 4.5cqw; color: #c4551a; line-height: 1.15; font-weight: 700; }
 .rc-title i { font: 700 2.5cqw "Times New Roman", Times, serif; letter-spacing: .05cqw; font-style: normal; }
-.rc-addr { position: absolute; top: 8.3cqw; left: 13cqw; right: 1cqw; text-align: left; font-size: 1.7cqw; }
-.rc-slogan { position: absolute; top: 9.6cqw; left: 0; right: 0; }
+.rc-addr { position: absolute; top: 7.7cqw; left: 13cqw; right: 1cqw; text-align: left; font-size: 1.7cqw; }
+.rc-slogan { position: absolute; top: 10.3cqw; left: 0; right: 0; }
 .rc-slogan span { background: #1aff1a; padding: 0 .4cqw; font-size: 1.55cqw; font-weight: 500; }
 .rc-pill { position: absolute; top: 17cqw; left: 50%; transform: translateX(-50%); background: #fbe5d6; border: .2cqw solid #000; border-radius: 99cqw; padding: .1cqw 4.6cqw; font-size: 2.45cqw; font-weight: 700; white-space: nowrap; }
 .rc-tag { position: absolute; top: .6cqw; right: .8cqw; background: #14502f; color: #fff; font-size: 1.25cqw; font-weight: 700; padding: .1cqw 1cqw; border-radius: 99cqw; }
@@ -357,11 +357,16 @@ small.inl{font-weight:400;color:#555}
 .rc-f { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: .4cqw; }
 .rc-f label { white-space: nowrap; font-size: 1.6cqw; margin: 0; }
 .rc-f .v { flex: 1; min-width: 0; border-bottom: .18cqw dotted #000; min-height: 1.9cqw; color: #1b2b8c; font-size: 1.6cqw; padding: 0 .3cqw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.rc-sign { position: absolute; left: 2.4cqw; right: 2.4cqw; bottom: 3.7cqw; display: flex; justify-content: space-between; }
+.rc-sign { position: absolute; left: 2.4cqw; right: 2.4cqw; bottom: 3.3cqw; display: flex; justify-content: space-between; }
 .rc-sign div { width: 22cqw; text-align: center; font-size: 1.6cqw; color: #1f4e9e; }
 .rc-sign div::before { content: ""; display: block; border-top: .22cqw dotted #000; margin: 0 2.4cqw .25cqw; height: 0; }
 
-.rc-foot { position: absolute; left: 0; right: 0; bottom: 2.15cqw; text-align: center; font-size: 1.15cqw; color: #333; }
+.rc-coll { position: relative; }
+.rc-sig { position: absolute; left: 50%; transform: translateX(-50%); bottom: 2.5cqw; width: 11cqw; height: auto; }
+.rc-cname { position: absolute; left: 0; right: 0; bottom: 2.7cqw; font-size: 1.8cqw; color: #4a148c; text-align: center; }
+.btn.btn-yellow:not(:disabled) { background: #f5c518; border-color: #d4a500; color: #3a2e00; }
+.rcpt-tools .btn:disabled { opacity: .45; cursor: not-allowed; }
+.rc-foot { position: absolute; left: 0; right: 0; bottom: 2.3cqw; text-align: center; font-size: 1.15cqw; color: #333; }
 .rc-form .mob-row { display: flex; gap: 8px; }
 .rc-form .mob-row select { flex: 1; }
 .rc-form .mob-row input { flex: 1; }

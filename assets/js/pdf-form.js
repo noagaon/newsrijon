@@ -518,7 +518,8 @@
   }
 
   // ন্যূনতম পিডিএফ রাইটার: একটি A4 পেইজে একটি JPEG ছবি
-  function jpegToPdf(jpeg, w, h, title) {
+  function jpegToPdf(jpeg, w, h, title, pw, ph) {
+    pw = pw || 595.28; ph = ph || 841.89;
     var chunks = [], offsets = [], pos = 0;
     function str(s) {
       var a = new Uint8Array(s.length);
@@ -530,12 +531,12 @@
     push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
     obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
     obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
-    obj(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+    obj(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pw + ' ' + ph + '] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
     offsets[4] = pos;
     push('4 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + w + ' /Height ' + h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpeg.length + ' >>\nstream\n');
     push(jpeg);
     push('\nendstream\nendobj\n');
-    var content = 'q\n595.28 0 0 841.89 0 0 cm\n/Im0 Do\nQ\n';
+    var content = 'q\n' + pw + ' 0 0 ' + ph + ' 0 0 cm\n/Im0 Do\nQ\n';
     obj(5, '<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream');
     obj(6, '<< /Title (' + String(title).replace(/[()\\]/g, '') + ') /Producer (srijonshil website) >>');
     var xref = pos;
