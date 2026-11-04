@@ -7,6 +7,7 @@ KINDS = ['নিবন্ধন ফি', 'মাসিক চাঁদা', 'ব
          'উৎসব উদযাপন চাঁদা', 'বিবাহ শুভেচ্ছা/অভিনন্দন চাঁদা', 'অন্যান্য চাঁদা']
 METHODS = ['নগদ প্রদান করুন', 'মোবাইল ব্যাংকিং এ প্রদান করুন', 'ব্যাংক একাউন্টে প্রদান করুন']
 COLLECTORS = ['জুনেদ আহমদ', 'কবির আহমদ', 'অন্য']
+MOBILE_LABEL = {'বিকাশ করুন': 'বিকাশ করুন- 01741217946 নম্বরে'}   # ড্রপডাউনে দেখানো লেখা (মান আগের মতোই)
 MOBILE = ['বিকাশ করুন', 'নগদ করুন', 'রকেট করুন', 'অন্যান্য']
 
 
@@ -66,7 +67,7 @@ def body():
             + inp('rWords', 'চাঁদার পরিমাণ (কথায়)', 'text', 'অঙ্ক লিখলে নিজে বসবে', extra=' readonly')
             + sel('rMethod', 'চাঁদা প্রদানের মাধ্যম', METHODS, cls='span2')
             + '<div class="field" id="rMobW" hidden><label for="rMob">মোবাইল ব্যাংকিং</label><div class="mob-row"><select id="rMob"><option value="">— নির্বাচন করুন —</option>'
-              + ''.join('<option>%s</option>' % esc(m) for m in MOBILE) + '</select><input id="rAcc" type="text" inputmode="numeric" maxlength="11" placeholder="অ্যাকাউন্ট নম্বর" autocomplete="off" hidden></div><small class="hint-warn" id="rAccHint" hidden>অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।</small></div>'
+              + ''.join('<option value="%s">%s</option>' % (esc(m), esc(MOBILE_LABEL.get(m, m))) for m in MOBILE) + '</select><input id="rAcc" type="text" inputmode="numeric" maxlength="11" placeholder="অ্যাকাউন্ট নম্বর" autocomplete="off" hidden></div><small class="hint-warn" id="rAccHint" hidden>অ্যাকাউন্ট নম্বর ১১ ডিজিটের হতে হবে।</small></div>'
             + sel('rColl', 'আদায়কারীর নাম', COLLECTORS, cls='span2')
             + '<div class="field span2" id="rCollOtherW" hidden><label for="rCollOther">আদায়কারীর নাম লিখুন</label><input id="rCollOther" type="text" maxlength="40" autocomplete="off"></div>'
             + '</div><div class="rcpt-tools"><button type="button" class="btn btn-outline" id="rPermit">🔑 অনুমতি নিন</button>'
