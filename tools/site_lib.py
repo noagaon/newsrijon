@@ -91,10 +91,14 @@ def dl_pairs(pairs):
         '<li><strong>%s</strong> %s</li>' % (esc(a), esc(b)) for a, b in pairs)
 
 
+class Raw(str):
+    """escape না করা HTML টুকরো (টেবিলের ঘরে)"""
+
+
 def table(headers, rows, empty_msg='তালিকা শীঘ্রই হালনাগাদ করা হবে।', id_=''):
     th = ''.join('<th>%s</th>' % esc(h) for h in headers)
     if rows:
-        body = ''.join('<tr>%s</tr>' % ''.join('<td data-label="%s">%s</td>' % (esc(headers[i]), esc(c)) for i, c in enumerate(r)) for r in rows)
+        body = ''.join('<tr>%s</tr>' % ''.join('<td data-label="%s">%s</td>' % (esc(headers[i]), (c if isinstance(c, Raw) else esc(c))) for i, c in enumerate(r)) for r in rows)
     else:
         body = '<tr><td colspan="%d" class="empty">%s</td></tr>' % (len(headers), esc(empty_msg))
     return '<div class="table-wrap"><table%s><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>' % (

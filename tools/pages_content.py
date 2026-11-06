@@ -262,11 +262,25 @@ BODY['structure'] = (
 )
 
 # ৬. সদস্য তালিকা
-MEMBER_HEADS = ['ক্রম', 'নাম', 'সদস্য নম্বর', 'সদস্যপদ লাভের তারিখ']
+MEMBER_HEADS = ['ক্রম', 'নাম', 'সদস্য নম্বর', 'সদস্যপদ লাভের তারিখ', 'অবস্থা']
+
+# অবস্থা: ক্রম নম্বর (১ থেকে) অনুযায়ী; তালিকায় না থাকলে Active
+INACTIVE = {'general': {5, 8, 9, 10, 11, 12, 13}, 'junior': {1, 2, 3, 4, 6, 7, 8}}
+TRANSFERRED = {'junior': {5}}
+_ARROWS = ('<span class="st-ic" aria-hidden="true"><svg viewBox="0 0 16 16" width="1em" height="1em"><path d="M2 8h10M8 3.5 12.5 8 8 12.5" fill="none" stroke="#1e9e4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+           '<svg viewBox="0 0 16 16" width="1em" height="1em"><path d="M8 14V4M3.5 8 8 3.5 12.5 8" fill="none" stroke="#1e9e4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>')
+
+
+def member_status(key, no):
+    if no in TRANSFERRED.get(key, ()):
+        return Raw('Transfared to GM ' + _ARROWS)
+    if no in INACTIVE.get(key, ()):
+        return 'Inactive ❌'
+    return 'Active ✅'
 
 
 def member_rows(key):
-    return [(str(i + 1), n, no, d or '—') for i, (n, no, d) in enumerate(MEMBERS[key])]
+    return [(str(i + 1), n, no, d or '—', member_status(key, i + 1)) for i, (n, no, d) in enumerate(MEMBERS[key])]
 
 
 BODY['members'] = (

@@ -361,6 +361,7 @@ small.inl{font-weight:400;color:#555}
 .rc-sign div { width: 22cqw; text-align: center; font-size: 1.6cqw; color: #1f4e9e; }
 .rc-sign div::before { content: ""; display: block; border-top: .22cqw dotted #000; margin: 0 2.4cqw .25cqw; height: 0; }
 
+.st-ic { display: inline-flex; gap: .05em; vertical-align: -.12em; }
 .rc-coll { position: relative; }
 .rc-sig { position: absolute; left: 50%; transform: translateX(-50%); bottom: 2.5cqw; width: 11cqw; height: auto; }
 .rc-cname { position: absolute; left: 0; right: 0; bottom: 2.7cqw; font-size: 1.8cqw; color: #4a148c; text-align: center; }
