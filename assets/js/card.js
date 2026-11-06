@@ -167,20 +167,25 @@
 
   /* ---------- ইনপুট ---------- */
   var ALL = window.SRIJON_MEMBERS || {};
-  $('cType').addEventListener('change', function () {
+  if ($('cType')) $('cType').addEventListener('change', function () {
     var k = this.value, list = ALL[k] || [], sel = $('cMember');
     $('cTypeText').value = KEY[k] || '';
     sel.disabled = !list.length;
     sel.innerHTML = '<option value="">' + (list.length ? '— বাছাই করুন —' : 'এই ধরণে এখনো সদস্য নেই') + '</option>' + list.map(function (m, i) { return '<option value="' + i + '">' + m.no + ' — ' + m.n + '</option>'; }).join('');
     schedule();
   });
-  $('cMember').addEventListener('change', function () {
+  if ($('cMember')) $('cMember').addEventListener('change', function () {
     var list = ALL[$('cType').value] || [], m = list[parseInt(this.value, 10)];
     if (m) { $('cName').value = m.n; $('cNo').value = m.no; $('cDate').value = m.d || ''; }
     schedule();
   });
   ['cName', 'cNo', 'cTypeText', 'cDate', 'cZoom', 'cPx', 'cPy'].forEach(function (id) { $(id).addEventListener('input', schedule); });
-  $('cPhoto').addEventListener('change', function () {
+  window.SrijonCard = {   // অ্যাকাউন্ট পাতা থেকে ব্যবহারের জন্য
+    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; schedule(); },
+    photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
+    render: schedule
+  };
+  if ($('cPhoto')) $('cPhoto').addEventListener('change', function () {
     var f = this.files[0]; if (!f) return;
     if (!/^image\//.test(f.type)) { status('error', 'শুধু ছবির ফাইল দিন।'); return; }
     var u = URL.createObjectURL(f), im = new Image();

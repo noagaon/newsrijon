@@ -176,15 +176,32 @@ def build_pages():
             extra = '<script src="../config.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/help.js" defer></script>'
         else:
             body = pc.BODY[slug]
+        if slug == 'members':
+            body = '<p class="lead">সদস্য আবেদন করে থাকলে নিজের অ্যাকাউন্টে ঢুকে প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব দেখুন। <a class="btn btn-primary" href="account.html">সদস্য অ্যাকাউন্ট (লগইন / খুলুন)</a></p>' + body
         write('pages/%s.html' % slug, page(slug, body, extra))
     import receipt_page
     write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/receipt-pdf.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
     import card_page
     html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
+    import account_page
+    write('pages/account.html', page('members', account_page.body(), '<script src="../config.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>', title='সদস্য অ্যাকাউন্ট', parent='members').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
     write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
 
 
+def sync_roster():
+    """অ্যাকাউন্ট-স্ক্রিপ্টে সদস্য তালিকা (নাম, নম্বর, তারিখ, ধরণ) বসায়"""
+    import json as _j
+    labels = {'general': 'সাধারণ সদস্য', 'expat': 'প্রবাসী সদস্য', 'donor': 'দাতা সদস্য', 'junior': 'জুনিয়র সদস্য'}
+    rows = [[n, no, d or '', labels[k]] for k, v in pc.MEMBERS.items() for (n, no, d) in v]
+    path = os.path.join(ROOT, 'apps-script', 'account', 'Code.gs')
+    src = open(path, encoding='utf-8').read()
+    a, b = src.index('/*ROSTER*/'), src.index('/*END*/')
+    new = '/*ROSTER*/\nvar ROSTER = ' + _j.dumps(rows, ensure_ascii=False, separators=(',', ':')) + ';\n'
+    open(path, 'w', encoding='utf-8').write(src[:a] + new + src[b:])
+
+
 if __name__ == '__main__':
+    sync_roster()
     build_home()
     build_pages()
     import json as _j

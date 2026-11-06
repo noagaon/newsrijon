@@ -388,3 +388,13 @@ small.inl{font-weight:400;color:#555}
   .rc-cut span { background: #fff; }
   .rcpt, .rc-head, .rc-tag, .rc-slogan span, .rc-pill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---- সদস্য অ্যাকাউন্ট ---- */
+.acct .tabs-links a.active { background: var(--g700); color: #fff; }
+.acct-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.acct-profile h3 { margin: 18px 0 8px; color: var(--g800); }
+.acct-profile th { text-align: left; width: 38%; background: var(--g100); font-weight: 600; }
+.acct small, .acct .muted { color: #555; }
+.fund-total { background: var(--g100); border: 1px solid #b9dcc6; border-radius: 14px; padding: 18px 22px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
+.fund-total strong { font-size: 2rem; color: var(--g800); }
+.acct [hidden] { display: none !important; }
