@@ -1,7 +1,7 @@
 /**
  * সৃজনশীল তরুণ সংঘ — "সহযোগিতা চাই" ফরমের ব্যাকএন্ড (Google Apps Script)
  *
- * স্প্রেডশিট : 1ug7goIOB8lR8NWYlimZcHMVjrOW4wXHPzKO1OKhO5sU   (ট্যাব "সহযোগিতার আবেদন" না থাকলে নিজে তৈরি হয়)
+ * স্প্রেডশিট : 1iFD7-w-ZIzLgzXo73S4Lf0-CErhYNtPQapkkK5EaaYM   (ট্যাব "সহযোগিতার আবেদন" না থাকলে নিজে তৈরি হয়)
  * ড্রাইভ ফোল্ডার : 11I5RCEjhnbK3I8cPGW2SURSv9y0f8S89          (ফরমের পিডিএফ + আবেদনকারীর সংযুক্ত পিডিএফ)
  * ইমেইল : CONFIG.MAIL_TO-তে পিডিএফসহ মেইল যায়
  *
@@ -14,7 +14,7 @@
  * কোড বদলালে: Deploy > Manage deployments > Edit > New version > Deploy।
  */
 var CONFIG = {
-  SHEET_ID: '1ug7goIOB8lR8NWYlimZcHMVjrOW4wXHPzKO1OKhO5sU',
+  SHEET_ID: '1iFD7-w-ZIzLgzXo73S4Lf0-CErhYNtPQapkkK5EaaYM',
   TAB: 'সহযোগিতার আবেদন',
   FOLDER_ID: '11I5RCEjhnbK3I8cPGW2SURSv9y0f8S89',
   MAIL_TO: 'srijonshil2011@gmail.com',
