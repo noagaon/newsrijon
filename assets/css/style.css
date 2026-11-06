@@ -362,6 +362,12 @@ small.inl{font-weight:400;color:#555}
 .rc-sign div::before { content: ""; display: block; border-top: .22cqw dotted #000; margin: 0 2.4cqw .25cqw; height: 0; }
 
 .st-ic { display: inline-flex; gap: .05em; vertical-align: -.12em; }
+.card-tool { display: grid; gap: 22px; }
+.card-preview { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.card-preview figure { margin: 0; flex: 1 1 320px; max-width: 520px; }
+.card-preview figure.portrait { flex: 0 1 300px; }
+.card-preview canvas { width: 100%; height: auto; border: 1px solid #cfd8d2; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.12); background: #fff; }
+.card-preview figcaption { text-align: center; font-size: .9rem; color: #555; margin-top: 6px; }
 .rc-coll { position: relative; }
 .rc-sig { position: absolute; left: 50%; transform: translateX(-50%); bottom: 2.5cqw; width: 11cqw; height: auto; }
 .rc-cname { position: absolute; left: 0; right: 0; bottom: 2.7cqw; font-size: 1.8cqw; color: #4a148c; text-align: center; }

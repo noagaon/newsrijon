@@ -179,6 +179,9 @@ def build_pages():
         write('pages/%s.html' % slug, page(slug, body, extra))
     import receipt_page
     write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/receipt-pdf.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
+    import card_page
+    html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
+    write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
 
 
 if __name__ == '__main__':
@@ -186,6 +189,6 @@ if __name__ == '__main__':
     build_pages()
     import json as _j
     write('assets/js/members.js', 'window.SRIJON_MEMBERS=' + _j.dumps(
-        {k: [{'n': n, 'no': no} for (n, no, d) in v] for k, v in pc.MEMBERS.items()},
+        {k: [{'n': n, 'no': no, 'd': d} for (n, no, d) in v] for k, v in pc.MEMBERS.items()},
         ensure_ascii=False, separators=(',', ':')) + ';\n')
     print('OK: index.html +', len(MENU), 'pages')
