@@ -35,6 +35,7 @@ MENU = [
     ('membership', 'সদস্য আবেদন'),
     ('past-presidents', 'প্রাক্তন সভাপতি'),
     ('support', 'সহযোগিতা করুন'),
+    ('help', 'সহযোগিতা চাই'),
     ('reports', 'প্রতিবেদন'),
     ('publications', 'প্রকাশনা'),
     ('transparency', 'স্বচ্ছতা ও জবাবদিহিতা'),

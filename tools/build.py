@@ -91,6 +91,8 @@ def home_body():
                  '<div class="chips">' + ''.join('<span class="chip">%s</span>' % esc(x) for x in ['স্বেচ্ছাসেবক হিসেবে', 'শিক্ষা সহায়তা', 'মানবিক সহায়তা']) + '</div>'
                  + '<p class="btn-row">' + btn('আর্থিক সহযোগিতা', href('support', 'financial'), 'primary') + '</p>',
                  href('support'), id_='support'))
+    import help_page
+    S.append(sec('সহযোগিতা চাই', p(help_page.INTRO_HOME), href('help'), id_='help'))
     S.append(sec('প্রতিবেদন',
                  '<div class="chips">' + ''.join('<span class="chip">%s</span>' % esc(x) for x in ['বার্ষিক প্রতিবেদন', 'কার্যক্রম প্রতিবেদন', 'আর্থিক প্রতিবেদন', 'প্রকল্প প্রতিবেদন']) + '</div>',
                  href('reports'), id_='reports'))
@@ -165,6 +167,10 @@ def build_pages():
         elif slug == 'feedback':
             body = pc.BODY[slug]
             extra = '<script src="../config.js"></script>\n<script src="../assets/js/feedback.js" defer></script>'
+        elif slug == 'help':
+            import help_page
+            body = help_page.body()
+            extra = '<script src="../config.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/help.js" defer></script>'
         else:
             body = pc.BODY[slug]
         write('pages/%s.html' % slug, page(slug, body, extra))
