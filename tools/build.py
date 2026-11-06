@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """সাইট তৈরি: index.html ও pages/*.html জেনারেট করে।  ব্যবহার: python3 tools/build.py"""
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -134,6 +135,8 @@ def home_body():
     S.append(sec('মতামত দিন',
                  p('আপনার মতামত আমাদের কাছে গুরুত্বপূর্ণ। একটি সংগঠন তখনই আরও সুন্দর ও কার্যকরভাবে এগিয়ে যেতে পারে, যখন সদস্য, স্বেচ্ছাসেবী ও শুভাকাঙ্ক্ষীদের পরামর্শ, অভিজ্ঞতা ও গঠনমূলক মতামতকে গুরুত্ব দেওয়া হয়। আপনার কোনো পরামর্শ, অভিযোগ, নতুন উদ্যোগের ধারণা কিংবা উন্নয়নের প্রস্তাব থাকলে আমাদের জানান।'),
                  href('feedback'), id_='feedback'))
+    rank = {slug: n for n, (slug, _t) in enumerate(MENU)}      # হোমের কার্ডও মেনুর ক্রমে
+    S.sort(key=lambda h: rank.get(re.search(r'id="([^"]+)"', h).group(1), 999))
     return '<div class="home-grid">%s</div>' % ''.join(S)
 
 
