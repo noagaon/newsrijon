@@ -144,10 +144,11 @@
   function download(href, name) { var a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 1500); }
   function slug() { return (info().no || 'card').replace(/[^A-Za-z0-9]+/g, '-'); }
   function png(cv, name) { cv.toBlob(function (b) { var u = URL.createObjectURL(b); download(u, name); setTimeout(function () { URL.revokeObjectURL(u); }, 4000); }, 'image/png'); }
-  function pdf(canvas, pw, ph, name) {
+  function pdf(canvas, pw, ph, name, kind) {
     return window.SrijonPDF.canvasToJpeg(canvas).then(function (j) {
       var bytes = window.SrijonPDF.jpegToPdf(j, canvas.width, canvas.height, 'Srijonshil Tarun Sangha - Member Card', pw, ph);
       var u = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); download(u, name); setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+      if (kind && window.SRIJON_ONPDF) window.SRIJON_ONPDF(kind, bytes);
     });
   }
   var MM = 72 / 25.4;
@@ -158,9 +159,9 @@
     ctx.drawImage($('cvFront'), x, y1, cw, ch); ctx.drawImage($('cvBack'), x, y2, cw, ch);
     ctx.strokeStyle = '#999'; ctx.lineWidth = 2; ctx.strokeRect(x, y1, cw, ch); ctx.strokeRect(x, y2, cw, ch);
     text(ctx, 'আসল মাপ ৮৫.৬ × ৫৪ মিমি — কেটে নিন; সামনে-পেছনে জুড়ে লেমিনেট করুন।', A4W / 2, y2 + ch + 12 * S, 400, 34, '#666', FIXF, 'center');
-    pdf(c, 595.28, 841.89, 'ID-' + slug() + '.pdf');
+    pdf(c, 595.28, 841.89, 'ID-' + slug() + '.pdf', 'id');
   });
-  $('cPhotoPdf').addEventListener('click', function () { pdf($('cvPhoto'), 105 * MM, 148 * MM, 'PhotoCard-' + slug() + '.pdf'); });
+  $('cPhotoPdf').addEventListener('click', function () { pdf($('cvPhoto'), 105 * MM, 148 * MM, 'PhotoCard-' + slug() + '.pdf', 'photo'); });
   $('cFrontPng').addEventListener('click', function () { png($('cvFront'), 'ID-front-' + slug() + '.png'); });
   $('cBackPng').addEventListener('click', function () { png($('cvBack'), 'ID-back-' + slug() + '.png'); });
   $('cPhotoPng').addEventListener('click', function () { png($('cvPhoto'), 'PhotoCard-' + slug() + '.png'); });

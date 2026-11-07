@@ -73,7 +73,15 @@ def body():
     <a href="#" data-t="profile">প্রোফাইল</a><a href="#" data-t="idcard">আইডি কার্ড</a><a href="#" data-t="photocard">ফটোকার্ড</a><a href="#" data-t="receipts">আমার রসিদ</a><a href="#" data-t="fund">চাঁদার হিসাব</a>
   </div>
 
-  <section data-tab="profile"><div id="pBody" class="acct-profile"><p>লোড হচ্ছে…</p></div></section>
+  <section data-tab="profile">
+    <div class="form-card" id="photoBox">
+      <h2>প্রোফাইল ছবি</h2>
+      <div class="photo-up"><img id="aPhotoImg" alt="আপনার ছবি" width="120" height="150" hidden>
+        <div><p>নতুন ছবি দিলে সেটি অ্যাকাউন্টে সংরক্ষিত হবে এবং আইডি কার্ড ও ফটোকার্ডে ব্যবহার হবে। পরিষ্কার, সামনে থেকে তোলা ছবি দিন (ছবি নিজে থেকে ছোট করে পাঠানো হয়)।</p>
+        <input id="aPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"> <button class="btn btn-primary" type="button" id="aPhotoGo" disabled>ছবি আপলোড করুন</button></div></div>
+    </div>
+    <div id="pBody" class="acct-profile"><p>লোড হচ্ছে…</p></div>
+  </section>
 
   <div data-cardctl hidden class="form-card no-print">
     <h2>কার্ডের ছবি ঠিক করুন</h2>
@@ -94,10 +102,12 @@ def body():
     </div></div>
     <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cIdPdf">⬇️ আইডি কার্ড (PDF)</button>
     <button class="btn btn-outline" type="button" id="cFrontPng">সামনে (ছবি)</button><button class="btn btn-outline" type="button" id="cBackPng">পেছনে (ছবি)</button></div>
+    <p class="muted saved-line" id="savedId">পিডিএফ ডাউনলোড করলে কার্ডটি আপনার অ্যাকাউন্টে নিজে থেকে সংরক্ষিত হয়।</p>
   </section>
   <section data-tab="photocard" hidden>
     <div class="card-tool"><div class="card-preview"><figure class="portrait"><canvas id="cvPhoto" width="1240" height="1748"></canvas><figcaption>ফটোকার্ড</figcaption></figure></div></div>
     <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cPhotoPdf">⬇️ ফটোকার্ড (PDF)</button><button class="btn btn-outline" type="button" id="cPhotoPng">ফটোকার্ড (ছবি)</button></div>
+    <p class="muted saved-line" id="savedPhoto">পিডিএফ ডাউনলোড করলে কার্ডটি আপনার অ্যাকাউন্টে নিজে থেকে সংরক্ষিত হয়।</p>
   </section>
 
   <section data-tab="receipts" hidden><div id="rBody"><p>লোড হচ্ছে…</p></div></section>

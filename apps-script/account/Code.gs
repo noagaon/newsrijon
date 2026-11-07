@@ -22,6 +22,10 @@ var CONFIG = {
   RECEIPT_TAB: 'চাঁদা রসিদ',
   ACCOUNT_SHEET_ID: '1N5uMSXyxJyv2xY-MzvrbS54nXp7tL3mz3z7wd3NWHgI',  // অ্যাকাউন্টের তথ্য (ইউজারনেম, হ্যাশ পাসওয়ার্ড) এই শিটে থাকে
   ACCOUNT_TAB: 'অ্যাকাউন্ট',
+  DRIVE_FOLDER_ID: '1BQVJvC8gabosUwd6T_Mx7i5AZGhZ8bMM',   // সদস্যের আপলোড করা ছবি ও সংরক্ষিত কার্ড (উপ-ফোল্ডার নিজে তৈরি হয়)
+  MAX_PHOTO_BYTES: 2 * 1024 * 1024,
+  MAX_CARD_BYTES: 6 * 1024 * 1024,
+  UPLOADS_PER_HOUR: 10,
   OTP_MINUTES: 10,
   OTP_MAX_TRIES: 5,
   RECOVER_MINUTES: 15,
@@ -35,8 +39,8 @@ var CONFIG = {
   MAX_PER_MIN: 60
 };
 
-var ACC_HEADERS = ['সদস্য নম্বর', 'নাম', 'ইউজারনেম', 'পাসওয়ার্ড (হ্যাশ)', 'সল্ট', 'রিকভারি ইমেইল', 'ফরম নম্বর', 'তৈরির সময়', 'সর্বশেষ লগইন', 'লগইন সংখ্যা'];
-var C = { NO: 0, NAME: 1, USER: 2, PW: 3, SALT: 4, MAIL: 5, FORM: 6, CREATED: 7, LAST: 8, COUNT: 9 };
+var ACC_HEADERS = ['সদস্য নম্বর', 'নাম', 'ইউজারনেম', 'পাসওয়ার্ড (হ্যাশ)', 'সল্ট', 'রিকভারি ইমেইল', 'ফরম নম্বর', 'তৈরির সময়', 'সর্বশেষ লগইন', 'লগইন সংখ্যা', 'আপলোড ছবি (ফাইল আইডি)', 'ছবি আপলোডের সময়', 'আইডি কার্ড (ফাইল আইডি)', 'আইডি কার্ড সংরক্ষণের সময়', 'ফটোকার্ড (ফাইল আইডি)', 'ফটোকার্ড সংরক্ষণের সময়'];
+var C = { NO: 0, NAME: 1, USER: 2, PW: 3, SALT: 4, MAIL: 5, FORM: 6, CREATED: 7, LAST: 8, COUNT: 9, PHOTO: 10, PHOTO_AT: 11, IDC: 12, IDC_AT: 13, PHC: 14, PHC_AT: 15 };
 
 /*ROSTER*/
 var ROSTER = [["মোঃ শাহনুর হুসাইন","STS/GM/0001","15.09.2011","সাধারণ সদস্য"],["মোঃ জুনেদ আহমদ","STS/GM/0002","15.09.2011","সাধারণ সদস্য"],["তোফায়েল আহমদ","STS/GM/0003","15.09.2011","সাধারণ সদস্য"],["মোজাহিদ আহমদ","STS/GM/0004","15.09.2011","সাধারণ সদস্য"],["মোঃ ওবায়দুল্লাহ আফজল","STS/GM/0005","16.09.2011","সাধারণ সদস্য"],["মোঃ ইব্রাহীম আলী","STS/GM/0006","16.09.2011","সাধারণ সদস্য"],["তরিকুল ইসলাম","STS/GM/0007","16.09.2011","সাধারণ সদস্য"],["মোঃ শামীম আহমদ","STS/GM/0008","16.09.2011","সাধারণ সদস্য"],["মোঃ শাহিন আহমদ","STS/GM/0009","02.12.2011","সাধারণ সদস্য"],["আলমগীর কবির","STS/GM/0010","12.12.2011","সাধারণ সদস্য"],["মোঃ আনার মিয়া","STS/GM/0011","17.01.2012","সাধারণ সদস্য"],["রবিউল মান্না","STS/GM/0012","22.06.2012","সাধারণ সদস্য"],["মোঃ তাজুল ইসলাম রুবেল তালুকদার","STS/GM/0013","19.01.2013","সাধারণ সদস্য"],["মোঃ কবির আহমদ","STS/GM/0014","24.04.2026","সাধারণ সদস্য"],["জুবায়ের আহমদ জুবের","STS/GM/0015","24.04.2026","সাধারণ সদস্য"],["ইমরান হোসেন","STS/GM/0016","24.04.2026","সাধারণ সদস্য"],["মোঃ নজরুল ইসলাম","STS/GM/0017","24.04.2026","সাধারণ সদস্য"],["মোঃ সুহেল আহমদ","STS/GM/0018","24.04.2026","সাধারণ সদস্য"],["মোঃ ইকবাল হোসেন","STS/GM/0019","24.04.2026","সাধারণ সদস্য"],["মোঃ আব্দুল ওয়াদুদ","STS/GM/0020","24.04.2026","সাধারণ সদস্য"],["আলী আকবর","STS/GM/0021","25.04.2026","সাধারণ সদস্য"],["নাহিদ হোসেন তাম্বির","STS/GM/0022","25.04.2026","সাধারণ সদস্য"],["কামিল হোসেন","STS/GM/0023","25.04.2026","সাধারণ সদস্য"],["সাকিব আহমদ","STS/GM/0024","28.04.2026","সাধারণ সদস্য"],["আরিফুর রহমান","STS/GM/0025","28.04.2026","সাধারণ সদস্য"],["মোঃ নাহিদ আহমদ","STS/GM/0026","30.04.2026","সাধারণ সদস্য"],["মোঃ জামাল আহমদ","STS/GM/0027","30.04.2026","সাধারণ সদস্য"],["মোঃ রাসেল আহমদ","STS/GM/0028","30.04.2026","সাধারণ সদস্য"],["মোঃ জুয়েল রাজ","STS/GM/0029","30.04.2026","সাধারণ সদস্য"],["সুমন আহমদ","STS/GM/0030","30.04.2026","সাধারণ সদস্য"],["মোঃ মাহবুবুর রহমান","STS/GM/0031","30.04.2026","সাধারণ সদস্য"],["হাফিজুর রহমান ইমন","STS/GM/0032","30.04.2026","সাধারণ সদস্য"],["মোঃ সাঈদ মোহতাদী","STS/GM/0033","30.04.2026","সাধারণ সদস্য"],["মোঃ ইয়াসিন হোসেন জাহেদ","STS/GM/0034","30.04.2026","সাধারণ সদস্য"],["মোঃ জাহেদ আহমদ","STS/GM/0035","30.04.2026","সাধারণ সদস্য"],["মোঃ ছাবিল আহমদ","STS/GM/0036","05.05.2026","সাধারণ সদস্য"],["মোঃ হাসানুল হক শিবলু","STS/GM/0037","05.05.2026","সাধারণ সদস্য"],["হুসাইন আহমদ","STS/GM/0038","05.05.2026","সাধারণ সদস্য"],["মোঃ পাবেল আহমদ","STS/GM/0039","05.05.2026","সাধারণ সদস্য"],["মোঃ এহসানুল হক ইমন","STS/GM/0040","05.05.2026","সাধারণ সদস্য"],["মোঃ আবু বক্কর","STS/GM/0041","05.05.2026","সাধারণ সদস্য"],["মোঃ ইসলাম উদ্দিন","STS/GM/0042","05.05.2026","সাধারণ সদস্য"],["মোঃ হামিদুর রহমান মুন্না","STS/GM/0043","09.05.2026","সাধারণ সদস্য"],["মোঃ মিলাদ","STS/GM/0044","09.05.2026","সাধারণ সদস্য"],["মোঃ রাজু মিয়া","STS/GM/0045","09.05.2026","সাধারণ সদস্য"],["মোঃ রিপন","STS/GM/0046","09.05.2026","সাধারণ সদস্য"],["আব্দুর রহমান শাকিল","STS/GM/0047","09.05.2026","সাধারণ সদস্য"],["মোহাম্মদ আলী আসগর","STS/GM/0048","09.05.2026","সাধারণ সদস্য"],["মোহাম্মদ আলী জাবের","STS/GM/0049","09.05.2026","সাধারণ সদস্য"],["আলী আহসান","STS/GM/0050","09.05.2026","সাধারণ সদস্য"],["আতিকুর রহমান","STS/OM/0001","14.05.2026","প্রবাসী সদস্য"],["মোঃ কামাল হোসেন","STS/OM/0002","26.05.2026","প্রবাসী সদস্য"],["মোঃ হাসান সাঈদ খাঁন নাহিদ","STS/OM/0003","27.05.2026","প্রবাসী সদস্য"],["মোঃ মনছূর আহমদ","STS/JM/0001","07.10.2011","জুনিয়র সদস্য"],["কুকন","STS/JM/0002","07.10.2011","জুনিয়র সদস্য"],["মোঃ ইমাম উদ্দিন","STS/JM/0003","07.10.2011","জুনিয়র সদস্য"],["আসিক","STS/JM/0004","07.10.2011","জুনিয়র সদস্য"],["মোঃ আবু বক্কর","STS/JM/0005","07.10.2011","জুনিয়র সদস্য"],["মোঃ আজাদ আহমদ","STS/JM/0006","07.10.2011","জুনিয়র সদস্য"],["মোঃ আশরাফ আহমদ","STS/JM/0007","07.10.2011","জুনিয়র সদস্য"],["মোঃ আফজাল হোসেন সায়েম","STS/JM/0008","09.10.2011","জুনিয়র সদস্য"],["মোঃ অলিউর রহমান","STS/JM/0009","20.04.2026","জুনিয়র সদস্য"],["মোঃ আলহাজ আহমদ","STS/JM/0010","20.04.2026","জুনিয়র সদস্য"]];
@@ -61,6 +65,9 @@ function doPost(e) {
       case 'acct_logout': CacheService.getScriptCache().remove('tk_' + safeTok_(r.token)); return json_({ ok: true });
       case 'acct_profile': return json_(withSession_(r, profile_));
       case 'acct_photo': return json_(withSession_(r, photo_));
+      case 'acct_photo_upload': return json_(withSession_(r, photoUpload_));
+      case 'acct_card_save': return json_(withSession_(r, cardSave_));
+      case 'acct_card_get': return json_(withSession_(r, cardGet_));
       case 'acct_receipts': return json_(withSession_(r, receipts_));
       case 'acct_receipt_pdf': return json_(withSession_(r, receiptPdf_));
     }
@@ -123,6 +130,8 @@ function accSheet_() {
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, ACC_HEADERS.length).setValues([ACC_HEADERS]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
     sh.setFrozenRows(1);
+  } else if (sh.getLastColumn() < ACC_HEADERS.length) {     // পুরনো শিটে নতুন কলাম যোগ
+    sh.getRange(1, 1, 1, ACC_HEADERS.length).setValues([ACC_HEADERS]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
   }
   return sh;
 }
@@ -247,7 +256,7 @@ function signupVerify_(r) {
     var email = cell_(m.t, m.row, 'ইমেইল').trim().toLowerCase();
     if (!validEmail_(email)) { email = String(r.email || '').trim().toLowerCase(); if (!validEmail_(email)) return { ok: false, error: 'need_email' }; }
     var salt = Utilities.getUuid();
-    accSheet_().appendRow([m.no || no, m.nameBn, user, pwHash_(pw, salt), salt, email, cell_(m.t, m.row, 'ফরম নম্বর'), now_(), '', 0]);
+    accSheet_().appendRow([m.no || no, m.nameBn, user, pwHash_(pw, salt), salt, email, cell_(m.t, m.row, 'ফরম নম্বর'), now_(), '', 0, '', '', '', '', '', '']);
     CacheService.getScriptCache().remove('sp_' + hmac_(no));
     return { ok: true, emailMasked: maskEmail_(email) };
   } finally { lock.releaseLock(); }
@@ -331,15 +340,68 @@ function profile_(no) {
   });
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
   return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '' },
-    hasPhoto: !!driveId_(cell_(a.t, a.row, 'ছবির লিংক')) };
+    hasPhoto: !!(String(acc0_(no, C.PHOTO)) || driveId_(cell_(a.t, a.row, 'ছবির লিংক'))),
+    saved: { id: String(acc0_(no, C.IDC_AT)), photo: String(acc0_(no, C.PHC_AT)) } };
 }
+function acc0_(no, col) { var a = findAccount_(no); return a ? (a.v[col] || '') : ''; }
 function driveId_(url) { var m = String(url || '').match(/[-\w]{25,}/); return m ? m[0] : ''; }
 function photo_(no) {
   var a = applicationRow_(no); if (!a) return { ok: false, error: 'notfound' };
-  var id = driveId_(cell_(a.t, a.row, 'ছবির লিংক')); if (!id) return { ok: false, error: 'nophoto' };
+  var acc = findAccount_(no), id = (acc && String(acc.v[C.PHOTO] || '')) || driveId_(cell_(a.t, a.row, 'ছবির লিংক')); if (!id) return { ok: false, error: 'nophoto' };
   var b = DriveApp.getFileById(id).getBlob();
   if (b.getBytes().length > 9 * 1024 * 1024) return { ok: false, error: 'toolarge' };
   return { ok: true, mime: b.getContentType() || 'image/jpeg', data: Utilities.base64Encode(b.getBytes()) };
+}
+
+// ---------------------------------------------------------------- ছবি আপলোড ও কার্ড সংরক্ষণ (ড্রাইভ)
+function subFolder_(name) {
+  var root = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID), it = root.getFoldersByName(name);
+  return it.hasNext() ? it.next() : root.createFolder(name);
+}
+function uploadGuard_(no) {
+  var c = CacheService.getScriptCache(), k = 'up_' + hmac_(no) + '_' + Math.floor(Date.now() / 3600000), n = Number(c.get(k) || 0) + 1;
+  c.put(k, String(n), 3700);
+  return n <= CONFIG.UPLOADS_PER_HOUR;
+}
+function slug_(no) { return String(no).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+function bytesOf_(b64, max) {
+  var s = String(b64 || '').replace(/^data:[^,]*,/, '');
+  if (!s || s.length > max * 1.4) return null;
+  var b = Utilities.base64Decode(s);
+  return b.length > max ? null : b;
+}
+function saveFile_(acc, folderName, fileName, blob, idCol, atCol) {
+  var folder = subFolder_(folderName), old = String(acc.v[idCol] || '');
+  var f = folder.createFile(blob.setName(fileName));
+  acc.sh.getRange(acc.row, idCol + 1, 1, 1).setValue(f.getId());
+  acc.sh.getRange(acc.row, atCol + 1, 1, 1).setValue(now_());
+  if (old) { try { DriveApp.getFileById(old).setTrashed(true); } catch (e) {} }   // আগেরটি ট্র্যাশে
+  return f;
+}
+function photoUpload_(no, r) {
+  var acc = findAccount_(no); if (!acc) return { ok: false, error: 'notfound' };
+  if (!uploadGuard_(no)) return { ok: false, error: 'too_many' };
+  var b = bytesOf_(r.data, CONFIG.MAX_PHOTO_BYTES);
+  if (!b || b.length < 4 || (b[0] & 255) !== 0xFF || (b[1] & 255) !== 0xD8) return { ok: false, error: 'bad_image' };   // শুধু JPEG (সাইট ছোট করে JPEG বানিয়ে পাঠায়)
+  saveFile_(acc, 'সদস্যের ছবি', 'Photo-' + slug_(no) + '-' + now_().replace(/\D/g, '') + '.jpg', Utilities.newBlob(b, 'image/jpeg'), C.PHOTO, C.PHOTO_AT);
+  return { ok: true };
+}
+function cardSave_(no, r) {
+  var acc = findAccount_(no); if (!acc) return { ok: false, error: 'notfound' };
+  var kind = r.kind === 'photo' ? 'photo' : (r.kind === 'id' ? 'id' : '');
+  if (!kind) return { ok: false, error: 'invalid' };
+  if (!uploadGuard_(no)) return { ok: false, error: 'too_many' };
+  var b = bytesOf_(r.data, CONFIG.MAX_CARD_BYTES);
+  if (!b || String.fromCharCode(b[0] & 255, b[1] & 255, b[2] & 255, b[3] & 255) !== '%PDF') return { ok: false, error: 'bad_pdf' };
+  var name = (kind === 'id' ? 'ID-' : 'PhotoCard-') + slug_(no) + '.pdf';
+  saveFile_(acc, 'সংরক্ষিত কার্ড', name, Utilities.newBlob(b, 'application/pdf'), kind === 'id' ? C.IDC : C.PHC, kind === 'id' ? C.IDC_AT : C.PHC_AT);
+  return { ok: true, at: now_() };
+}
+function cardGet_(no, r) {
+  var acc = findAccount_(no); if (!acc) return { ok: false, error: 'notfound' };
+  var kind = r.kind === 'photo' ? 'photo' : 'id', id = String(acc.v[kind === 'id' ? C.IDC : C.PHC] || '');
+  if (!id) return { ok: false, error: 'nocard' };
+  return { ok: true, name: (kind === 'id' ? 'ID-' : 'PhotoCard-') + slug_(no) + '.pdf', data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
 }
 
 // ---------------------------------------------------------------- রসিদ ও চাঁদার হিসাব

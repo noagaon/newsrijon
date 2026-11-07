@@ -19,6 +19,7 @@
     sms_not_configured: 'আপনার আবেদনে ইমেইল নেই এবং SMS সেবাও চালু নেই, তাই কোড পাঠানো যাচ্ছে না। কর্তৃপক্ষের সাথে যোগাযোগ করুন।',
     mail_failed: 'কোড ইমেইলে পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
     sms_failed: 'OTP পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    bad_image: 'ছবিটি নেওয়া যায়নি। JPG/PNG ছবি দিন।', bad_pdf: 'কার্ড সংরক্ষণ করা যায়নি।', too_many: 'অনেক বেশিবার আপলোড হয়েছে, এক ঘণ্টা পরে চেষ্টা করুন।', nocard: 'সংরক্ষিত কার্ড পাওয়া যায়নি।',
     too_many_otp: 'এই নম্বরে ঘণ্টায় অনেকবার OTP চাওয়া হয়েছে। পরে চেষ্টা করুন।',
     otp_wrong: 'কোড ভুল হয়েছে।', otp_expired: 'কোডের মেয়াদ শেষ বা ভুল চেষ্টা বেশি হয়েছে। নতুন কোড নিন।',
     bad_username: 'ইউজারনেম ৩–৩০ অক্ষরের, ইংরেজি ছোট হরফ/সংখ্যা/_/. দিয়ে হতে হবে।',
@@ -123,9 +124,55 @@
         return '<h3>' + esc(g.title) + '</h3><div class="table-wrap"><table><tbody>' + g.items.map(function (i) { return '<tr><th scope="row">' + esc(i.k) + '</th><td>' + esc(i.v) + '</td></tr>'; }).join('') + '</tbody></table></div>';
       }).join('') + '<p class="muted">এনআইডি/জন্মনিবন্ধন নম্বরের শেষ ৪ সংখ্যা ছাড়া বাকি অংশ নিরাপত্তার জন্য ঢেকে দেখানো হয়। তথ্যে ভুল থাকলে কর্তৃপক্ষকে জানান।</p>';
       if (window.SrijonCard) window.SrijonCard.set(r.card);
-      if (r.hasPhoto) api('acct_photo').then(function (p) { if (p.ok && window.SrijonCard) window.SrijonCard.photo('data:' + p.mime + ';base64,' + p.data); }).catch(function () {});
+      loaded.sv = r.saved; showSaved(r.saved);
+      if (r.hasPhoto) api('acct_photo').then(function (p) { if (p.ok && window.SrijonCard) { var du = 'data:' + p.mime + ';base64,' + p.data; window.SrijonCard.photo(du); $('aPhotoImg').src = du; $('aPhotoImg').hidden = false; } }).catch(function () {});
     }).catch(function () { loaded.profile = 0; });
   }
+  /* ---------- সংরক্ষিত কার্ড ও ছবি আপলোড ---------- */
+  var SAVE_TXT = { id: 'আইডি কার্ড', photo: 'ফটোকার্ড' };
+  function showSaved(sv) {
+    sv = sv || {};
+    [['id', 'savedId'], ['photo', 'savedPhoto']].forEach(function (x) {
+      var el = $(x[1]); if (!el) return;
+      el.innerHTML = (sv[x[0]] ? 'সংরক্ষিত ' + SAVE_TXT[x[0]] + ' (' + esc(bn(sv[x[0]])) + ') <button class="btn btn-outline" type="button" data-getcard="' + x[0] + '">⬇️ সংরক্ষিত কপি ডাউনলোড</button> — ' : '') + 'পিডিএফ ডাউনলোড করলে কার্ডটি আপনার অ্যাকাউন্টে নিজে থেকে সংরক্ষিত হয়।';
+    });
+  }
+  function saveDownload(b64, name) {
+    var bin = atob(b64), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    var u = URL.createObjectURL(new Blob([a], { type: 'application/pdf' })), l = document.createElement('a'); l.href = u; l.download = name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); URL.revokeObjectURL(u); }, 1500);
+  }
+  function b64OfBytes(bytes) { var s = '', ch = 0x8000; for (var i = 0; i < bytes.length; i += ch) s += String.fromCharCode.apply(null, bytes.subarray(i, i + ch)); return btoa(s); }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-getcard]'); if (!b) return; b.disabled = true;
+    api('acct_card_get', { kind: b.dataset.getcard }).then(function (r) { b.disabled = false; if (!r.ok) { status('error', errMsg(r)); return; } saveDownload(r.data, r.name); }).catch(function () { b.disabled = false; });
+  });
+  window.SRIJON_ONPDF = function (kind, bytes) {
+    if (!token) return;
+    api('acct_card_save', { kind: kind, data: b64OfBytes(new Uint8Array(bytes)) }).then(function (r) {
+      if (r.ok) { var sv = Object.assign({}, loaded.sv || {}); sv[kind] = r.at; loaded.sv = sv; showSaved(sv); status('info', SAVE_TXT[kind] + ' আপনার অ্যাকাউন্টে সংরক্ষিত হয়েছে।'); }
+      else status('error', errMsg(r));
+    }).catch(function () {});
+  };
+  // ছবি আপলোড: ছোট করে JPEG বানিয়ে পাঠানো
+  var upFile = null;
+  $('aPhotoFile').addEventListener('change', function () { upFile = this.files[0] || null; $('aPhotoGo').disabled = !upFile; });
+  $('aPhotoGo').addEventListener('click', function () {
+    if (!upFile) return; var btn = this;
+    if (!/^image\//.test(upFile.type)) { status('error', 'শুধু ছবির ফাইল দিন।'); return; }
+    var im = new Image(), u = URL.createObjectURL(upFile);
+    im.onerror = function () { status('error', 'ছবিটি খোলা যায়নি।'); };
+    im.onload = function () {
+      var m = 1000, k = Math.min(1, m / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      var data = c.toDataURL('image/jpeg', 0.9);
+      run(btn, { action: 'acct_photo_upload', token: token, data: data }, function () {
+        $('aPhotoImg').src = data; $('aPhotoImg').hidden = false; if (window.SrijonCard) window.SrijonCard.photo(data);
+        $('aPhotoFile').value = ''; upFile = null; btn.disabled = true; status('info', 'ছবি সংরক্ষিত হয়েছে। আইডি কার্ড ও ফটোকার্ডে নতুন ছবি ব্যবহার হবে।');
+      });
+    };
+    im.src = u;
+  });
+
   function loadReceipts() {
     if (loaded.rc) return; loaded.rc = 1;
     api('acct_receipts').then(function (r) {

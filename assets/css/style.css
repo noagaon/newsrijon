@@ -412,3 +412,7 @@ small.inl{font-weight:400;color:#555}
 .home-bar-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .home-bar-btns .btn-outline { background: #fff; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.photo-up { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.photo-up img { width: 120px; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid #cfe0d5; }
+.photo-up > div { flex: 1 1 260px; }
+.saved-line { margin-top: 10px; }
