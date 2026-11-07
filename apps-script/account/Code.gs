@@ -20,6 +20,7 @@ var CONFIG = {
   APPLY_TAB: 'আবেদন',
   RECEIPT_SHEET_ID: '1J0qRZ_vPAQaFHWWQId1wVRtfH57t04-Pvle0xvgAyPI',  // রসিদ শিট
   RECEIPT_TAB: 'চাঁদা রসিদ',
+  ACCOUNT_SHEET_ID: '1N5uMSXyxJyv2xY-MzvrbS54nXp7tL3mz3z7wd3NWHgI',  // অ্যাকাউন্টের তথ্য (ইউজারনেম, হ্যাশ পাসওয়ার্ড) এই শিটে থাকে
   ACCOUNT_TAB: 'অ্যাকাউন্ট',
   OTP_MINUTES: 10,
   OTP_MAX_TRIES: 5,
@@ -117,7 +118,7 @@ function readSheet_(ssId, tab) {
 function cell_(t, row, name) { var i = t.head.indexOf(name); return i < 0 ? '' : String(row[i] == null ? '' : row[i]); }
 
 function accSheet_() {
-  var ss = SpreadsheetApp.openById(CONFIG.MAIN_SHEET_ID), sh = ss.getSheetByName(CONFIG.ACCOUNT_TAB);
+  var ss = SpreadsheetApp.openById(CONFIG.ACCOUNT_SHEET_ID), sh = ss.getSheetByName(CONFIG.ACCOUNT_TAB);
   if (!sh) sh = ss.insertSheet(CONFIG.ACCOUNT_TAB);
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, ACC_HEADERS.length).setValues([ACC_HEADERS]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
