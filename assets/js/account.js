@@ -9,8 +9,8 @@
   function money(n) { return '৳ ' + bn(Number(n || 0).toLocaleString('en-US')); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function status(cls, m) { var s = $('aStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = m || ''; if (m) s.scrollIntoView({ block: 'nearest' }); }
-  function store(v) { try { if (v) sessionStorage.setItem(TK, v); else sessionStorage.removeItem(TK); } catch (e) {} }
-  function stored() { try { return sessionStorage.getItem(TK) || ''; } catch (e) { return ''; } }
+  function store(v) { try { if (v) localStorage.setItem(TK, v); else { localStorage.removeItem(TK); sessionStorage.removeItem(TK); } } catch (e) { try { if (v) sessionStorage.setItem(TK, v); } catch (e2) {} } }   // লগআউট না করা পর্যন্ত এই ডিভাইসে লগইন থাকে
+  function stored() { try { return localStorage.getItem(TK) || sessionStorage.getItem(TK) || ''; } catch (e) { return ''; } }
 
   var ERR = {
     invalid: 'তথ্য সঠিকভাবে দিন (এনআইডি শুধু সংখ্যা)।',

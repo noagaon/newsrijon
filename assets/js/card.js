@@ -40,7 +40,8 @@
     if (photo) {
       var zoom = parseFloat($('cZoom').value) || 1, px = parseFloat($('cPx').value) / 100, py = parseFloat($('cPy').value) / 100;
       var sc = Math.max(w / photo.width, h / photo.height) * zoom, dw = photo.width * sc, dh = photo.height * sc;
-      var ox = x + (w - dw) / 2 + px * (dw - w) / 2, oy = y + (h - dh) / 2 + py * (dh - h) / 2;
+      var ox = x + (w - dw) / 2 + px * Math.abs(dw - w) / 2, oy = y + (h - dh) / 2 + py * Math.abs(dh - h) / 2;
+      if (zoom < 1) { ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, h); }   // ছবি ফ্রেমের চেয়ে ছোট হলে চারপাশ সাদা
       ctx.drawImage(photo, ox, oy, dw, dh);
     } else {
       var g = ctx.createLinearGradient(x, y, x, y + h); g.addColorStop(0, '#cfe6d8'); g.addColorStop(1, '#a9cdb8'); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
@@ -59,7 +60,6 @@
   }
 
   /* ---------- আইডি কার্ড: সামনে (১০১২×৬৩৮ = ৮৫.৬×৫৪ মিমি, ৩০০ ডিপিআই) ---------- */
-  function frameScale() { var e = $('cSize'), v = e ? parseFloat(e.value) : 100; return Math.min(1, Math.max(.7, (isNaN(v) ? 100 : v) / 100)); }
   function drawFront(cv) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = info();
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); watermark(ctx, W, H, 420, .06);
@@ -71,8 +71,7 @@
     text(ctx, 'নোয়াগাঁও, টুকেরবাজার, সিলেট • স্থাপিত ২০১১', 152, 130, 400, 22, '#d9efe2', SANS, 'left', 640);
     text(ctx, 'সদস্য পরিচয়পত্র', W - 36, 55, 700, 30, '#fff', FIXF, 'right');
     // ছবি
-    var px = 40, py = 186, pw = 250, ph = 310, k = frameScale();   // ছবির ফ্রেম ছোট করার স্লাইডার (৭০%–১০০%)
-    px += pw * (1 - k) / 2; py += ph * (1 - k) / 2; pw *= k; ph *= k;
+    var px = 40, py = 186, pw = 250, ph = 310;
     ctx.fillStyle = G2; rrect(ctx, px - 6, py - 6, pw + 12, ph + 12, 28); ctx.fill();
     drawPhoto(ctx, px, py, pw, ph, function () { rrect(ctx, px, py, pw, ph, 22); });
     // লেখা
@@ -119,8 +118,7 @@
     text(ctx, 'সৃজনশীল', TX, 130, 700, 112, '#fff', FIXF, 'left', W - TX - 120); text(ctx, 'তরুণ সংঘ', TX, 250, 700, 112, '#fff', FIXF, 'left', W - TX - 120);
     text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 335, 700, 38, '#ffe2bd', '"Times New Roman",Times,serif', 'left', W - TX - 120);
     // ছবি
-    var px = Math.round(W * .36), py = 440, pw = W - px, ph = 760, k = frameScale();
-    px = W - pw * k; py = py + ph - ph * k; pw *= k; ph *= k;     // ছবির ফ্রেম ডান-নিচ ঠিক রেখে ছোট হয়
+    var px = Math.round(W * .36), py = 440, pw = W - px, ph = 760;
     var tc = document.createElement('canvas'); tc.width = W; tc.height = H; var tx2 = tc.getContext('2d');
     drawPhoto(tx2, px, py, pw, ph, function () { tx2.beginPath(); tx2.moveTo(px + 170, py); tx2.lineTo(W, py); tx2.lineTo(W, py + ph); tx2.lineTo(px + 170, py + ph); tx2.arcTo(px, py + ph, px, py + ph - 170, 170); tx2.lineTo(px, py + 170); tx2.arcTo(px, py, px + 170, py, 170); tx2.closePath(); });
     // বাম দিকে হালকা গ্লো (মিলিয়ে যাওয়া), নিচের গ্লোর মতো
@@ -129,9 +127,12 @@
     // নিচের দিকে হালকা মিলিয়ে যাওয়া
     var fg = ctx.createLinearGradient(0, py + ph - 130, 0, py + ph + 4); fg.addColorStop(0, 'rgba(246,249,228,0)'); fg.addColorStop(1, 'rgba(246,249,228,1)'); ctx.fillStyle = fg; ctx.fillRect(px, py + ph - 130, pw, 134);
     // খাড়া লেখা
-    var EN = (en(d.type) || 'Member').toUpperCase(), SERIF = '"Times New Roman",Times,serif', fs = 80;   // শুধু একটি লেখা: GENERAL MEMBER ইত্যাদি
-    font(ctx, 700, fs, SERIF); while (ctx.measureText('EXPATRIATE MEMBER').width > 700 && fs > 20) { fs--; font(ctx, 700, fs, SERIF); }
-    ctx.save(); ctx.translate(45, py + ph - 30); ctx.rotate(-Math.PI / 2); text(ctx, EN, 0, 0, 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left'); ctx.restore();
+    // খাড়া লেখা দুই লাইনে: GENERAL / MEMBER (আগের বড় Times স্টাইল), সব ধরণে একই আকার
+    var WORD = (en(d.type).split(' ')[0] || '').toUpperCase(), SERIF = '"Times New Roman",Times,serif', fs = 120;
+    font(ctx, 700, fs, SERIF); while (ctx.measureText('EXPATRIATE').width > 700 && fs > 30) { fs--; font(ctx, 700, fs, SERIF); }
+    ctx.save(); ctx.translate(0, py + ph - 20); ctx.rotate(-Math.PI / 2);
+    if (WORD) text(ctx, WORD, 0, 78, 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left');     // উপরের (বাঁ) লাইন
+    text(ctx, 'MEMBER', 0, 78 + Math.round(fs * 1.02), 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left'); ctx.restore();
     ctx.save(); ctx.translate(262, py + ph - 20); ctx.rotate(-Math.PI / 2); text(ctx, d.type, 0, 0, 500, 46, 'rgba(60,60,60,.75)', FIXF, 'left'); ctx.restore();
     // নাম, নম্বর
     var tx = 96, tw = W - 2 * tx, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;

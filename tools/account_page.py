@@ -91,8 +91,7 @@ def body():
     <h2>কার্ডের ছবি ঠিক করুন</h2>
     <div class="grid-form">
       <div class="field"><label for="cPhoto">অন্য ছবি দিতে চাইলে (ঐচ্ছিক)</label><input id="cPhoto" type="file" accept="image/*"></div>
-      <div class="field"><label for="cZoom">ছবি বড়-ছোট</label><input id="cZoom" type="range" min="1" max="3" step="0.05" value="1"></div>
-    <div class="field"><label for="cSize">ছবির ফ্রেম ছোট করুন (১০০%% → ৭০%%)</label><input id="cSize" type="range" min="70" max="100" step="1" value="100"><small>আইডি কার্ড ও ফটোকার্ড দুটোতেই কাজ করে।</small></div>
+      <div class="field"><label for="cZoom">ছবি বড়-ছোট (ফ্রেম একই থাকে)</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
       <div class="field"><label for="cPx">ডানে-বামে</label><input id="cPx" type="range" min="-100" max="100" step="1" value="0"></div>
       <div class="field"><label for="cPy">উপরে-নিচে</label><input id="cPy" type="range" min="-100" max="100" step="1" value="0"></div>
     </div>

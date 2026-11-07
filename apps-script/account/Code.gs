@@ -31,7 +31,7 @@ var CONFIG = {
   SENDER_NAME: 'সৃজনশীল তরুণ সংঘ',
   LOGIN_MAX_FAILS: 5,          // এত বার ভুল হলে ...
   LOCK_MINUTES: 30,            // ... এত মিনিট তালা
-  SESSION_HOURS: 6,
+  SESSION_DAYS: 180,           // লগআউট না করলে এই ডিভাইসে লগইন এতদিন থাকে (ব্যবহার করলে মেয়াদ বাড়ে)
   MAX_PER_MIN: 60
 };
 
@@ -58,7 +58,7 @@ function doPost(e) {
       case 'acct_login': return json_(login_(r));
       case 'acct_recover_start': return json_(recoverStart_(r));
       case 'acct_recover_verify': return json_(recoverVerify_(r));
-      case 'acct_logout': CacheService.getScriptCache().remove('tk_' + safeTok_(r.token)); return json_({ ok: true });
+      case 'acct_logout': endSession_(r.token); return json_({ ok: true });
       case 'acct_profile': return json_(withSession_(r, profile_));
       case 'acct_photo': return json_(withSession_(r, photo_));
       case 'acct_photo_upload': return json_(withSession_(r, photoUpload_));
@@ -248,7 +248,7 @@ function login_(r) {
   }
   c.remove(lk);
   var tok = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
-  c.put('tk_' + tok, String(acc.v[C.NO]), CONFIG.SESSION_HOURS * 3600);
+  newSession_(tok, String(acc.v[C.NO]));
   acc.sh.getRange(acc.row, C.LAST + 1, 1, 2).setValues([[now_(), Number(acc.v[C.COUNT] || 0) + 1]]);
   return { ok: true, token: tok, memberNo: String(acc.v[C.NO]), name: String(acc.v[C.NAME]), username: String(acc.v[C.USER]) };
 }
@@ -271,12 +271,47 @@ function recoverVerify_(r) {
     var salt = Utilities.getUuid();
     acc.sh.getRange(acc.row, C.PW + 1, 1, 2).setValues([[pwHash_(pw, salt), salt]]);
     CacheService.getScriptCache().remove('lk_' + hmac_(user));
+    endAllSessions_(String(acc.v[C.NO]));
     return { ok: true };
   } finally { lock.releaseLock(); }
 }
+// লম্বা মেয়াদের সেশন: ক্যাশে (দ্রুত, ৬ ঘণ্টা) + Script properties-এ (দীর্ঘস্থায়ী, হ্যাশ করা টোকেন)।
+// ক্যাশ/প্রপার্টির মান: "সদস্য নম্বর|মেয়াদ|তৈরির সময়"। পাসওয়ার্ড বদলালে "rev_" চিহ্ন দিয়ে আগের সব সেশন বাতিল হয়।
+function revAt_(props, no) { return Number(props.getProperty('rev_' + hmac_(normNo_(no))) || 0); }
+function newSession_(tok, no) {
+  var props = PropertiesService.getScriptProperties(), now = Date.now(), all = props.getProperties();
+  Object.keys(all).forEach(function (k) {                                   // মেয়াদ-শেষ সেশন সাফ
+    if (k.indexOf('ses_') === 0 && Number(String(all[k]).split('|')[1]) < now) props.deleteProperty(k);
+  });
+  var v = no + '|' + (now + CONFIG.SESSION_DAYS * 86400000) + '|' + now;
+  props.setProperty('ses_' + hmac_(tok), v);
+  CacheService.getScriptCache().put('tk_' + tok, v, 6 * 3600);
+}
+function endSession_(tok) {
+  tok = safeTok_(tok); if (!tok) return;
+  CacheService.getScriptCache().remove('tk_' + tok);
+  PropertiesService.getScriptProperties().deleteProperty('ses_' + hmac_(tok));
+}
+function endAllSessions_(no) {                                                // পাসওয়ার্ড বদলালে সব ডিভাইস লগআউট
+  var props = PropertiesService.getScriptProperties();
+  props.setProperty('rev_' + hmac_(normNo_(no)), String(Date.now() + 1));
+  var all = props.getProperties();
+  Object.keys(all).forEach(function (k) { if (k.indexOf('ses_') === 0 && noEq_(String(all[k]).split('|')[0], no)) props.deleteProperty(k); });
+}
 function withSession_(r, fn) {
-  var no = CacheService.getScriptCache().get('tk_' + safeTok_(r.token));
-  if (!no) return { ok: false, error: 'session' };
+  var tok = safeTok_(r.token); if (!tok) return { ok: false, error: 'session' };
+  var c = CacheService.getScriptCache(), props = PropertiesService.getScriptProperties(), v = c.get('tk_' + tok), k = 'ses_' + hmac_(tok);
+  if (!v) {
+    v = props.getProperty(k);
+    if (v && Number(v.split('|')[1]) <= Date.now()) { props.deleteProperty(k); v = null; }
+  }
+  if (!v) return { ok: false, error: 'session' };
+  var p = v.split('|'), no = p[0];
+  if (Number(p[2] || 0) < revAt_(props, no)) { endSession_(tok); return { ok: false, error: 'session' }; }
+  if (!c.get('tk_' + tok)) {                                                // ক্যাশ হারালে ফিরিয়ে আনা + ব্যবহারে মেয়াদ বাড়ানো
+    v = no + '|' + (Date.now() + CONFIG.SESSION_DAYS * 86400000) + '|' + p[2];
+    props.setProperty(k, v); c.put('tk_' + tok, v, 6 * 3600);
+  }
   return fn(no, r);
 }
 
