@@ -44,7 +44,8 @@
   var gTabs = $('aGuestTabs').querySelectorAll('a'), panes = { login: $('gLogin'), signup: $('gSignup'), forgot: $('gForgot') };
   function gShow(k) { Object.keys(panes).forEach(function (x) { panes[x].hidden = x !== k; }); Array.prototype.forEach.call(gTabs, function (a) { a.classList.toggle('active', a.dataset.g === k); }); status('', ''); }
   Array.prototype.forEach.call(gTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); gShow(a.dataset.g); }); });
-  gShow('login');
+  function fromHash() { gShow(/^#(signup|forgot)$/.test(location.hash) ? location.hash.slice(1) : 'login'); }
+  fromHash(); window.addEventListener('hashchange', function () { if (!$('aGuest').hidden) fromHash(); });
 
   /* ---------- লগইন ---------- */
   $('gLogin').addEventListener('submit', function () {

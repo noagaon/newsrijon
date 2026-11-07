@@ -154,10 +154,52 @@ def hero():
 '''
 
 
+def home_bar():
+    return '''<section class="home-bar" aria-label="সার্চ ও অ্যাকাউন্ট"><div class="wrap home-bar-row">
+  <form class="site-search" id="siteSearch" role="search" onsubmit="return false">
+    <label class="sr-only" for="qBox">সাইটে খুঁজুন</label>
+    <input id="qBox" type="search" placeholder="🔍 সাইটে খুঁজুন… (যেমন: সদস্য, রক্তদান, চাঁদা)" autocomplete="off" maxlength="80">
+    <div id="qRes" class="search-res" hidden></div>
+  </form>
+  <div class="home-bar-btns"><a class="btn btn-primary" href="pages/account.html#signup">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="pages/account.html#login">লগইন করুন</a></div>
+</div></section>
+'''
+
+
+def build_search_index():
+    """সার্চের জন্য পেজগুলোর লেখা থেকে assets/js/search-index.js বানায়"""
+    import json as _j
+    from html.parser import HTMLParser
+
+    class T(HTMLParser):
+        def __init__(self):
+            super().__init__(); self.skip = 0; self.out = []; self.title = ''; self._t = False
+        def handle_starttag(self, tag, attrs):
+            if tag in ('script', 'style', 'header', 'nav', 'footer', 'form', 'noscript', 'svg'): self.skip += 1
+            if tag == 'h1': self._t = True
+            if tag in ('p', 'li', 'tr', 'h1', 'h2', 'h3', 'dt', 'dd', 'br'): self.out.append(' ')
+        def handle_endtag(self, tag):
+            if tag in ('script', 'style', 'header', 'nav', 'footer', 'form', 'noscript', 'svg'): self.skip = max(0, self.skip - 1)
+            if tag == 'h1': self._t = False
+        def handle_data(self, d):
+            if self.skip: return
+            if self._t: self.title += d
+            self.out.append(d)
+    items = [('index.html', 'হোম')] + [('pages/%s.html' % sl, t) for sl, t in MENU] + [('pages/subscription-receipt.html', 'চাঁদা জমাদানের রসিদ')]
+    docs = []
+    for path, title in items:
+        f = os.path.join(ROOT, path)
+        if not os.path.exists(f): continue
+        t = T(); t.feed(open(f, encoding='utf-8').read())
+        text = re.sub(r'\s+', ' ', ''.join(t.out)).strip()
+        docs.append({'u': path, 't': title, 'x': text})
+    write('assets/js/search-index.js', 'window.SRIJON_SEARCH=' + _j.dumps(docs, ensure_ascii=False, separators=(',', ':')) + ';\n')
+
+
 def build_home():
-    out = head('', '', is_home=True) + header('', '') + hero()
+    out = head('', '', is_home=True) + header('', '') + hero() + home_bar()
     out += '<div class="wrap home-wrap">%s</div>' % home_body()
-    out += footer('') % {'extra': ''}
+    out += footer('') % {'extra': '<script src="assets/js/search.js" defer></script>'}
     write('index.html', out)
 
 
@@ -204,6 +246,7 @@ if __name__ == '__main__':
     sync_roster()
     build_home()
     build_pages()
+    build_search_index()
     import json as _j
     write('assets/js/members.js', 'window.SRIJON_MEMBERS=' + _j.dumps(
         {k: [{'n': n, 'no': no, 'd': d} for (n, no, d) in v] for k, v in pc.MEMBERS.items()},

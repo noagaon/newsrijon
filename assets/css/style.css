@@ -398,3 +398,17 @@ small.inl{font-weight:400;color:#555}
 .fund-total { background: var(--g100); border: 1px solid #b9dcc6; border-radius: 14px; padding: 18px 22px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
 .fund-total strong { font-size: 2rem; color: var(--g800); }
 .acct [hidden] { display: none !important; }
+
+/* হোম: সার্চ + অ্যাকাউন্ট বার */
+.home-bar { background: var(--green-900, #0b3d24); padding: 14px 0; }
+.home-bar-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; }
+.site-search { position: relative; flex: 1 1 320px; max-width: 560px; }
+.site-search input { width: 100%; padding: 12px 16px; font: inherit; border: 0; border-radius: 10px; background: #fff; }
+.search-res { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-height: 60vh; overflow: auto; text-align: left; }
+.search-res a { display: block; padding: 10px 14px; border-bottom: 1px solid #e3ece6; color: #0b3d24; text-decoration: none; }
+.search-res a:hover, .search-res a:focus { background: #eef6f1; }
+.search-res a span { display: block; font-size: .85rem; color: #4a5a50; margin-top: 2px; }
+.search-res p { padding: 12px 14px; margin: 0; color: #4a5a50; }
+.home-bar-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.home-bar-btns .btn-outline { background: #fff; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
