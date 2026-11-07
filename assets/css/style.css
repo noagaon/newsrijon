@@ -419,3 +419,4 @@ small.inl{font-weight:400;color:#555}
 .congrats { text-align: center; padding: 22px 12px; background: #eef8f1; border: 2px solid #1e8e4f; border-radius: 14px; }
 .congrats h3 { margin: 0 0 8px; font-size: 1.6rem; color: #0b3d24; }
 .congrats p { margin: 0 0 14px; line-height: 1.8; }
+.acct .field small { display: block; margin-top: 4px; }

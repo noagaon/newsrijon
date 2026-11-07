@@ -67,9 +67,9 @@
       <p>অ্যাকাউন্ট শুধু সংগঠনের সদস্যদের জন্য। সদস্য ধরণ ও নম্বর বাছাই করুন, নাম নিজে থেকে বসবে; তারপর নিজের এনআইডি নম্বর দিয়ে যাচাই করুন।</p>
       <div class="grid-form">
         <div class="field"><label for="sType">১। সদস্য ধরণ</label><select id="sType"><option value="">— বাছাই করুন —</option><option value="general">সাধারণ সদস্য</option><option value="expat">প্রবাসী সদস্য</option><option value="donor">দাতা সদস্য</option><option value="junior">জুনিয়র সদস্য</option></select></div>
-        <div class="field"><label for="sNo">২। সদস্য নম্বর</label><input id="sNo" list="sNoList" maxlength="30" placeholder="আগে সদস্য ধরণ বাছাই করুন" autocomplete="off" disabled><datalist id="sNoList"></datalist><small>প্রিফিক্স (যেমন STS/GM/) নিজে বসবে — শুধু ৪ সংখ্যা (বাংলা বা ইংরেজি, যেমন ০০০৫) লিখুন, অথবা সাজেস্ট থেকে বাছাই করুন।</small></div>
+        <div class="field"><label for="sNo">২। সদস্য নম্বর</label><input id="sNo" list="sNoList" maxlength="30" placeholder="আগে সদস্য ধরণ বাছাই করুন" autocomplete="off" disabled><datalist id="sNoList"></datalist></div>
         <div class="field"><label for="sName">৩। নাম</label><input id="sName" readonly placeholder="সদস্য নম্বর বাছাই করলে নাম নিজে থেকে বসবে"><small>নামটি আপনার না হলে সঠিক সদস্য নম্বর আবার বাছাই করুন।</small></div>
-        <div class="field"><label for="sNid">৪। এনআইডি নম্বর</label><input id="sNid" inputmode="numeric" maxlength="34" autocomplete="off" disabled><small>বাংলা সংখ্যা লিখলেও নিজে ইংরেজি হয়ে যাবে।</small></div>
+        <div class="field"><label for="sNid">৪। এনআইডি নম্বর</label><input id="sNid" inputmode="numeric" maxlength="34" autocomplete="off" disabled><small>বাংলা অথবা ইংরেজি যেকোন ভাষায় লিখুন।</small></div>
       </div>
       <button class="btn btn-primary" id="sCheck" type="button" disabled>তথ্য যাচাই করুন</button>
     </div>

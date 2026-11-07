@@ -158,7 +158,7 @@ def home_bar():
     return '''<section class="home-bar" aria-label="সার্চ ও অ্যাকাউন্ট"><div class="wrap home-bar-row">
   <form class="site-search" id="siteSearch" role="search" onsubmit="return false">
     <label class="sr-only" for="qBox">সাইটে খুঁজুন</label>
-    <input id="qBox" type="search" placeholder="🔍 সাইটে খুঁজুন… (যেমন: সদস্য, রক্তদান, চাঁদা)" autocomplete="off" maxlength="80">
+    <input id="qBox" type="search" placeholder="🔍 সাইটে খুঁজুন…" autocomplete="off" maxlength="80">
     <div id="qRes" class="search-res" hidden></div>
   </form>
   <div class="home-bar-btns"><a class="btn btn-primary" href="pages/account.html#signup">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="pages/account.html#login">লগইন করুন</a></div>
