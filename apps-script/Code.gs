@@ -111,6 +111,16 @@ function sheet_(name, headers) {
         have[i] = RENAMES[h];
       }
     });
+    // "সদস্য নম্বর" না থাকলে নিবন্ধন ফি-র পাশে (ঠিক জায়গায়) কলাম বসে; প্রশাসক এখানে নম্বর লেখেন
+    if (name === CONFIG.APPLY_TAB && have.indexOf('সদস্য নম্বর') < 0) {
+      var at = have.indexOf('নিবন্ধন ফি (টাকা)');
+      if (at >= 0) {
+        sh.insertColumnAfter(at + 1);
+        sh.getRange(1, at + 2).setValue('সদস্য নম্বর').setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
+        sh.getRange(2, at + 2, Math.max(1, sh.getMaxRows() - 1), 1).setNumberFormat('@');   // STS/GM/0001 লেখা যেন তারিখ/সংখ্যা না হয়ে যায়
+        have.splice(at + 1, 0, 'সদস্য নম্বর');
+      }
+    }
     var missing = headers.filter(function (h) { return have.indexOf(h) < 0; });
     if (missing.length) {
       sh.getRange(1, have.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
@@ -693,4 +703,10 @@ function saveFeedback_(r) {
   var sh = sheet_(CONFIG.FEEDBACK_TAB, FEEDBACK_HEADERS);
   sh.appendRow([nowInfo_().sheet, safe_(r.name, 100), safe_(r.contact, 100), msg]);
   return { ok: true };
+}
+
+// আবেদন শিটে "সদস্য নম্বর" কলাম যোগ করতে এডিটরে একবার Run করুন (কলাম আগে থেকে থাকলে কিছু বদলায় না)
+function addMemberNumberColumn() {
+  var sh = sheet_(CONFIG.APPLY_TAB, APPLY_HEADERS);
+  Logger.log('কলাম নম্বর (সদস্য নম্বর): ' + colOf_(sh, 'সদস্য নম্বর') + ' — শিট: ' + sh.getParent().getName() + ' / ' + sh.getName());
 }
