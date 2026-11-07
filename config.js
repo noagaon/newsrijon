@@ -5,6 +5,6 @@ window.SRIJON_CONFIG = {
   // "সহযোগিতা চাই" ব্যাকএন্ডের (apps-script/help) ওয়েব অ্যাপ লিংক বসান
   HELP_URL: 'https://script.google.com/macros/s/AKfycbwFQ2iN7HKa3jKpfaD0B_5Z5BoOXY1sgZt3WdvyZ9itDOtdYqZXqEy1mvFfc0YR2Z4nsA/exec',
   // সদস্য অ্যাকাউন্ট ব্যাকএন্ডের (apps-script/account) ওয়েব অ্যাপ লিংক বসান
-  ACCOUNT_URL: '',
+  ACCOUNT_URL: 'https://script.google.com/macros/s/AKfycbwMoUzsonbTQld54TqOPaukigErlfkN5ZGiW8qnq7oVfWAG6xMBG3UvjrTmOUCM56uXJw/exec',
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzTWo1I6LaAeZos36cV8hz2d1YrePtvtdgpfjtkYEhZgkrgEB33i07LHnPonAgwSLM9ew/exec'
 };
