@@ -13,12 +13,11 @@
   function stored() { try { return sessionStorage.getItem(TK) || ''; } catch (e) { return ''; } }
 
   var ERR = {
-    invalid: 'তথ্য সঠিকভাবে দিন (ফোন ০১ দিয়ে ১১ সংখ্যা, এনআইডি শুধু সংখ্যা)।',
-    nomatch: 'দেওয়া তথ্য সদস্য আবেদন ফরমের তথ্যের সাথে মেলেনি। নাম, সদস্য নম্বর, এনআইডি ও ফোন ফরমে যেমন দিয়েছিলেন ঠিক তেমন লিখুন।',
+    invalid: 'তথ্য সঠিকভাবে দিন (এনআইডি শুধু সংখ্যা)।',
+    nomatch: 'দেওয়া তথ্য আমাদের রেকর্ডের সাথে মেলেনি। সদস্য ধরণ, নম্বর ও এনআইডি ঠিক আছে কি না দেখুন। বারবার ভুল হলে ৩০ মিনিটের জন্য তালা পড়বে।',
+    ticket_expired: 'যাচাইয়ের মেয়াদ (১৫ মিনিট) শেষ। আবার তথ্য যাচাই করুন।',
     exists: 'এই সদস্য নম্বরে আগেই অ্যাকাউন্ট খোলা হয়েছে। লগইন করুন, না পারলে "পাসওয়ার্ড ভুলে গেছেন?" ব্যবহার করুন।',
-    sms_not_configured: 'আপনার আবেদনে ইমেইল নেই এবং SMS সেবাও চালু নেই, তাই কোড পাঠানো যাচ্ছে না। কর্তৃপক্ষের সাথে যোগাযোগ করুন।',
     mail_failed: 'কোড ইমেইলে পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
-    sms_failed: 'OTP পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
     bad_image: 'ছবিটি নেওয়া যায়নি। JPG/PNG ছবি দিন।', bad_pdf: 'কার্ড সংরক্ষণ করা যায়নি।', too_many: 'অনেক বেশিবার আপলোড হয়েছে, এক ঘণ্টা পরে চেষ্টা করুন।', nocard: 'সংরক্ষিত কার্ড পাওয়া যায়নি।',
     too_many_otp: 'এই নম্বরে ঘণ্টায় অনেকবার OTP চাওয়া হয়েছে। পরে চেষ্টা করুন।',
     otp_wrong: 'কোড ভুল হয়েছে।', otp_expired: 'কোডের মেয়াদ শেষ বা ভুল চেষ্টা বেশি হয়েছে। নতুন কোড নিন।',
@@ -26,7 +25,7 @@
     bad_password: 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে এবং ইউজারনেমের সমান নয়।',
     user_taken: 'এই ইউজারনেম আগেই নেওয়া হয়েছে, অন্যটি দিন।',
     need_email: 'সঠিক ইমেইল দিন (পাসওয়ার্ড রিকভারির জন্য)।',
-    badlogin: 'ইউজারনেম বা পাসওয়ার্ড ভুল।', locked: 'অনেকবার ভুল হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    badlogin: 'ইউজারনেম বা পাসওয়ার্ড ভুল।', locked: 'অনেকবার ভুল হয়েছে। ৩০ মিনিট পর আবার চেষ্টা করুন।',
     busy: 'এখন অনেক অনুরোধ চলছে, একটু পরে চেষ্টা করুন।', session: 'সেশনের মেয়াদ শেষ। আবার লগইন করুন।'
   };
   function errMsg(r) { return ERR[r && r.error] || 'কিছু ভুল হয়েছে। আবার চেষ্টা করুন।'; }
@@ -54,24 +53,42 @@
     run($('lGo'), { action: 'acct_login', username: $('lUser').value, password: $('lPass').value }, function (r) { $('lPass').value = ''; enter(r); });
   });
 
-  /* ---------- অ্যাকাউন্ট খোলা ---------- */
-  var signNo = '';
+  /* ---------- অ্যাকাউন্ট খোলা: ধরণ → নম্বর (সাজেস্ট) → নাম (নিজে বসে) → এনআইডি যাচাই → পাসওয়ার্ড ---------- */
+  var ALL = window.SRIJON_MEMBERS || {}, ticket = '', signNo = '';
+  function suggestList() {
+    var list = ALL[$('sType').value] || [], dl = $('sNoList');
+    dl.innerHTML = list.map(function (m) { return '<option value="' + esc(m.no) + '">' + esc(m.n) + '</option>'; }).join('');
+    $('sNo').disabled = !list.length; $('sNo').value = ''; $('sName').value = ''; $('sNid').disabled = true; $('sNid').value = ''; $('sCheck').disabled = true;
+    $('sNo').placeholder = !$('sType').value ? 'আগে সদস্য ধরণ বাছাই করুন' : (list.length ? 'যেমন: ' + list[0].no : 'এই ধরণে এখনো সদস্য নেই');
+  }
+  function memberOf(no) { var l = ALL[$('sType').value] || [], k = String(no).trim().toUpperCase(); for (var i = 0; i < l.length; i++) if (l[i].no.toUpperCase() === k) return l[i]; return null; }
+  function onNo() {
+    var m = memberOf($('sNo').value); $('sName').value = m ? m.n : ''; $('sNid').disabled = !m; if (!m) $('sNid').value = '';
+    checkReady();
+  }
+  function checkReady() { $('sCheck').disabled = !(memberOf($('sNo').value) && /^[0-9০-৯]{10,17}$/.test($('sNid').value.trim())); }
+  $('sType').addEventListener('change', suggestList);
+  $('sNo').addEventListener('input', onNo); $('sNo').addEventListener('change', onNo);
+  $('sNid').addEventListener('input', checkReady);
   $('gSignup').addEventListener('submit', function (e) { e.preventDefault(); });
-  $('sGo1').addEventListener('click', function () {
-    if (!$('sName').value.trim() || !$('sNo').value.trim() || !$('sNid').value.trim() || !$('sPhone').value.trim()) { status('error', 'চারটি ঘরই পূরণ করুন।'); return; }
-    signNo = $('sNo').value;
-    run($('sGo1'), { action: 'acct_signup_start', name: $('sName').value, memberNo: signNo, nid: $('sNid').value, phone: $('sPhone').value }, function (r) {
-      $('sStep1').hidden = true; $('sStep2').hidden = false; $('sEmailWrap').hidden = !r.needEmail;
-      $('sOtpInfo').textContent = (r.channel === 'sms' ? 'আপনার ফোনে (' + bn(r.phoneMasked || '') + ')' : 'আবেদন ফরমের ইমেইলে (' + (r.emailMasked || '') + ') স্প্যাম ফোল্ডারও দেখুন —') + ' একটি OTP পাঠানো হয়েছে। সেটি ও নিজের পছন্দের ইউজারনেম-পাসওয়ার্ড দিন।';
+  function lockIdentity(on) { ['sType', 'sNo', 'sNid'].forEach(function (i) { $(i).disabled = on; }); $('sCheck').hidden = on; if (!on) onNo(); }
+  $('sCheck').addEventListener('click', function () {
+    var m = memberOf($('sNo').value); if (!m) { status('error', 'তালিকা থেকে সদস্য নম্বর বাছাই করুন।'); return; }
+    signNo = m.no;
+    run($('sCheck'), { action: 'acct_signup_check', type: $('sType').value, memberNo: m.no, name: m.n, nid: $('sNid').value }, function (r) {
+      ticket = r.ticket; lockIdentity(true); $('sStep2').hidden = false; $('sEmailWrap').hidden = !r.needEmail; $('sUser').focus();
     });
   });
+  $('sBack').addEventListener('click', function (e) { e.preventDefault(); ticket = ''; lockIdentity(false); $('sStep2').hidden = true; ['sPass', 'sPass2'].forEach(function (i) { $(i).value = ''; }); status('', ''); });
   $('sGo2').addEventListener('click', function () {
-    if (!$('sOtp').value.trim() || !$('sUser').value.trim() || !$('sPass').value) { status('error', 'OTP, ইউজারনেম ও পাসওয়ার্ড দিন।'); return; }
+    if (!ticket) { status('error', 'আগে তথ্য যাচাই করুন।'); return; }
+    if (!$('sUser').value.trim() || !$('sPass').value) { status('error', 'ইউজারনেম ও পাসওয়ার্ড দিন।'); return; }
     if ($('sPass').value !== $('sPass2').value) { status('error', 'দুই পাসওয়ার্ড মিলছে না।'); return; }
-    run($('sGo2'), { action: 'acct_signup_verify', memberNo: signNo, otp: $('sOtp').value, username: $('sUser').value, password: $('sPass').value, email: $('sEmail').value }, function (r) {
-      var u = $('sUser').value; ['sOtp', 'sPass', 'sPass2'].forEach(function (i) { $(i).value = ''; });
-      $('sStep1').hidden = false; $('sStep2').hidden = true; gShow('login'); $('lUser').value = u.trim().toLowerCase();
-      status('info', 'অ্যাকাউন্ট তৈরি হয়েছে। এখন লগইন করুন' + (r.emailMasked ? '। রিকভারি ইমেইল: ' + r.emailMasked : '।'));
+    run($('sGo2'), { action: 'acct_signup_create', ticket: ticket, username: $('sUser').value, password: $('sPass').value, email: $('sEmail').value }, function (r) {
+      var u = $('sUser').value.trim().toLowerCase(); ['sPass', 'sPass2', 'sNid'].forEach(function (i) { $(i).value = ''; }); ticket = '';
+      $('sStep1').hidden = true; $('sStep2').hidden = true; $('sDone').hidden = false;
+      $('sDoneMsg').textContent = (r.name || '') + ', সংগঠনের সদস্য অ্যাকাউন্টে আপনাকে স্বাগতম! আপনার অ্যাকাউন্ট সফলভাবে খোলা হয়েছে। সদস্য নম্বর: ' + (r.memberNo || signNo) + ', ইউজারনেম: ' + u + '। এখন লগইন করে প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব দেখুন।';
+      $('sToLogin').onclick = function () { $('sDone').hidden = true; $('sStep1').hidden = false; lockIdentity(false); suggestList(); $('sType').value = ''; gShow('login'); $('lUser').value = u; $('lPass').focus(); };
     });
   });
 

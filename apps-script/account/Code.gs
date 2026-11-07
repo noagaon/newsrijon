@@ -1,18 +1,15 @@
 /**
  * সৃজনশীল তরুণ সংঘ — সদস্য অ্যাকাউন্টের ব্যাকএন্ড (Google Apps Script)
  *
- * কাজ
- *  • অ্যাকাউন্ট খোলা: নাম + সদস্য নম্বর + এনআইডি + ফোন → "আবেদন" শিটের সারির সাথে মেলালে ৬ সংখ্যার কোড (OTP) যায়:
- *    SMS গেটওয়ে সেট করা থাকলে ফোনে; না থাকলে আবেদন ফরমের ইমেইলে (বিনা খরচে)। কোড মিললে সদস্যের নিজের বেছে নেওয়া ইউজারনেম ও পাসওয়ার্ডে অ্যাকাউন্ট তৈরি হয়।
- *    SMS চালু করতে Script properties-এ SMS_URL (যেমন http://bulksmsbd.net/api/smsapi?api_key=XXXX&type=text&number={to}&senderid=XXXX&message={msg}) ও SMS_OK (সফল উত্তরে যে লেখা থাকে, যেমন 202) দিন; API কী কখনো কোডে/সাইটে বসাবেন না।
- *  • লগইন: ইউজারনেম + পাসওয়ার্ড (ভুল চেষ্টা বেশি হলে সাময়িক তালা)। পাসওয়ার্ড শিটে হ্যাশ করে থাকে, আসল পাসওয়ার্ড কেউ দেখতে পায় না।
- *  • পাসওয়ার্ড ভুলে গেলে: নিবন্ধিত ইমেইলে কোড → নতুন পাসওয়ার্ড।
- *  • ভেতরে: প্রোফাইল (আবেদন ফরমের তথ্য), কার্ডের তথ্য/ছবি, নিজের রসিদ ও পিডিএফ, চাঁদার হিসাব।
+ *  • অ্যাকাউন্ট খোলা: সদস্য ধরণ + সদস্য নম্বর + নাম + এনআইডি → সদস্য তালিকা ও "আবেদন" শিটের সাথে মিললে সদস্য নিজের ইউজারনেম ও পাসওয়ার্ড দেন (কোনো OTP নেই)।
+ *    ভুল তথ্য বারবার দিলে (৫ বার) ওই সদস্য নম্বরে ৩০ মিনিট তালা পড়ে।
+ *  • লগইন: ইউজারনেম + পাসওয়ার্ড (পাসওয়ার্ড শিটে হ্যাশ করে থাকে)।
+ *  • পাসওয়ার্ড ভুলে গেলে: রিকভারি ইমেইলে কোড → নতুন পাসওয়ার্ড (ইমেইল আবেদন ফরম থেকে নেওয়া হয়; ফরমে না থাকলে অ্যাকাউন্ট খোলার সময় সদস্য দেন)।
+ *  • ভেতরে: প্রোফাইল, ছবি আপলোড, আইডি/ফটোকার্ড (ড্রাইভে সংরক্ষণ), নিজের রসিদ ও চাঁদার হিসাব।
  *
- * সেটআপ: ১) নতুন Apps Script প্রজেক্টে এই Code.gs ও appsscript.json বসান  ২) setup ফাংশন একবার Run করে অনুমতি দিন
- *        ৩) Deploy > New deployment > Web app > Execute as = Me, Who has access = Anyone → URL টি config.js এর ACCOUNT_URL-এ বসবে।
- * কোড বদলালে: Deploy > Manage deployments > Edit > New version।
- * দৈনিক ইমেইল কোটা: সাধারণ Gmail-এ প্রায় ১০০, তাই MAIL_PER_DAY সীমা দেওয়া আছে।
+ * সেটআপ: ১) Apps Script প্রজেক্টে এই Code.gs ও appsscript.json বসান  ২) setup ফাংশন একবার Run করে অনুমতি দিন
+ *        ৩) Deploy > Manage deployments > Edit > New version (লিংক একই থাকবে)।
+ * দৈনিক ইমেইল কোটা: সাধারণ Gmail-এ প্রায় ১০০; রিকভারির কোড-মেইলে MAIL_PER_DAY সীমা দেওয়া আছে।
  */
 
 var CONFIG = {
@@ -30,7 +27,6 @@ var CONFIG = {
   OTP_MAX_TRIES: 5,
   RECOVER_MINUTES: 15,
   OTP_PER_TARGET_PER_HOUR: 3,
-  SMS_PER_DAY: 100,            // দিনে মোট SMS সীমা (SMS চালু থাকলে)
   MAIL_PER_DAY: 80,            // দিনে মোট কোড-ইমেইল সীমা
   SENDER_NAME: 'সৃজনশীল তরুণ সংঘ',
   LOGIN_MAX_FAILS: 5,          // এত বার ভুল হলে ...
@@ -57,8 +53,8 @@ function doPost(e) {
     var n = Number(cache.get(k) || 0) + 1; cache.put(k, String(n), 120);
     if (n > CONFIG.MAX_PER_MIN) return json_({ ok: false, error: 'busy' });
     switch (r.action) {
-      case 'acct_signup_start': return json_(signupStart_(r));
-      case 'acct_signup_verify': return json_(signupVerify_(r));
+      case 'acct_signup_check': return json_(signupCheck_(r));
+      case 'acct_signup_create': return json_(signupCreate_(r));
       case 'acct_login': return json_(login_(r));
       case 'acct_recover_start': return json_(recoverStart_(r));
       case 'acct_recover_verify': return json_(recoverVerify_(r));
@@ -82,13 +78,6 @@ function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).se
 // ---------------------------------------------------------------- সহায়ক
 function enDigits_(s) { var d = '০১২৩৪৫৬৭৮৯'; return String(s == null ? '' : s).replace(/[০-৯]/g, function (c) { return d.indexOf(c); }); }
 function normName_(s) { return String(s || '').replace(/[‌‍]/g, '').replace(/\s+/g, ' ').trim(); }
-function normPhone_(s) {
-  var d = enDigits_(s).replace(/\D/g, '');
-  if (d.indexOf('880') === 0 && d.length >= 13) d = '0' + d.substring(3);
-  if (d.length === 10 && d.charAt(0) === '1') d = '0' + d;
-  return d;
-}
-function validPhone_(p) { return /^01[3-9]\d{8}$/.test(p); }
 function normNid_(s) { return enDigits_(s).replace(/\D/g, ''); }
 function normNo_(s) { return enDigits_(s).toUpperCase().replace(/\s+/g, '').replace(/[\\.\-_]/g, '/'); }
 function noEq_(a, b) {
@@ -142,26 +131,25 @@ function findAccount_(no) {
   return null;
 }
 
-// আবেদনের সারি খোঁজা: এনআইডি + ফোন দুটোই মিলতে হবে; সদস্য নম্বর ও নাম যাচাই
-function matchApplicant_(name, no, nid, phone) {
-  var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB), hit = null;
+// সদস্য ধরণ + সদস্য নম্বর + নাম + এনআইডি যাচাই: সদস্য তালিকা ও আবেদন শিট দুটোর সাথেই মিলতে হবে
+var TYPE_LABEL = { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', donor: 'দাতা সদস্য', junior: 'জুনিয়র সদস্য' };
+function matchMember_(type, no, name, nid) {
+  var label = TYPE_LABEL[type]; if (!label) return null;
+  var ro = rosterOf_(no);
+  if (!ro || ro[3] !== label || normName_(ro[0]) !== normName_(name)) return null;
+  var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB);
   for (var i = t.rows.length - 1; i >= 0; i--) {
     var row = t.rows[i];
     if (/বাতিল/.test(cell_(t, row, 'অবস্থা'))) continue;
-    if (normNid_(cell_(t, row, 'এনআইডি')) !== nid || normPhone_(cell_(t, row, 'ফোন')) !== phone) continue;
-    hit = row; break;
+    if (normNid_(cell_(t, row, 'এনআইডি')) !== nid) continue;
+    var rowNo = cell_(t, row, 'সদস্য নম্বর');
+    var same = rowNo ? noEq_(rowNo, ro[1]) : normName_(cell_(t, row, 'নাম (বাংলা)')) === normName_(ro[0]);
+    if (same) return { t: t, row: row, nameBn: normName_(cell_(t, row, 'নাম (বাংলা)')) || normName_(ro[0]), no: ro[1], type: ro[3], date: ro[2] };
   }
-  if (!hit) return null;
-  var nameBn = normName_(cell_(t, hit, 'নাম (বাংলা)')), rowNo = cell_(t, hit, 'সদস্য নম্বর');
-  var ro = null;
-  for (var j = 0; j < ROSTER.length; j++) if (noEq_(ROSTER[j][1], no)) { ro = ROSTER[j]; break; }
-  var noOk = rowNo ? noEq_(rowNo, no) : (ro && normName_(ro[0]) === nameBn);
-  var nameOk = normName_(name) === nameBn || (ro && normName_(ro[0]) === normName_(name) && noOk);
-  if (!noOk || !nameOk) return null;
-  return { t: t, row: hit, nameBn: nameBn, no: ro ? ro[1] : rowNo, type: ro ? ro[3] : cell_(t, hit, 'সদস্য ধরণ'), date: ro ? ro[2] : '' };
+  return null;
 }
 
-// ---------------------------------------------------------------- কোড (OTP) পাঠানো: SMS থাকলে ফোনে, না থাকলে আবেদনের ইমেইলে
+// ---------------------------------------------------------------- ইমেইলে কোড (শুধু পাসওয়ার্ড রিকভারির জন্য)
 function validEmail_(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && e.length <= 120; }
 function normUser_(s) { return String(s || '').trim().toLowerCase(); }
 function validUser_(u) { return /^[a-z0-9][a-z0-9_.]{2,29}$/.test(u); }
@@ -176,15 +164,6 @@ function dayCount_(prefix, max) {
   if (n > max) throw new Error('daily limit');
   c.put(k, String(n), 6 * 3600);
 }
-function smsOn_() { return !!PropertiesService.getScriptProperties().getProperty('SMS_URL'); }
-function sendSms_(phone, text) {
-  var p = PropertiesService.getScriptProperties(), url = p.getProperty('SMS_URL');
-  if (!url) throw new Error('SMS_URL not set');
-  dayCount_('sd_', CONFIG.SMS_PER_DAY);
-  var u = url.replace(/\{to88\}/g, '88' + phone).replace(/\{to\}/g, phone).replace(/\{msg\}/g, encodeURIComponent(text));
-  var res = UrlFetchApp.fetch(u, { muteHttpExceptions: true }), ok = p.getProperty('SMS_OK') || '202', body = res.getContentText();
-  if (res.getResponseCode() >= 300 || body.indexOf(ok) < 0) { console.error('sms fail', res.getResponseCode(), body.substring(0, 200)); throw new Error('sms failed'); }
-}
 function sendMail_(email, subject, text) {
   dayCount_('md_', CONFIG.MAIL_PER_DAY);
   MailApp.sendEmail({ to: email, subject: subject, body: text, name: CONFIG.SENDER_NAME });
@@ -196,10 +175,9 @@ function otpStart_(purpose, key, channel, target, minutes) {
   c.put(hk, String(cnt), 3600);
   var code = '' + (100000 + Math.floor(Math.random() * 900000));
   try {
-    if (channel === 'sms') sendSms_(target, CONFIG.SENDER_NAME + ': আপনার OTP ' + code + ' (' + minutes + ' মিনিট বৈধ)। কাউকে জানাবেন না।');
-    else sendMail_(target, CONFIG.SENDER_NAME + ' — যাচাইয়ের কোড', (purpose === 'fp' ? 'আপনার অ্যাকাউন্টের পাসওয়ার্ড বদলানোর কোড' : 'সদস্য অ্যাকাউন্ট খোলার যাচাই কোড') + ': ' + code +
+    sendMail_(target, CONFIG.SENDER_NAME + ' — যাচাইয়ের কোড', 'আপনার অ্যাকাউন্টের পাসওয়ার্ড বদলানোর কোড' + ': ' + code +
       '\n(' + minutes + ' মিনিট পর্যন্ত বৈধ। কাউকে জানাবেন না।)\n\nআপনি না চেয়ে থাকলে এই ইমেইল উপেক্ষা করুন।\n— ' + CONFIG.SENDER_NAME);
-  } catch (e) { console.error('otp send', e && e.message); return { ok: false, error: channel === 'sms' ? 'sms_failed' : 'mail_failed' }; }
+  } catch (e) { console.error('otp send', e && e.message); return { ok: false, error: 'mail_failed' }; }
   c.put('ot_' + purpose + '_' + hmac_(key), JSON.stringify({ h: hmac_(code), n: 0 }), minutes * 60);
   return { ok: true };
 }
@@ -220,45 +198,40 @@ function findByUser_(u) {
   for (var i = 0; i < vals.length; i++) if (normUser_(vals[i][C.USER]) === u) return { sh: sh, row: i + 2, v: vals[i] };
   return null;
 }
-// ধাপ ১: নাম+সদস্য নম্বর+এনআইডি+ফোন মেলানো → কোড পাঠানো
-function signupStart_(r) {
-  var name = normName_(r.name).substring(0, 80), no = normNo_(r.memberNo).substring(0, 30), nid = normNid_(r.nid), phone = normPhone_(r.phone);
-  if (!name || !no || !/^\d{10,17}$/.test(nid) || !validPhone_(phone)) return { ok: false, error: 'invalid' };
-  var lock = LockService.getScriptLock(); lock.waitLock(20000);
-  try {
-    if (findAccount_(no)) return { ok: false, error: 'exists' };
-    var m = matchApplicant_(name, no, nid, phone);
-    if (!m) return { ok: false, error: 'nomatch' };      // কোন তথ্যটি ভুল তা বলা হয় না
-    var formMail = cell_(m.t, m.row, 'ইমেইল').trim().toLowerCase(); if (!validEmail_(formMail)) formMail = '';
-    var sms = smsOn_(), o;
-    if (sms) o = otpStart_('su', no, 'sms', phone, CONFIG.OTP_MINUTES);
-    else if (formMail) o = otpStart_('su', no, 'mail', formMail, CONFIG.OTP_MINUTES);
-    else return { ok: false, error: 'sms_not_configured' };   // ফোনেও পাঠানো যাচ্ছে না, ইমেইলও নেই
-    if (!o.ok) return o;
-    CacheService.getScriptCache().put('sp_' + hmac_(no), JSON.stringify({ nid: nid, name: name, phone: phone }), CONFIG.OTP_MINUTES * 60 + 300);
-    return { ok: true, channel: sms ? 'sms' : 'mail', phoneMasked: mask_(phone, 3), emailMasked: formMail ? maskEmail_(formMail) : '', needEmail: !formMail };
-  } finally { lock.releaseLock(); }
+// ধাপ ১: সদস্য ধরণ + নম্বর + নাম + এনআইডি যাচাই (OTP নেই)। মিললে পাসওয়ার্ড দেওয়ার টিকিট মেলে।
+// ভুল এনআইডি বারবার দিলে ওই সদস্য নম্বরে সাময়িক তালা পড়ে।
+function signupCheck_(r) {
+  var type = String(r.type || ''), no = normNo_(r.memberNo).substring(0, 30), name = normName_(r.name).substring(0, 80), nid = normNid_(r.nid);
+  if (!TYPE_LABEL[type] || !no || !name || !/^\d{10,17}$/.test(nid)) return { ok: false, error: 'invalid' };
+  var c = CacheService.getScriptCache(), fk = 'sf_' + hmac_(no), fails = Number(c.get(fk) || 0);
+  if (fails >= CONFIG.LOGIN_MAX_FAILS) return { ok: false, error: 'locked', minutes: CONFIG.LOCK_MINUTES };
+  if (findAccount_(no)) return { ok: false, error: 'exists' };
+  var m = matchMember_(type, no, name, nid);
+  if (!m) { c.put(fk, String(fails + 1), CONFIG.LOCK_MINUTES * 60); return { ok: false, error: 'nomatch' }; }   // কোন তথ্যটি ভুল তা বলা হয় না
+  c.remove(fk);
+  var formMail = cell_(m.t, m.row, 'ইমেইল').trim().toLowerCase(); if (!validEmail_(formMail)) formMail = '';
+  var ticket = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  c.put('st_' + ticket, JSON.stringify({ type: type, no: no, name: name, nid: nid }), 15 * 60);
+  return { ok: true, ticket: ticket, memberNo: m.no, needEmail: !formMail, emailMasked: formMail ? maskEmail_(formMail) : '' };
 }
-// ধাপ ২: কোড + নিজের বেছে নেওয়া ইউজারনেম/পাসওয়ার্ড (+ ইমেইল, ফরমে না থাকলে) → অ্যাকাউন্ট তৈরি
-function signupVerify_(r) {
-  var no = normNo_(r.memberNo), user = normUser_(r.username), pw = String(r.password || '');
+// ধাপ ২: টিকিট + নিজের বেছে নেওয়া ইউজারনেম/পাসওয়ার্ড (+ ফরমে ইমেইল না থাকলে রিকভারি ইমেইল) → অ্যাকাউন্ট তৈরি
+function signupCreate_(r) {
+  var user = normUser_(r.username), pw = String(r.password || ''), c = CacheService.getScriptCache(), tk = 'st_' + safeTok_(r.ticket), raw = c.get(tk);
+  if (!raw) return { ok: false, error: 'ticket_expired' };
   if (!validUser_(user)) return { ok: false, error: 'bad_username' };
   if (pw.length < 8 || pw.length > 100 || pw.toLowerCase() === user) return { ok: false, error: 'bad_password' };
-  var pend = CacheService.getScriptCache().get('sp_' + hmac_(no));
-  if (!pend) return { ok: false, error: 'otp_expired' };
-  var chk = otpCheck_('su', no, r.otp); if (!chk.ok) return chk;
-  var d = JSON.parse(pend), lock = LockService.getScriptLock(); lock.waitLock(20000);
+  var d = JSON.parse(raw), lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
-    if (findAccount_(no)) return { ok: false, error: 'exists' };
-    if (findByUser_(user)) return { ok: false, error: 'user_taken', keepOtp: true };
-    var m = matchApplicant_(d.name, no, d.nid, d.phone);
+    if (findAccount_(d.no)) return { ok: false, error: 'exists' };
+    if (findByUser_(user)) return { ok: false, error: 'user_taken' };
+    var m = matchMember_(d.type, d.no, d.name, d.nid);
     if (!m) return { ok: false, error: 'nomatch' };
     var email = cell_(m.t, m.row, 'ইমেইল').trim().toLowerCase();
     if (!validEmail_(email)) { email = String(r.email || '').trim().toLowerCase(); if (!validEmail_(email)) return { ok: false, error: 'need_email' }; }
     var salt = Utilities.getUuid();
-    accSheet_().appendRow([m.no || no, m.nameBn, user, pwHash_(pw, salt), salt, email, cell_(m.t, m.row, 'ফরম নম্বর'), now_(), '', 0, '', '', '', '', '', '']);
-    CacheService.getScriptCache().remove('sp_' + hmac_(no));
-    return { ok: true, emailMasked: maskEmail_(email) };
+    accSheet_().appendRow([m.no, m.nameBn, user, pwHash_(pw, salt), salt, email, cell_(m.t, m.row, 'ফরম নম্বর'), now_(), '', 0, '', '', '', '', '', '']);
+    c.remove(tk);
+    return { ok: true, name: m.nameBn, memberNo: m.no };
   } finally { lock.releaseLock(); }
 }
 
@@ -438,9 +411,6 @@ function receiptPdf_(no, r) {
 function setup() {
   accSheet_(); readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB); readSheet_(CONFIG.RECEIPT_SHEET_ID, CONFIG.RECEIPT_TAB);
   DriveApp.getRootFolder(); secret_();
-  UrlFetchApp.fetch('https://www.google.com', { muteHttpExceptions: true });   // বাইরের অনুরোধের অনুমতি (SMS-এর জন্য)
+  MailApp.getRemainingDailyQuota();
   Logger.log('অনুমতি ঠিক আছে। আজকের বাকি ইমেইল কোটা: ' + MailApp.getRemainingDailyQuota());
 }
-
-// SMS গেটওয়ে পরীক্ষা: নিজের নম্বর বসিয়ে Run করুন (SMS_URL সেট থাকতে হবে)
-function testSms() { sendSms_('01XXXXXXXXX', 'সৃজনশীল তরুণ সংঘ: পরীক্ষামূলক বার্তা'); }

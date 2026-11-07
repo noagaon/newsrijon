@@ -226,7 +226,7 @@ def build_pages():
     import card_page
     html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
     import account_page
-    write('pages/account.html', page('members', account_page.body(), '<script src="../config.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>', title='সদস্য অ্যাকাউন্ট', parent='members').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
+    write('pages/account.html', page('members', account_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>', title='সদস্য অ্যাকাউন্ট', parent='members').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
     write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
 
 

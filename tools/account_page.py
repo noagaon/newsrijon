@@ -6,7 +6,7 @@ from site_lib import *
 def body():
     return '''<div id="acct" class="acct">
 <noscript><p class="status error">এই পাতা চালাতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
-<p class="lead">সদস্য আবেদন ফরমে যাঁরা আবেদন করেছেন, কেবল তাঁরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
+<p class="lead">সংগঠনের সদস্যরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
 <div id="aStatus" class="status" role="status" aria-live="polite"></div>
 
 <div id="aGuest">
@@ -26,25 +26,29 @@ def body():
   <form class="form-card" id="gSignup" data-pane="signup" hidden onsubmit="return false">
     <h2>অ্যাকাউন্ট খুলুন</h2>
     <div id="sStep1">
-      <p>আবেদন ফরমে যে তথ্য দিয়েছিলেন, ঠিক সেটি লিখুন। তথ্য মিললে একটি OTP যাবে (ফোনে, SMS চালু না থাকলে আবেদনের ইমেইলে)।</p>
+      <p>অ্যাকাউন্ট শুধু সংগঠনের সদস্যদের জন্য। সদস্য ধরণ ও নম্বর বাছাই করুন, নাম নিজে থেকে বসবে; তারপর নিজের এনআইডি নম্বর দিয়ে যাচাই করুন।</p>
       <div class="grid-form">
-        <div class="field"><label for="sName">১। নাম (বাংলায়, ফরমে যেভাবে)</label><input id="sName" maxlength="80" autocomplete="name"></div>
-        <div class="field"><label for="sNo">২। সদস্য নম্বর</label><input id="sNo" maxlength="30" placeholder="STS/GM/0000" autocomplete="off"></div>
-        <div class="field"><label for="sNid">৩। এনআইডি নম্বর</label><input id="sNid" inputmode="numeric" maxlength="20" autocomplete="off"></div>
-        <div class="field"><label for="sPhone">৪। ফোন নম্বর</label><input id="sPhone" type="tel" inputmode="numeric" maxlength="16" autocomplete="tel"></div>
+        <div class="field"><label for="sType">১। সদস্য ধরণ</label><select id="sType"><option value="">— বাছাই করুন —</option><option value="general">সাধারণ সদস্য</option><option value="expat">প্রবাসী সদস্য</option><option value="donor">দাতা সদস্য</option><option value="junior">জুনিয়র সদস্য</option></select></div>
+        <div class="field"><label for="sNo">২। সদস্য নম্বর</label><input id="sNo" list="sNoList" maxlength="30" placeholder="আগে সদস্য ধরণ বাছাই করুন" autocomplete="off" disabled><datalist id="sNoList"></datalist><small>লিখতে শুরু করলে নম্বর সাজেস্ট করবে — তালিকা থেকে বাছাই করুন।</small></div>
+        <div class="field"><label for="sName">৩। নাম</label><input id="sName" readonly placeholder="সদস্য নম্বর বাছাই করলে নাম নিজে থেকে বসবে"><small>নামটি আপনার না হলে সঠিক সদস্য নম্বর আবার বাছাই করুন।</small></div>
+        <div class="field"><label for="sNid">৪। এনআইডি নম্বর</label><input id="sNid" inputmode="numeric" maxlength="20" autocomplete="off" disabled></div>
       </div>
-      <button class="btn btn-primary" id="sGo1" type="submit">OTP পাঠান</button>
+      <button class="btn btn-primary" id="sCheck" type="button" disabled>তথ্য যাচাই করুন</button>
     </div>
     <div id="sStep2" hidden>
-      <p id="sOtpInfo"></p>
+      <p class="status ok">✅ তথ্য মিলেছে। এবার নিজের ইউজারনেম ও পাসওয়ার্ড দিন। <a href="#" id="sBack">তথ্য বদলাতে চাইলে এখানে চাপুন</a></p>
       <div class="grid-form">
-        <div class="field"><label for="sOtp">পাওয়া OTP</label><input id="sOtp" inputmode="numeric" maxlength="8" autocomplete="one-time-code"></div>
-        <div class="field"><label for="sUser">আপনার পছন্দের ইউজারনেম</label><input id="sUser" maxlength="30" autocomplete="username"><small>ইংরেজি ছোট হরফ, সংখ্যা, _ বা . — ৩ থেকে ৩০ অক্ষর।</small></div>
-        <div class="field"><label for="sPass">পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</label><input id="sPass" type="password" maxlength="100" autocomplete="new-password"></div>
+        <div class="field"><label for="sUser">ইউজারনেম (আপনার পছন্দের)</label><input id="sUser" maxlength="30" autocomplete="username"><small>ইংরেজি ছোট হরফ, সংখ্যা, _ বা . — ৩ থেকে ৩০ অক্ষর।</small></div>
+        <div class="field"><label for="sPass">৫। পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</label><input id="sPass" type="password" maxlength="100" autocomplete="new-password"></div>
         <div class="field"><label for="sPass2">পাসওয়ার্ড আবার</label><input id="sPass2" type="password" maxlength="100" autocomplete="new-password"></div>
-        <div class="field" id="sEmailWrap" hidden><label for="sEmail">ইমেইল (পাসওয়ার্ড রিকভারির জন্য)</label><input id="sEmail" type="email" maxlength="120" autocomplete="email"></div>
+        <div class="field" id="sEmailWrap" hidden><label for="sEmail">ইমেইল (পাসওয়ার্ড ভুলে গেলে রিকভারির জন্য)</label><input id="sEmail" type="email" maxlength="120" autocomplete="email"></div>
       </div>
-      <button class="btn btn-primary" id="sGo2" type="submit">অ্যাকাউন্ট তৈরি করুন</button>
+      <button class="btn btn-primary" id="sGo2" type="submit">সাবমিট করুন</button>
+    </div>
+    <div id="sDone" class="congrats" hidden>
+      <h3>🎉 অভিনন্দন!</h3>
+      <p id="sDoneMsg"></p>
+      <button class="btn btn-primary" type="button" id="sToLogin">লগইন করুন</button>
     </div>
   </form>
 
