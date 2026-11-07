@@ -55,27 +55,39 @@
 
   /* ---------- অ্যাকাউন্ট খোলা: ধরণ → নম্বর (সাজেস্ট) → নাম (নিজে বসে) → এনআইডি যাচাই → পাসওয়ার্ড ---------- */
   var ALL = window.SRIJON_MEMBERS || {}, ticket = '', signNo = '';
+  var PREFIX = { general: 'STS/GM/', expat: 'STS/OM/', donor: 'STS/DM/', junior: 'STS/JM/' };
+  function toEn(v) { return String(v).replace(/[০-৯]/g, function (c) { return BN.indexOf(c); }); }
+  function prefix() { return PREFIX[$('sType').value] || ''; }
   function suggestList() {
-    var list = ALL[$('sType').value] || [], dl = $('sNoList');
+    var list = ALL[$('sType').value] || [], dl = $('sNoList'), pf = prefix();
     dl.innerHTML = list.map(function (m) { return '<option value="' + esc(m.no) + '">' + esc(m.n) + '</option>'; }).join('');
-    $('sNo').disabled = !list.length; $('sNo').value = ''; $('sName').value = ''; $('sNid').disabled = true; $('sNid').value = ''; $('sCheck').disabled = true;
-    $('sNo').placeholder = !$('sType').value ? 'আগে সদস্য ধরণ বাছাই করুন' : (list.length ? 'যেমন: ' + list[0].no : 'এই ধরণে এখনো সদস্য নেই');
+    $('sNo').disabled = !pf; $('sNo').value = pf; $('sName').value = ''; $('sNid').disabled = true; $('sNid').value = ''; $('sCheck').disabled = true;
+    $('sNo').placeholder = pf ? pf + '0000' : 'আগে সদস্য ধরণ বাছাই করুন';
+    if (pf) { $('sNo').focus(); }
+    if (pf && !list.length) status('info', 'এই ধরণে এখনো কোনো সদস্য তালিকাভুক্ত নেই।'); else status('', '');
   }
   function memberOf(no) { var l = ALL[$('sType').value] || [], k = String(no).trim().toUpperCase(); for (var i = 0; i < l.length; i++) if (l[i].no.toUpperCase() === k) return l[i]; return null; }
-  function onNo() {
-    var m = memberOf($('sNo').value); $('sName').value = m ? m.n : ''; $('sNid').disabled = !m; if (!m) $('sNid').value = '';
+  // সদস্য নম্বর: প্রিফিক্স (STS/GM/) ঠিক থাকে; বাংলা/ইংরেজি সংখ্যা লিখলে ইংরেজি হয়ে যায়; ৪ সংখ্যা হলেই নাম বসে
+  function onNo(e) {
+    var pf = prefix(); if (!pf) return;
+    var en = toEn($('sNo').value).toUpperCase(), suf = (en.indexOf(pf) === 0 ? en.slice(pf.length) : en).replace(/\D/g, '').slice(0, 4);
+    if (e && e.type === 'change' && suf.length > 0 && suf.length < 4) suf = ('0000' + suf).slice(-4);   // ফাঁকা হলে ০ দিয়ে ভরে (5 → 0005)
+    var v = pf + suf; if ($('sNo').value !== v) $('sNo').value = v;
+    var m = suf.length === 4 ? memberOf(v) : null;
+    $('sName').value = m ? m.n : ''; $('sNid').disabled = !m; if (!m) $('sNid').value = '';
+    if (suf.length === 4 && !m) status('error', 'এই নম্বরে কোনো সদস্য পাওয়া যায়নি। নম্বরটি আবার দেখুন।'); else if (m) status('', '');
     checkReady();
   }
-  function checkReady() { $('sCheck').disabled = !(memberOf($('sNo').value) && /^[0-9০-৯]{10,17}$/.test($('sNid').value.trim())); }
+  function checkReady() { $('sCheck').disabled = !(memberOf($('sNo').value) && /^\d{10,17}$/.test(toEn($('sNid').value).trim())); }
   $('sType').addEventListener('change', suggestList);
   $('sNo').addEventListener('input', onNo); $('sNo').addEventListener('change', onNo);
-  $('sNid').addEventListener('input', checkReady);
+  $('sNid').addEventListener('input', function () { var v = toEn($('sNid').value).replace(/\D/g, ''); if ($('sNid').value !== v) $('sNid').value = v; checkReady(); });
   $('gSignup').addEventListener('submit', function (e) { e.preventDefault(); });
   function lockIdentity(on) { ['sType', 'sNo', 'sNid'].forEach(function (i) { $(i).disabled = on; }); $('sCheck').hidden = on; if (!on) onNo(); }
   $('sCheck').addEventListener('click', function () {
     var m = memberOf($('sNo').value); if (!m) { status('error', 'তালিকা থেকে সদস্য নম্বর বাছাই করুন।'); return; }
     signNo = m.no;
-    run($('sCheck'), { action: 'acct_signup_check', type: $('sType').value, memberNo: m.no, name: m.n, nid: $('sNid').value }, function (r) {
+    run($('sCheck'), { action: 'acct_signup_check', type: $('sType').value, memberNo: m.no, name: m.n, nid: toEn($('sNid').value) }, function (r) {
       ticket = r.ticket; lockIdentity(true); $('sStep2').hidden = false; $('sEmailWrap').hidden = !r.needEmail; $('sUser').focus();
     });
   });
