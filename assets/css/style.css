@@ -420,3 +420,10 @@ small.inl{font-weight:400;color:#555}
 .congrats h3 { margin: 0 0 8px; font-size: 1.6rem; color: #0b3d24; }
 .congrats p { margin: 0 0 14px; line-height: 1.8; }
 .acct .field small { display: block; margin-top: 4px; }
+/* অ্যাকাউন্ট পেজ: সব ঘর সদস্য-ধরণ বাক্সের মতো সমান মাপের */
+.acct input:not([type=file]):not([type=checkbox]):not([type=radio]), .acct select {
+  width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border: 1.5px solid #b9cbbf; border-radius: 10px; background: #fff; color: var(--ink); min-height: 46px; }
+/* সমান উচ্চতা */
+.acct input:not([type=file]):not([type=checkbox]):not([type=radio]), .acct select { height: 46px; line-height: 1.2; }
+.acct input[readonly] { background: #f3f6f4; color: #3c4a42; }
+.acct input:disabled { background: #f3f6f4; cursor: not-allowed; }
