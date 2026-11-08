@@ -111,9 +111,9 @@
     var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#ffffff'); bg.addColorStop(.62, '#f6f9e4'); bg.addColorStop(1, '#e6efb6'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     // উপরের সবুজ বাঁকা আকার
     var tg = ctx.createLinearGradient(0, 0, W, H * .6); tg.addColorStop(0, '#0f6b46'); tg.addColorStop(.55, '#58b08a'); tg.addColorStop(1, '#d4ecde');
-    ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(890, 0); ctx.bezierCurveTo(1100, 30, 1200, 230, 1190, 440); ctx.lineTo(W, 440); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(620, 0); ctx.bezierCurveTo(900, 40, 1150, 250, W, 420); ctx.lineTo(W, 440); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
     // লোগো ও নাম
-    var LX = 245, TX = 435;   // লোগো ও নাম বামে সরানো
+    var LX = 195, TX = 385;   // লোগো ও নাম বামে সরানো
     if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, 190, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, 190 - lh / 2 - 4, lw - 8, lh - 8); }
     text(ctx, 'সৃজনশীল', TX, 130, 700, 112, '#fff', FIXF, 'left', W - TX - 120); text(ctx, 'তরুণ সংঘ', TX, 250, 700, 112, '#fff', FIXF, 'left', W - TX - 120);
     text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 335, 700, 38, '#ffe2bd', '"Times New Roman",Times,serif', 'left', W - TX - 120);
