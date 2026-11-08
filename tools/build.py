@@ -8,9 +8,12 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from site_lib import *            # noqa
 import pages_content as pc        # noqa
+import content as ct              # noqa
 from form_page import membership_body, FORM_SCRIPTS  # noqa
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+EMPTY = {'notices': 'এই মুহূর্তে কোনো নোটিশ নেই। নতুন নোটিশ প্রকাশিত হলে এখানে দেখা যাবে।', 'news': 'এই মুহূর্তে কোনো সংবাদ প্রকাশিত নেই। শীঘ্রই এখানে নতুন সংবাদ যুক্ত হবে।'}
+
 
 
 def write(rel, text):
@@ -21,6 +24,10 @@ def write(rel, text):
 
 
 def sec(title, inner, link=None, link_label='বিস্তারিত', cls='', id_=''):
+    if id_ in ('notices', 'news', 'reports'):
+        items = ct.load(id_)
+        if items:
+            inner += ct.post_list(id_, items, home=True, limit=3)
     more = ('<p class="more-row">%s</p>' % more_link(link, link_label)) if link else ''
     return '<section class="card home-card %s"%s><h2>%s</h2>%s%s</section>' % (
         cls, ' id="%s"' % id_ if id_ else '', esc(title), inner, more)
@@ -226,7 +233,21 @@ def build_pages():
             body = pc.BODY[slug]
         if slug == 'members':
             body = '<p class="lead">সদস্য আবেদন করে থাকলে নিজের অ্যাকাউন্টে ঢুকে প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব দেখুন। <a class="btn btn-primary" href="mysrijon.html">আমার সৃজন (লগইন / খুলুন)</a></p>' + body
+        if slug in ('notices', 'news'):
+            body = body.replace('@@POSTS:%s@@' % slug, ct.post_list(slug, ct.load(slug), empty=EMPTY[slug]))
+        elif slug == 'reports':
+            its = ct.load('reports')
+            if its:
+                body += '<h2 id="published">প্রকাশিত প্রতিবেদন</h2>' + ct.post_list('reports', its)
+        elif slug == 'gallery':
+            gal = ct.gallery_cards()
+            body = ('<div class="tabs-links"><a href="#photos">ছবি</a><a href="#videos">ভিডিও</a><a href="#audios">অডিও</a><a href="#files">ফাইল</a></div><div class="grid-2">'
+                    + ''.join(card(t, gal[k] or empty_state('শীঘ্রই যুক্ত করা হবে।', i), icon=i, id_=k) for k, t, i in [('photos', 'ছবি', '🖼️'), ('videos', 'ভিডিও', '🎬'), ('audios', 'অডিও', '🎧'), ('files', 'ফাইল', '📎')]) + '</div>')
         write('pages/%s.html' % slug, page(slug, body, extra))
+        if slug in ('notices', 'news', 'reports'):
+            for d in ct.load(slug):
+                write('pages/%s-%s.html' % (slug, d['id']), page(slug, ct.post_body(d), '', title=d.get('title') or MENU_TITLE[slug], parent=slug,
+                      desc=ct.excerpt(d.get('body'), 160) or None, og_image=(d.get('image') or '').lstrip('/') or None))
     import receipt_page
     write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/receipt-pdf.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
     import card_page

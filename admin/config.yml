@@ -1,0 +1,80 @@
+# কনটেন্ট ম্যানেজার (Sveltia CMS — Decap CMS-এর সাথে সামঞ্জস্যপূর্ণ)। লগইন: গিটহাব ব্যক্তিগত টোকেন (PAT), আলাদা সার্ভার লাগে না।
+backend:
+  name: github
+  repo: noagaon/newsrijon
+  branch: main
+media_folder: assets/uploads
+public_folder: /assets/uploads
+locale: en
+
+collections:
+  - name: notices
+    label: নোটিশ
+    label_singular: নোটিশ
+    folder: content/notices
+    create: true
+    extension: json
+    format: json
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    summary: "{{date}} — {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: শিরোনাম, widget: string }
+      - { name: date, label: তারিখ, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { name: body, label: বিস্তারিত লেখা, widget: text, hint: "অনুচ্ছেদ আলাদা করতে মাঝে একটি ফাঁকা লাইন দিন।" }
+      - { name: image, label: ছবি (ঐচ্ছিক), widget: image, required: false }
+      - { name: file, label: সংযুক্ত ফাইল/পিডিএফ (ঐচ্ছিক), widget: file, required: false }
+
+  - name: news
+    label: সংবাদ
+    label_singular: সংবাদ
+    folder: content/news
+    create: true
+    extension: json
+    format: json
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    summary: "{{date}} — {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: শিরোনাম, widget: string }
+      - { name: date, label: তারিখ, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { name: body, label: সংবাদের লেখা, widget: text, hint: "অনুচ্ছেদ আলাদা করতে মাঝে একটি ফাঁকা লাইন দিন।" }
+      - { name: image, label: প্রধান ছবি (ঐচ্ছিক), widget: image, required: false }
+      - { name: file, label: সংযুক্ত ফাইল/পিডিএফ (ঐচ্ছিক), widget: file, required: false }
+
+  - name: reports
+    label: প্রতিবেদন
+    label_singular: প্রতিবেদন
+    folder: content/reports
+    create: true
+    extension: json
+    format: json
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    summary: "{{date}} — {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: শিরোনাম, widget: string }
+      - { name: category, label: ধরণ, widget: select, options: ["বার্ষিক প্রতিবেদন", "কার্যক্রম প্রতিবেদন", "আর্থিক প্রতিবেদন", "প্রকল্প প্রতিবেদন"] }
+      - { name: date, label: তারিখ, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { name: body, label: সারসংক্ষেপ, widget: text, required: false }
+      - { name: file, label: প্রতিবেদনের পিডিএফ, widget: file, required: false }
+      - { name: image, label: ছবি (ঐচ্ছিক), widget: image, required: false }
+
+  - name: gallery
+    label: গ্যালারি
+    label_singular: গ্যালারির আইটেম
+    folder: content/gallery
+    create: true
+    extension: json
+    format: json
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    summary: "{{date}} — [{{type}}] {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: type, label: ধরণ, widget: select, options: ["ছবি", "ভিডিও", "অডিও", "ফাইল"] }
+      - { name: title, label: শিরোনাম, widget: string }
+      - { name: date, label: তারিখ, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { name: body, label: ক্যাপশন (ঐচ্ছিক), widget: text, required: false }
+      - { name: images, label: "ছবিসমূহ (ধরণ 'ছবি' হলে)", widget: list, required: false, field: { name: image, label: ছবি, widget: image } }
+      - { name: video_url, label: "ভিডিওর লিংক (ধরণ 'ভিডিও' হলে — ইউটিউব/ফেসবুক)", widget: string, required: false }
+      - { name: file, label: "অডিও/ফাইল (ধরণ 'অডিও' বা 'ফাইল' হলে)", widget: file, required: false }

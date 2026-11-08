@@ -1,0 +1,25 @@
+name: সাইট তৈরি (কনটেন্ট বদলালে নিজে থেকে)
+on:
+  push:
+    branches: [main]
+    paths: ['content/**', 'tools/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: site-build
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: python3 tools/build.py
+      - name: বদল থাকলে কমিট
+        run: |
+          git config user.name "site-builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "সাইট নিজে থেকে তৈরি (কনটেন্ট হালনাগাদ)" && git push)

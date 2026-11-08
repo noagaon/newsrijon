@@ -231,10 +231,12 @@ def footer(root):
        'mail': ICONS['mail'], 'email': SITE['email'], 'fb': ICONS['facebook'], 'fbl': SITE['facebook'], 'pin': ICONS['pin']}
 
 
-def page(slug, body, extra_scripts='', title=None, parent=None, crumb=None, mid=()):
+def page(slug, body, extra_scripts='', title=None, parent=None, crumb=None, mid=(), desc=None, og_image=None):
     title = title or MENU_TITLE[slug]
     root = '../'
-    out = head(title, root) + header(root, slug)
+    out = head(title, root, desc) + header(root, slug)
+    if og_image:
+        out = out.replace('assets/img/charter.jpg', og_image, 1)
     out += '''<section class="page-hero"><div class="wrap">
   <nav class="crumbs" aria-label="ব্রেডক্রাম্ব"><a href="../index.html">হোম</a> <span>›</span> %s<span>%s</span></nav>
   <h1>%s</h1>

@@ -23,3 +23,9 @@
 
 ## GitHub Pages
 Settings → Pages → Source: `main` / root।
+
+## কনটেন্ট ম্যানেজার (নোটিশ, সংবাদ, প্রতিবেদন, গ্যালারি)
+- অ্যাডমিন পেইজ: `/admin/` (Sveltia CMS)। লগইন: গিটহাব ব্যক্তিগত টোকেন (Fine-grained, শুধু এই রিপো, Contents: Read and write)।
+- লেখা `content/<ধরণ>/*.json`-এ, ছবি/ফাইল `assets/uploads/`-এ জমা হয়।
+- `content/` বা `tools/` বদলালে `.github/workflows/build.yml` নিজে থেকে `python3 tools/build.py` চালিয়ে পেইজ তৈরি করে কমিট করে (১–২ মিনিট)।
+- নোটিশ, সংবাদ ও প্রতিবেদনের প্রতিটির আলাদা পেইজ হয় (`pages/<ধরণ>-<আইডি>.html`)।

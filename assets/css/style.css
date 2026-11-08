@@ -460,3 +460,26 @@ small.inl{font-weight:400;color:#555}
 [data-cardctl] input[type=range] { width: 100%; height: 28px; margin: 0; padding: 0; }
 [data-cardctl].form-card { padding-top: 10px; padding-bottom: 10px; }
 [data-cardctl] .status:empty { display: none; }
+/* CMS পোস্ট ও গ্যালারি */
+.post { display: flex; gap: 14px; align-items: flex-start; }
+.post-thumb { flex: 0 0 120px; }
+.post-thumb img { width: 120px; height: 90px; object-fit: cover; border-radius: 8px; display: block; }
+.post-txt { min-width: 0; flex: 1; }
+.post h3 { margin: 2px 0 4px; }
+.post h3 a { color: inherit; text-decoration: none; }
+.post h3 a:hover { text-decoration: underline; }
+.post p { margin: 0; }
+.post-cat { display: inline-block; background: #e8f3ec; color: var(--green, #0b3d24); border-radius: 999px; padding: 1px 10px; font-size: .85rem; margin-left: 6px; }
+.post-full .post-meta { color: var(--muted); margin: 0 0 12px; }
+.post-fig { margin: 0 0 14px; }
+.post-fig img { max-width: 100%; height: auto; border-radius: var(--radius); display: block; }
+.post-body p { margin: 0 0 12px; line-height: 1.9; }
+.gal-item { border-top: 1px solid var(--line); padding: 12px 0; }
+.gal-item h4 { margin: 0; }
+.gal-item time { color: var(--muted); font-size: .9rem; }
+.gal-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 8px; }
+.gal-imgs img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; display: block; }
+.gal-video { position: relative; padding-top: 56.25%; margin-top: 8px; }
+.gal-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
+.gal-item audio { width: 100%; margin-top: 8px; }
+@media (max-width: 520px) { .post-thumb { flex-basis: 84px; } .post-thumb img { width: 84px; height: 64px; } }
