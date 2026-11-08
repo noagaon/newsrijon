@@ -111,9 +111,9 @@
     var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#ffffff'); bg.addColorStop(.62, '#f6f9e4'); bg.addColorStop(1, '#e6efb6'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     // উপরের সবুজ বাঁকা আকার
     var tg = ctx.createLinearGradient(0, 0, W, H * .6); tg.addColorStop(0, '#0f6b46'); tg.addColorStop(.55, '#58b08a'); tg.addColorStop(1, '#d4ecde');
-    ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(890, 0); ctx.bezierCurveTo(1100, 30, 1200, 230, 1190, 440); ctx.lineTo(W, 440); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
     // লোগো ও নাম
-    var LX = 300, TX = 490;   // লোগো ও নাম ডানে সরানো
+    var LX = 245, TX = 435;   // লোগো ও নাম বামে সরানো
     if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, 190, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, 190 - lh / 2 - 4, lw - 8, lh - 8); }
     text(ctx, 'সৃজনশীল', TX, 130, 700, 112, '#fff', FIXF, 'left', W - TX - 120); text(ctx, 'তরুণ সংঘ', TX, 250, 700, 112, '#fff', FIXF, 'left', W - TX - 120);
     text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 335, 700, 38, '#ffe2bd', '"Times New Roman",Times,serif', 'left', W - TX - 120);
@@ -130,10 +130,10 @@
     // খাড়া লেখা দুই লাইনে: GENERAL / MEMBER (আগের বড় Times স্টাইল), সব ধরণে একই আকার
     var WORD = (en(d.type).split(' ')[0] || '').toUpperCase(), SERIF = '"Times New Roman",Times,serif', fs = 120;
     font(ctx, 700, fs, SERIF); while (ctx.measureText('EXPATRIATE').width > 700 && fs > 30) { fs--; font(ctx, 700, fs, SERIF); }
-    ctx.save(); ctx.translate(0, py + ph - 20); ctx.rotate(-Math.PI / 2);
+    ctx.save(); ctx.translate(55, py + ph - 20); ctx.rotate(-Math.PI / 2);
     if (WORD) text(ctx, WORD, 0, 78, 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left');     // উপরের (বাঁ) লাইন
     text(ctx, 'MEMBER', 0, 78 + Math.round(fs * 1.02), 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left'); ctx.restore();
-    ctx.save(); ctx.translate(262, py + ph - 20); ctx.rotate(-Math.PI / 2); text(ctx, d.type, 0, 0, 500, 46, 'rgba(60,60,60,.75)', FIXF, 'left'); ctx.restore();
+    ctx.save(); ctx.translate(317, py + ph - 20); ctx.rotate(-Math.PI / 2); text(ctx, d.type, 0, 0, 500, 46, 'rgba(60,60,60,.75)', FIXF, 'left'); ctx.restore();
     // নাম, নম্বর
     var tx = 96, tw = W - 2 * tx, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;
     wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, tx, y, 700, nsz, '#111', FIXF, 'left', tw); y += nsz + 14; });

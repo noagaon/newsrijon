@@ -19,6 +19,7 @@
     exists: 'এই সদস্য নম্বরে আগেই অ্যাকাউন্ট খোলা হয়েছে। লগইন করুন, না পারলে "পাসওয়ার্ড ভুলে গেছেন?" ব্যবহার করুন।',
     mail_failed: 'কোড ইমেইলে পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
     bad_image: 'ছবিটি নেওয়া যায়নি। JPG/PNG ছবি দিন।', bad_pdf: 'কার্ড সংরক্ষণ করা যায়নি।', too_many: 'অনেক বেশিবার আপলোড হয়েছে, এক ঘণ্টা পরে চেষ্টা করুন।', nocard: 'সংরক্ষিত কার্ড পাওয়া যায়নি।',
+    empty: 'কিছু লিখুন।', too_long: 'লেখাটি অনেক বড় (সর্বোচ্চ ১০০০ অক্ষর)।', too_many_posts: 'অনেক বেশি পোস্ট করা হয়েছে, কিছুক্ষণ পরে চেষ্টা করুন।', nopdf: 'আবেদন ফরমের কপি পাওয়া যায়নি।',
     too_many_otp: 'এই নম্বরে ঘণ্টায় অনেকবার OTP চাওয়া হয়েছে। পরে চেষ্টা করুন।',
     otp_wrong: 'কোড ভুল হয়েছে।', otp_expired: 'কোডের মেয়াদ শেষ বা ভুল চেষ্টা বেশি হয়েছে। নতুন কোড নিন।',
     bad_username: 'ইউজারনেম ৩–৩০ অক্ষরের, ইংরেজি ছোট হরফ/সংখ্যা/_/. দিয়ে হতে হবে।',
@@ -131,7 +132,7 @@
     Array.prototype.forEach.call(secs, function (s) { s.hidden = s.dataset.tab !== k; });
     Array.prototype.forEach.call(uTabs, function (a) { a.classList.toggle('active', a.dataset.t === k); });
     ctl.hidden = !(k === 'idcard' || k === 'photocard');
-    if (k === 'profile') loadProfile(); if (k === 'receipts' || k === 'fund') loadReceipts();
+    if (k === 'profile') loadProfile(); if (k === 'receipts' || k === 'fund') loadReceipts(); if (k === 'feed') loadFeed(true);
     if ((k === 'idcard' || k === 'photocard') && window.SrijonCard) window.SrijonCard.render();
   }
   Array.prototype.forEach.call(uTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); tab(a.dataset.t); }); });
@@ -148,7 +149,8 @@
     if (loaded.profile) return; loaded.profile = 1;
     api('acct_profile').then(function (r) {
       if (!r.ok) { $('pBody').innerHTML = '<p class="status error">আবেদনের তথ্য পাওয়া যায়নি।</p>'; return; }
-      $('pBody').innerHTML = r.groups.map(function (g) {
+      var pdfBox = r.hasFormPdf ? '<div class="form-pdf"><h3>আবেদন ফরমের কপি</h3><p>সদস্যপদের জন্য সর্বপ্রথম জমা দেওয়া পূরণকৃত আবেদন ফরম। এটি শুধু ডাউনলোড করা যাবে, বদলানো যাবে না।</p><button class="btn btn-outline" type="button" id="formPdfGo">⬇️ আবেদন ফরম (PDF) ডাউনলোড</button></div>' : '';
+      $('pBody').innerHTML = pdfBox + r.groups.map(function (g) {
         if (!g.items.length) return '';
         return '<h3>' + esc(g.title) + '</h3><div class="table-wrap"><table><tbody>' + g.items.map(function (i) { return '<tr><th scope="row">' + esc(i.k) + '</th><td>' + esc(i.v) + '</td></tr>'; }).join('') + '</tbody></table></div>';
       }).join('') + '<p class="muted">এনআইডি/জন্মনিবন্ধন নম্বরের শেষ ৪ সংখ্যা ছাড়া বাকি অংশ নিরাপত্তার জন্য ঢেকে দেখানো হয়। তথ্যে ভুল থাকলে কর্তৃপক্ষকে জানান।</p>';
@@ -171,6 +173,34 @@
     var u = URL.createObjectURL(new Blob([a], { type: 'application/pdf' })), l = document.createElement('a'); l.href = u; l.download = name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); URL.revokeObjectURL(u); }, 1500);
   }
   function b64OfBytes(bytes) { var s = '', ch = 0x8000; for (var i = 0; i < bytes.length; i += ch) s += String.fromCharCode.apply(null, bytes.subarray(i, i + ch)); return btoa(s); }
+  document.addEventListener('click', function (e) {
+    var f = e.target.closest('#formPdfGo'); if (!f) return; f.disabled = true;
+    api('acct_form_pdf').then(function (r) { f.disabled = false; if (!r.ok) { status('error', errMsg(r)); return; } saveDownload(r.data, r.name); }).catch(function () { f.disabled = false; });
+  });
+  /* ---------- নিউজফিড ---------- */
+  var feedLast = 0;
+  function feedItem(p) {
+    return '<article class="feed-post" data-id="' + p.id + '"><header><strong>' + esc(p.name) + '</strong> <small>' + esc(bn(p.time)) + '</small>' + (p.mine ? ' <button type="button" class="feed-del" data-fdel="' + p.id + '">মুছুন</button>' : '') + '</header><p>' + esc(p.text).replace(/\n/g, '<br>') + '</p></article>';
+  }
+  function loadFeed(reset) {
+    if (reset) { feedLast = 0; $('feedList').innerHTML = '<p>লোড হচ্ছে…</p>'; }
+    api('acct_feed_list', { before: feedLast }).then(function (r) {
+      if (!r.ok) { $('feedList').innerHTML = '<p class="status error">লোড করা যায়নি।</p>'; return; }
+      var h = r.posts.map(feedItem).join('');
+      if (reset) $('feedList').innerHTML = h || '<p class="muted">এখনো কোনো পোস্ট নেই। প্রথম পোস্টটি আপনিই করুন!</p>'; else $('feedList').insertAdjacentHTML('beforeend', h);
+      if (r.posts.length) feedLast = r.posts[r.posts.length - 1].id; $('feedMore').hidden = !r.more;
+    }).catch(function () {});
+  }
+  $('feedMore').addEventListener('click', function () { loadFeed(false); });
+  $('feedText').addEventListener('input', function () { $('feedCnt').textContent = bn(this.value.length) + '/১০০০'; });
+  $('feedGo').addEventListener('click', function () {
+    var t = $('feedText').value.trim(); if (!t) { status('error', errMsg({ error: 'empty' })); return; }
+    run(this, { action: 'acct_feed_post', token: token, text: t }, function () { $('feedText').value = ''; $('feedCnt').textContent = '০/১০০০'; status('info', 'পোস্ট করা হয়েছে।'); loadFeed(true); });
+  });
+  document.addEventListener('click', function (e) {
+    var d = e.target.closest('[data-fdel]'); if (!d || !confirm('পোস্টটি মুছে ফেলবেন?')) return;
+    api('acct_feed_delete', { id: d.dataset.fdel }).then(function (r) { if (r.ok) { var a = d.closest('.feed-post'); if (a) a.remove(); } else status('error', errMsg(r)); }).catch(function () {});
+  });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-getcard]'); if (!b) return; b.disabled = true;
     api('acct_card_get', { kind: b.dataset.getcard }).then(function (r) { b.disabled = false; if (!r.ok) { status('error', errMsg(r)); return; } saveDownload(r.data, r.name); }).catch(function () { b.disabled = false; });
@@ -229,4 +259,11 @@
     token = stored();
     call({ action: 'acct_profile', token: token }).then(function (r) { if (r && r.ok) { me = {}; $('aGuest').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.card.name; $('uSub').textContent = 'সদস্য নম্বর: ' + r.card.no; loaded.profile = 0; tab('profile'); } else logoutLocal(); }).catch(logoutLocal);
   }
+  /* ---------- পাসওয়ার্ড দেখান ---------- */
+  ['lPass', 'sPass', 'fPass'].forEach(function (id) {
+    var inp = $(id); if (!inp) return; var ids = id === 'lPass' ? [id] : [id, id + '2'];
+    var l = document.createElement('label'); l.className = 'showpw'; l.innerHTML = '<input type="checkbox"> Show Password';
+    l.firstChild.addEventListener('change', function () { var t = this.checked ? 'text' : 'password'; ids.forEach(function (i) { var e = $(i); if (e) e.type = t; }); });
+    var host = $(ids[ids.length - 1]).parentNode; host.appendChild(l);
+  });
 })();

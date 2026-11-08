@@ -427,3 +427,14 @@ small.inl{font-weight:400;color:#555}
 .acct input:not([type=file]):not([type=checkbox]):not([type=radio]), .acct select { height: 46px; line-height: 1.2; }
 .acct input[readonly] { background: #f3f6f4; color: #3c4a42; }
 .acct input:disabled { background: #f3f6f4; cursor: not-allowed; }
+.showpw { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: .95rem; font-weight: 400; cursor: pointer; }
+.showpw input { width: auto; margin: 0; }
+.form-pdf { background: #f3f8f4; border: 1px solid #cfe3d6; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; }
+.form-pdf h3 { margin: 0 0 6px; }
+.feed-new { margin-bottom: 18px; }
+.feed-new textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #c9d6cd; border-radius: 10px; font: inherit; resize: vertical; }
+.feed-act { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.feed-post { border: 1px solid #dde7e0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; background: #fff; }
+.feed-post header small { color: #667; margin-left: 6px; }
+.feed-post p { margin: 6px 0 0; white-space: normal; overflow-wrap: anywhere; }
+.feed-del { float: right; background: none; border: 0; color: #b3261e; cursor: pointer; font: inherit; }

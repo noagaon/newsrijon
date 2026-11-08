@@ -74,7 +74,7 @@ def body():
 <div id="aUser" hidden>
   <div class="acct-head"><div><strong id="uName"></strong><br><small id="uSub"></small></div><button class="btn btn-outline" id="uOut" type="button">লগআউট</button></div>
   <div class="tabs-links" id="aTabs">
-    <a href="#" data-t="profile">প্রোফাইল</a><a href="#" data-t="idcard">আইডি কার্ড</a><a href="#" data-t="photocard">ফটোকার্ড</a><a href="#" data-t="receipts">আমার রসিদ</a><a href="#" data-t="fund">চাঁদার হিসাব</a>
+    <a href="#" data-t="profile">প্রোফাইল</a><a href="#" data-t="idcard">আইডি কার্ড</a><a href="#" data-t="photocard">ফটোকার্ড</a><a href="#" data-t="receipts">আমার রসিদ</a><a href="#" data-t="fund">চাঁদার হিসাব</a><a href="#" data-t="feed">নিউজফিড</a>
   </div>
 
   <section data-tab="profile">
@@ -116,6 +116,12 @@ def body():
 
   <section data-tab="receipts" hidden><div id="rBody"><p>লোড হচ্ছে…</p></div></section>
   <section data-tab="fund" hidden><div id="fBody"><p>লোড হচ্ছে…</p></div></section>
+  <section data-tab="feed" hidden>
+    <div class="feed-new"><label for="feedText">আপনার লেখা</label><textarea id="feedText" rows="4" maxlength="1000" placeholder="সদস্যদের সাথে কিছু শেয়ার করুন…"></textarea>
+      <div class="feed-act"><small id="feedCnt">০/১০০০</small><button class="btn btn-primary" type="button" id="feedGo">পোস্ট করুন</button></div></div>
+    <div id="feedList"><p>লোড হচ্ছে…</p></div>
+    <p class="center"><button class="btn btn-outline" type="button" id="feedMore" hidden>আরও দেখুন</button></p>
+  </section>
 </div>
 </div>
 <script>window.SRIJON_CARD=%s;</script>''' % (

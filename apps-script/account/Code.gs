@@ -19,6 +19,11 @@ var CONFIG = {
   RECEIPT_TAB: 'চাঁদা রসিদ',
   ACCOUNT_SHEET_ID: '1N5uMSXyxJyv2xY-MzvrbS54nXp7tL3mz3z7wd3NWHgI',  // অ্যাকাউন্টের তথ্য (ইউজারনেম, হ্যাশ পাসওয়ার্ড) এই শিটে থাকে
   ACCOUNT_TAB: 'অ্যাকাউন্ট',
+  FEED_TAB: 'নিউজফিড',
+  FEED_MAX_CHARS: 1000,
+  FEED_PER_HOUR: 5,
+  FEED_PER_DAY: 30,
+  FEED_PAGE: 20,
   DRIVE_FOLDER_ID: '1BQVJvC8gabosUwd6T_Mx7i5AZGhZ8bMM',   // সদস্যের আপলোড করা ছবি ও সংরক্ষিত কার্ড (উপ-ফোল্ডার নিজে তৈরি হয়)
   MAX_PHOTO_BYTES: 2 * 1024 * 1024,
   MAX_CARD_BYTES: 6 * 1024 * 1024,
@@ -64,6 +69,10 @@ function doPost(e) {
       case 'acct_photo_upload': return json_(withSession_(r, photoUpload_));
       case 'acct_card_save': return json_(withSession_(r, cardSave_));
       case 'acct_card_get': return json_(withSession_(r, cardGet_));
+      case 'acct_form_pdf': return json_(withSession_(r, formPdf_));
+      case 'acct_feed_list': return json_(withSession_(r, feedList_));
+      case 'acct_feed_post': return json_(withSession_(r, feedPost_));
+      case 'acct_feed_delete': return json_(withSession_(r, feedDelete_));
       case 'acct_receipts': return json_(withSession_(r, receipts_));
       case 'acct_receipt_pdf': return json_(withSession_(r, receiptPdf_));
     }
@@ -348,6 +357,7 @@ function profile_(no) {
   });
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
   return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '' },
+    hasFormPdf: !!driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')),
     hasPhoto: !!(String(acc0_(no, C.PHOTO)) || driveId_(cell_(a.t, a.row, 'ছবির লিংক'))),
     saved: { id: String(acc0_(no, C.IDC_AT)), photo: String(acc0_(no, C.PHC_AT)) } };
 }
@@ -359,6 +369,63 @@ function photo_(no) {
   var b = DriveApp.getFileById(id).getBlob();
   if (b.getBytes().length > 9 * 1024 * 1024) return { ok: false, error: 'toolarge' };
   return { ok: true, mime: b.getContentType() || 'image/jpeg', data: Utilities.base64Encode(b.getBytes()) };
+}
+
+// ---------------------------------------------------------------- আবেদন ফরমের মূল পিডিএফ (শুধু ডাউনলোড; বদলানোর কোনো ব্যবস্থা নেই)
+function formPdf_(no) {
+  var a = applicationRow_(no); if (!a) return { ok: false, error: 'notfound' };
+  var id = driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')); if (!id) return { ok: false, error: 'nopdf' };
+  return { ok: true, name: 'Application-' + slug_(cell_(a.t, a.row, 'ফরম নম্বর') || no) + '.pdf', data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
+}
+
+// ---------------------------------------------------------------- নিউজফিড (সব সদস্য লিখতে ও দেখতে পারে)
+var FEED_HEADERS = ['পোস্ট আইডি', 'সময়', 'সদস্য নম্বর', 'নাম', 'লেখা', 'অবস্থা'];   // অবস্থা: প্রকাশিত / মুছে ফেলা / লুকানো (প্রশাসক হাতে "লুকানো" লিখে সরাতে পারেন)
+function feedSheet_() {
+  var ss = SpreadsheetApp.openById(CONFIG.ACCOUNT_SHEET_ID), sh = ss.getSheetByName(CONFIG.FEED_TAB);
+  if (!sh) sh = ss.insertSheet(CONFIG.FEED_TAB);
+  if (sh.getLastRow() === 0) {
+    sh.getRange(1, 1, 1, FEED_HEADERS.length).setValues([FEED_HEADERS]).setFontWeight('bold').setBackground('#0b3d24').setFontColor('#ffffff');
+    sh.setFrozenRows(1); sh.getRange('E:E').setWrap(true).setNumberFormat('@');
+  }
+  return sh;
+}
+function feedList_(no, r) {
+  var sh = feedSheet_(), n = sh.getLastRow() - 1, before = Number(r.before) || 0, out = [], more = false;
+  if (n < 1) return { ok: true, posts: [], more: false };
+  var vals = sh.getRange(2, 1, n, FEED_HEADERS.length).getDisplayValues();
+  for (var i = vals.length - 1; i >= 0; i--) {
+    var id = i + 2;
+    if (before && id >= before) continue;
+    if (vals[i][5] !== 'প্রকাশিত') continue;
+    if (out.length >= CONFIG.FEED_PAGE) { more = true; break; }
+    out.push({ id: id, time: vals[i][1], no: vals[i][2], name: vals[i][3], text: vals[i][4], mine: noEq_(vals[i][2], no) });
+  }
+  return { ok: true, posts: out, more: more };
+}
+function feedPost_(no, r) {
+  var acc = findAccount_(no); if (!acc) return { ok: false, error: 'notfound' };
+  var text = String(r.text || '').replace(/\r/g, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').replace(/\n{3,}/g, '\n\n').trim();
+  if (!text) return { ok: false, error: 'empty' };
+  if (text.length > CONFIG.FEED_MAX_CHARS) return { ok: false, error: 'too_long' };
+  var c = CacheService.getScriptCache(), hk = 'fh_' + hmac_(no) + '_' + Math.floor(Date.now() / 3600000), dk = 'fd_' + hmac_(no) + '_' + Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyyMMdd');
+  var h = Number(c.get(hk) || 0) + 1, d = Number(c.get(dk) || 0) + 1;
+  if (h > CONFIG.FEED_PER_HOUR || d > CONFIG.FEED_PER_DAY) return { ok: false, error: 'too_many_posts' };
+  c.put(hk, String(h), 3700); c.put(dk, String(d), 86400);
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var sh = feedSheet_(), row = sh.getLastRow() + 1, t = now_();
+    sh.getRange(row, 5).setNumberFormat('@');   // '=' দিয়ে শুরু হলেও সূত্র নয়, সাধারণ লেখা
+    sh.getRange(row, 1, 1, FEED_HEADERS.length).setValues([[row, t, String(acc.v[C.NO]), String(acc.v[C.NAME]), text, 'প্রকাশিত']]);
+    return { ok: true, post: { id: row, time: t, no: String(acc.v[C.NO]), name: String(acc.v[C.NAME]), text: text, mine: true } };
+  } finally { lock.releaseLock(); }
+}
+function feedDelete_(no, r) {
+  var id = Number(r.id) || 0, sh = feedSheet_();
+  if (id < 2 || id > sh.getLastRow()) return { ok: false, error: 'notfound' };
+  var v = sh.getRange(id, 1, 1, FEED_HEADERS.length).getDisplayValues()[0];
+  if (!noEq_(v[2], no) || v[5] !== 'প্রকাশিত') return { ok: false, error: 'notfound' };       // শুধু নিজের পোস্ট
+  sh.getRange(id, 6).setValue('মুছে ফেলা');
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------- ছবি আপলোড ও কার্ড সংরক্ষণ (ড্রাইভ)
