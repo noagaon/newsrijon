@@ -549,6 +549,19 @@
     return out;
   }
 
+  /* আমাদের তৈরি পিডিএফে বসানো JPEG ছবিটি বের করে (রসিদ ছবি আকারে ডাউনলোডের জন্য; কোথাও জমা হয় না) */
+  function pdfToJpegBlob(bytes) {
+    function find(pat, from) {
+      outer: for (var i = from; i <= bytes.length - pat.length; i++) { for (var j = 0; j < pat.length; j++) if (bytes[i + j] !== pat.charCodeAt(j)) continue outer; return i; }
+      return -1;
+    }
+    var d = find('/DCTDecode', 0); if (d < 0) return null;
+    var st = find('stream\n', d); if (st < 0) return null; st += 7;
+    var en = find('\nendstream', st); if (en < 0) return null;
+    if (bytes[st] !== 0xFF || bytes[st + 1] !== 0xD8) return null;
+    return new Blob([bytes.subarray(st, en)], { type: 'image/jpeg' });
+  }
+
   function build(data, opts) {
     opts = opts || {};
     var logoUrl = opts.logoUrl || new URL('../assets/img/logo.webp', location.href).href;
@@ -580,5 +593,5 @@
     return btoa(parts.join(''));
   }
 
-  window.SrijonPDF = { build: build, toBase64: toBase64, canvasToJpeg: canvasToJpeg, jpegToPdf: jpegToPdf };
+  window.SrijonPDF = { build: build, toBase64: toBase64, canvasToJpeg: canvasToJpeg, jpegToPdf: jpegToPdf, pdfToJpegBlob: pdfToJpegBlob };
 })();

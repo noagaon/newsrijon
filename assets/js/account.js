@@ -241,8 +241,8 @@
     api('acct_receipts').then(function (r) {
       if (!r.ok) throw new Error('x');
       var note = '<p class="muted">শুধু সেইসব রসিদ দেখানো হয় যেগুলোতে আপনার সদস্য নম্বর লেখা আছে।</p>';
-      $('rBody').innerHTML = r.list.length ? '<div class="table-wrap"><table><thead><tr><th>রসিদ নম্বর</th><th>তারিখ</th><th>চাঁদার ধরণ</th><th>পরিমাণ</th><th>মাধ্যম</th><th>পিডিএফ</th></tr></thead><tbody>' +
-        r.list.map(function (x) { return '<tr><td>' + esc(x.no) + '</td><td>' + esc(x.date) + '</td><td>' + esc(x.kind) + '</td><td>' + money(x.amount) + '</td><td>' + esc(x.method) + '</td><td>' + (x.hasPdf ? '<button class="btn btn-outline" type="button" data-rno="' + esc(x.no) + '">⬇️ ডাউনলোড</button>' : '—') + '</td></tr>'; }).join('') + '</tbody></table></div>' + note
+      $('rBody').innerHTML = r.list.length ? '<div class="table-wrap"><table><thead><tr><th>রসিদ নম্বর</th><th>তারিখ</th><th>চাঁদার ধরণ</th><th>পরিমাণ</th><th>মাধ্যম</th><th>ডাউনলোড</th></tr></thead><tbody>' +
+        r.list.map(function (x) { return '<tr><td>' + esc(x.no) + '</td><td>' + esc(x.date) + '</td><td>' + esc(x.kind) + '</td><td>' + money(x.amount) + '</td><td>' + esc(x.method) + '</td><td>' + (x.hasPdf ? '<button class="btn btn-outline" type="button" data-rno="' + esc(x.no) + '">⬇️ পিডিএফ</button> <button class="btn btn-outline" type="button" data-rno="' + esc(x.no) + '" data-img="1">🖼️ ছবি</button>' : '—') + '</td></tr>'; }).join('') + '</tbody></table></div>' + note
         : '<p>এখনো কোনো রসিদ পাওয়া যায়নি।</p>' + note;
       $('fBody').innerHTML = '<div class="fund-total"><span>এ পর্যন্ত মোট প্রদান</span><strong>' + money(r.total) + '</strong><small>' + bn(r.count) + 'টি রসিদ</small></div>' +
         (r.kinds.length ? '<h3>খাত অনুযায়ী</h3><div class="table-wrap"><table><thead><tr><th>খাত</th><th>মোট</th></tr></thead><tbody>' + r.kinds.map(function (k) { return '<tr><td>' + esc(k.kind) + '</td><td>' + money(k.amount) + '</td></tr>'; }).join('') + '<tr><th>সর্বমোট</th><th>' + money(r.total) + '</th></tr></tbody></table></div>' : '') +
@@ -254,7 +254,9 @@
     api('acct_receipt_pdf', { rno: b.dataset.rno }).then(function (r) {
       b.disabled = false; if (!r.ok) { status('error', 'পিডিএফ পাওয়া যায়নি।'); return; }
       var bin = atob(r.data), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
-      var u = URL.createObjectURL(new Blob([a], { type: 'application/pdf' })), l = document.createElement('a'); l.href = u; l.download = r.name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); URL.revokeObjectURL(u); }, 1500);
+      var blob = b.dataset.img ? window.SrijonPDF.pdfToJpegBlob(a) : new Blob([a], { type: 'application/pdf' });
+      if (!blob) { status('error', 'ছবি তৈরি করা যায়নি; পিডিএফ ডাউনলোড করুন।'); return; }
+      var u = URL.createObjectURL(blob), l = document.createElement('a'); l.href = u; l.download = b.dataset.img ? r.name.replace(/\.pdf$/i, '') + '.jpg' : r.name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); URL.revokeObjectURL(u); }, 1500);
     }).catch(function () { b.disabled = false; });
   });
 

@@ -73,6 +73,7 @@ def body():
             + '</div><div class="rcpt-tools"><button type="button" class="btn btn-outline" id="rPermit">🔑 অনুমতি নিন</button>'
               '<button type="button" class="btn btn-primary" id="rSave" disabled>💾 সংরক্ষণ করুন</button>'
               '<button type="button" class="btn btn-outline" id="rPrint" disabled>⬇️ পিডিএফ ডাউনলোড করুন</button>'
+              '<button type="button" class="btn btn-outline" id="rImg" disabled>🖼️ ছবি (JPG) ডাউনলোড করুন</button>'
               '<button type="button" class="btn btn-outline" id="rClear">নতুন রসিদ (সব মুছুন)</button></div>'
               '<input type="text" id="rWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">'
               '<div id="rStatus" class="status" role="status" aria-live="polite"></div>'

@@ -130,7 +130,7 @@
   function status(cls, msg) { var s = $('rStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
   var saved = false;
   var rid = '', approved = false, pollTimer = null;
-  function dirty() { if (saved) { saved = false; lastPdf = null; lock(); } }
+  function dirty() { if (saved) { saved = false; lastPdf = null; $('rImg').disabled = true; lock(); } }
   function lock() { approved = false; rid = ''; stopPoll(); $('rSave').disabled = true; $('rPermit').disabled = false; $('rWaBox').hidden = true; $('rPrint').disabled = true; $('rPrint').classList.remove('btn-yellow'); }
   function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
   ['rDate', 'rType', 'rMemNo', 'rName', 'rKind', 'rKindOther', 'rAmount', 'rMethod', 'rMob', 'rAcc', 'rColl', 'rCollOther'].forEach(function (id) { $(id).addEventListener('input', dirty); $(id).addEventListener('change', dirty); });
@@ -200,7 +200,7 @@
         if (r && r.ok) {
           $('rNo').value = r.no; show('rNo'); saved = true; stamp();
           status('ok-strong', '✔ সংরক্ষিত হয়েছে। রসিদ নম্বর: ' + r.no + ' — পিডিএফ তৈরি ও জমা হচ্ছে…');
-          $('rPrint').disabled = false; $('rPrint').classList.add('btn-yellow'); $('rPermit').disabled = true;
+          $('rPrint').disabled = false; $('rImg').disabled = false; $('rPrint').classList.add('btn-yellow'); $('rPermit').disabled = true;
           makePdf().then(function (pdf) {
             lastPdf = { pdf: pdf, no: r.no };
             saveFile(pdf, r.no);          // ফোনে নিজে ডাউনলোড শুরু
@@ -227,6 +227,12 @@
   $('rPrint').addEventListener('click', function () {
     if (!saved || !lastPdf) { status('error', 'আগে "সংরক্ষণ করুন" বোতামে চাপ দিন, তারপর ডাউনলোড করুন।'); return; }
     var a = document.createElement('a'); a.href = URL.createObjectURL(lastPdf.pdf.blob); a.download = 'Receipt-' + lastPdf.no.replace('/', '-') + '.pdf';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  });
+  $('rImg').addEventListener('click', function () {
+    if (!saved || !lastPdf) { status('error', 'আগে "সংরক্ষণ করুন" বোতামে চাপ দিন, তারপর ডাউনলোড করুন।'); return; }
+    var j = window.SrijonPDF.pdfToJpegBlob(lastPdf.pdf.bytes); if (!j) { status('error', 'ছবি তৈরি করা যায়নি।'); return; }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(j); a.download = 'Receipt-' + lastPdf.no.replace('/', '-') + '.jpg';
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
   });
   window.addEventListener('beforeprint', stamp);

@@ -168,7 +168,7 @@
     if (busy || $('hWebsite').value) return;
     if (!(window.SRIJON_CONFIG || {}).HELP_URL) { status('error', 'জমা দেওয়ার লিংক এখনো বসানো হয়নি (config.js এর HELP_URL)। প্রশাসককে জানান।'); return; }
     var d = data(); if (!validate(d)) return;
-    busy = true; $('hSubmit').disabled = true; $('hDownload').hidden = true; status('info', 'আবেদন জমা হচ্ছে… অনুগ্রহ করে অপেক্ষা করুন।');
+    busy = true; $('hSubmit').disabled = true; $('hDownload').hidden = true; $('hImg').hidden = true; status('info', 'আবেদন জমা হচ্ছে… অনুগ্রহ করে অপেক্ষা করুন।');
     var no = '', token = '';
     call({ action: 'help_submit', website: $('hWebsite').value, data: d }).then(function (r) {
       if (!r || !r.ok) { var er = new Error(r && r.error || 'failed'); er.server = true; throw er; }
@@ -183,7 +183,7 @@
         return x;
       });
     }).then(function (x) {
-      $('hDownload').hidden = false; download(lastPdf.pdf.blob, 'Help-' + no.replace('/', '-') + '.pdf');
+      $('hDownload').hidden = false; $('hImg').hidden = false; download(lastPdf.pdf.blob, 'Help-' + no.replace('/', '-') + '.pdf');
       status(x && x.ok ? 'ok-strong' : 'error', x && x.ok
         ? '✔ আপনার আবেদন জমা হয়েছে। আবেদন নম্বর: ' + no + '। আমরা যথাসময়ে যোগাযোগ করবো। আবেদনের পিডিএফ কপি আপনার ফোনে নামছে; না নামলে নিচের বোতাম চাপুন।'
         : 'আপনার আবেদন গ্রহণ করা হয়েছে (নম্বর ' + no + ')। তবে পিডিএফ পাঠানো যায়নি (' + ((x && x.error) || '?') + ')। আবেদনের পিডিএফ ডাউনলোড করে রাখুন ও প্রয়োজনে ফোনে যোগাযোগ করুন।');
@@ -192,5 +192,6 @@
       status('error', err && err.server ? (ERR[err.message] || 'আবেদন জমা দেওয়া যায়নি। আবার চেষ্টা করুন।') : (no ? 'আপনার আবেদন গ্রহণ করা হয়েছে (নম্বর ' + no + ') কিন্তু পিডিএফ তৈরি/পাঠানো যায়নি। অনুগ্রহ করে আমাদের ফোনে জানান।' : 'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'));
     }).then(function () { busy = false; $('hSubmit').disabled = false; });
   });
+  $('hImg').addEventListener('click', function () { var j = lastPdf && window.SrijonPDF.pdfToJpegBlob(lastPdf.pdf.bytes); if (j) download(j, 'Help-' + lastPdf.no.replace('/', '-') + '.jpg'); });
   $('hDownload').addEventListener('click', function () { if (lastPdf) download(lastPdf.pdf.blob, 'Help-' + lastPdf.no.replace('/', '-') + '.pdf'); });
 })();
