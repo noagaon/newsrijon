@@ -6,7 +6,13 @@ from site_lib import *
 def body():
     return '''<div id="acct" class="acct">
 <noscript><p class="status error">এই পাতা চালাতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
-<p class="lead">সংগঠনের সদস্যরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
+<div class="mys-intro" id="aIntro">
+  <p class="btn-row" id="aIntroBtns"><a class="btn btn-primary" href="#signup">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="#login">লগইন করুন</a></p>
+  <h2>অংশগ্রহণ থেকে পরিবর্তনের পথে</h2>
+  <p>একটি সংগঠনের শক্তি শুধু তার নিয়ম-কাঠামো বা কার্যক্রমে নয়; বরং তার সবচেয়ে বড় শক্তি হলো তার সদস্যরা। একজন সদস্য হওয়া মানে শুধু একটি তালিকায় নিজের নাম যুক্ত করা নয়—এটি একটি মূল্যবোধ, দায়িত্ব ও ইতিবাচক পরিবর্তনের সঙ্গে নিজেকে যুক্ত করার অঙ্গীকার।</p>
+  <p>আপনি যদি মনে করেন, আপনার সময়, মেধা, অভিজ্ঞতা ও সামর্থ্য কোনো ভালো কাজে অবদান রাখতে পারে, তাহলে সদস্য হওয়ার আবেদন হতে পারে সেই পথচলার প্রথম ধাপ।</p>
+  <p class="muted">সংগঠনের সদস্যরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
+</div>
 <div id="aStatus" class="status" role="status" aria-live="polite"></div>
 
 <div id="aGuest">
@@ -81,7 +87,7 @@ def body():
     <div class="form-card" id="photoBox">
       <h2>প্রোফাইল ছবি</h2>
       <div class="photo-up"><img id="aPhotoImg" alt="আপনার ছবি" width="120" height="150" hidden>
-        <div><p>নতুন ছবি দিলে সেটি অ্যাকাউন্টে সংরক্ষিত হবে এবং আইডি কার্ড ও ফটোকার্ডে ব্যবহার হবে। পরিষ্কার, সামনে থেকে তোলা ছবি দিন (ছবি নিজে থেকে ছোট করে পাঠানো হয়)।</p>
+        <div><p class="lbl"><strong>ছবি পরিবর্তন করুন</strong></p>
         <input id="aPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"> <button class="btn btn-primary" type="button" id="aPhotoGo" disabled>ছবি আপলোড করুন</button></div></div>
     </div>
     <div id="pBody" class="acct-profile"><p>লোড হচ্ছে…</p></div>
@@ -90,7 +96,7 @@ def body():
   <div data-cardctl hidden class="form-card no-print">
     <h2>কার্ডের ছবি ঠিক করুন</h2>
     <div class="grid-form">
-      <div class="field"><label for="cPhoto">অন্য ছবি দিতে চাইলে (ঐচ্ছিক)</label><input id="cPhoto" type="file" accept="image/*"></div>
+      <div class="field"><label for="cPhoto">ছবি পরিবর্তন করুন (ঐচ্ছিক)</label><input id="cPhoto" type="file" accept="image/*"></div>
       <div class="field"><label for="cZoom">ছবি বড়-ছোট (ফ্রেম একই থাকে)</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
       <div class="field"><label for="cPx">ডানে-বামে</label><input id="cPx" type="range" min="-100" max="100" step="1" value="0"></div>
       <div class="field"><label for="cPy">উপরে-নিচে</label><input id="cPy" type="range" min="-100" max="100" step="1" value="0"></div>

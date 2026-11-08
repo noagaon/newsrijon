@@ -19,7 +19,7 @@
     exists: 'এই সদস্য নম্বরে আগেই অ্যাকাউন্ট খোলা হয়েছে। লগইন করুন, না পারলে "পাসওয়ার্ড ভুলে গেছেন?" ব্যবহার করুন।',
     mail_failed: 'কোড ইমেইলে পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
     bad_image: 'ছবিটি নেওয়া যায়নি। JPG/PNG ছবি দিন।', bad_pdf: 'কার্ড সংরক্ষণ করা যায়নি।', too_many: 'অনেক বেশিবার আপলোড হয়েছে, এক ঘণ্টা পরে চেষ্টা করুন।', nocard: 'সংরক্ষিত কার্ড পাওয়া যায়নি।',
-    empty: 'কিছু লিখুন।', too_long: 'লেখাটি অনেক বড় (সর্বোচ্চ ১০০০ অক্ষর)।', too_many_posts: 'অনেক বেশি পোস্ট করা হয়েছে, কিছুক্ষণ পরে চেষ্টা করুন।', nopdf: 'আবেদন ফরমের কপি পাওয়া যায়নি।',
+    empty: 'কিছু লিখুন।', too_long: 'লেখাটি অনেক বড় (সর্বোচ্চ ১০০০ অক্ষর)।', too_many_posts: 'অনেক বেশি পোস্ট করা হয়েছে, কিছুক্ষণ পরে চেষ্টা করুন।', nopdf: 'আবেদন ফরমের কপি পাওয়া যায়নি।', noreg: 'নিবন্ধন ফরম এখনো আপলোড করা হয়নি।',
     too_many_otp: 'এই নম্বরে ঘণ্টায় অনেকবার OTP চাওয়া হয়েছে। পরে চেষ্টা করুন।',
     otp_wrong: 'কোড ভুল হয়েছে।', otp_expired: 'কোডের মেয়াদ শেষ বা ভুল চেষ্টা বেশি হয়েছে। নতুন কোড নিন।',
     bad_username: 'ইউজারনেম ৩–৩০ অক্ষরের, ইংরেজি ছোট হরফ/সংখ্যা/_/. দিয়ে হতে হবে।',
@@ -136,11 +136,11 @@
     if ((k === 'idcard' || k === 'photocard') && window.SrijonCard) window.SrijonCard.render();
   }
   Array.prototype.forEach.call(uTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); tab(a.dataset.t); }); });
-  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); $('aUser').hidden = true; $('aGuest').hidden = false; }
+  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); $('aUser').hidden = true; $('aGuest').hidden = false; $('aIntroBtns').hidden = false; }
   $('uOut').addEventListener('click', function () { call({ action: 'acct_logout', token: token }).catch(function () {}); logoutLocal(); status('info', 'লগআউট হয়েছে।'); });
   function enter(r) {
     token = r.token; store(token); me = r; loaded = {};
-    $('aGuest').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.name || ''; $('uSub').textContent = 'সদস্য নম্বর: ' + (r.memberNo || '') + (r.username ? ' • ইউজারনেম: ' + r.username : '');
+    $('aGuest').hidden = true; $('aIntroBtns').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.name || ''; $('uSub').textContent = 'সদস্য নম্বর: ' + (r.memberNo || '') + (r.username ? ' • ইউজারনেম: ' + r.username : '');
     status('', ''); tab('profile');
   }
   function api(action, extra) { var p = { action: action, token: token }; for (var k in extra) p[k] = extra[k]; return call(p).then(function (r) { if (r && r.error === 'session') { logoutLocal(); status('error', errMsg(r)); throw new Error('session'); } return r; }); }
@@ -149,7 +149,8 @@
     if (loaded.profile) return; loaded.profile = 1;
     api('acct_profile').then(function (r) {
       if (!r.ok) { $('pBody').innerHTML = '<p class="status error">আবেদনের তথ্য পাওয়া যায়নি।</p>'; return; }
-      var pdfBox = r.hasFormPdf ? '<div class="form-pdf"><h3>আবেদন ফরমের কপি</h3><p>সদস্যপদের জন্য সর্বপ্রথম জমা দেওয়া পূরণকৃত আবেদন ফরম। এটি শুধু ডাউনলোড করা যাবে, বদলানো যাবে না।</p><button class="btn btn-outline" type="button" id="formPdfGo">⬇️ আবেদন ফরম (PDF) ডাউনলোড</button></div>' : '';
+      var pdfBox = '<div class="form-pdfs"><div class="form-pdf"><h3>আবেদন ফরম</h3><p>সর্বপ্রথম জমা দেওয়া পূরণকৃত ফরম।</p>' + (r.hasFormPdf ? '<button class="btn btn-primary" type="button" data-fview="apply">আবেদন ফরম দেখুন</button> <button class="btn btn-outline" type="button" data-fdl="apply">⬇️ আবেদন ফরম (PDF) ডাউনলোড</button>' : '<span class="muted">ফরমের কপি পাওয়া যায়নি।</span>') + '</div>' +
+        '<div class="form-pdf"><h3>নিবন্ধন ফরম</h3><p>কর্তৃপক্ষের স্বাক্ষরসহ চূড়ান্ত ফরম।</p>' + (r.hasRegPdf ? '<button class="btn btn-primary" type="button" data-fview="reg">নিবন্ধন ফরম দেখুন</button> <button class="btn btn-outline" type="button" data-fdl="reg">⬇️ ডাউনলোড</button>' : '<span class="muted">কর্তৃপক্ষ এখনো আপলোড করেনি।</span>') + '</div></div>';
       $('pBody').innerHTML = pdfBox + r.groups.map(function (g) {
         if (!g.items.length) return '';
         return '<h3>' + esc(g.title) + '</h3><div class="table-wrap"><table><tbody>' + g.items.map(function (i) { return '<tr><th scope="row">' + esc(i.k) + '</th><td>' + esc(i.v) + '</td></tr>'; }).join('') + '</tbody></table></div>';
@@ -174,8 +175,13 @@
   }
   function b64OfBytes(bytes) { var s = '', ch = 0x8000; for (var i = 0; i < bytes.length; i += ch) s += String.fromCharCode.apply(null, bytes.subarray(i, i + ch)); return btoa(s); }
   document.addEventListener('click', function (e) {
-    var f = e.target.closest('#formPdfGo'); if (!f) return; f.disabled = true;
-    api('acct_form_pdf').then(function (r) { f.disabled = false; if (!r.ok) { status('error', errMsg(r)); return; } saveDownload(r.data, r.name); }).catch(function () { f.disabled = false; });
+    var f = e.target.closest('[data-fview],[data-fdl]'); if (!f) return;
+    var kind = f.dataset.fview || f.dataset.fdl, view = !!f.dataset.fview, w = view ? window.open('', '_blank') : null; f.disabled = true;
+    api('acct_form_pdf', { kind: kind }).then(function (r) {
+      f.disabled = false; if (!r.ok) { if (w) w.close(); status('error', errMsg(r)); return; }
+      if (view) { var bin = atob(r.data), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); var u = URL.createObjectURL(new Blob([a], { type: 'application/pdf' })); if (w) w.location = u; else saveDownload(r.data, r.name); }
+      else saveDownload(r.data, r.name);
+    }).catch(function () { f.disabled = false; if (w) w.close(); });
   });
   /* ---------- নিউজফিড ---------- */
   var feedLast = 0;

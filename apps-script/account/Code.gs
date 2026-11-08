@@ -358,6 +358,7 @@ function profile_(no) {
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
   return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '' },
     hasFormPdf: !!driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')),
+    hasRegPdf: !!driveId_(cell_(a.t, a.row, 'নিবন্ধন ফরম লিংক')),
     hasPhoto: !!(String(acc0_(no, C.PHOTO)) || driveId_(cell_(a.t, a.row, 'ছবির লিংক'))),
     saved: { id: String(acc0_(no, C.IDC_AT)), photo: String(acc0_(no, C.PHC_AT)) } };
 }
@@ -372,10 +373,16 @@ function photo_(no) {
 }
 
 // ---------------------------------------------------------------- আবেদন ফরমের মূল পিডিএফ (শুধু ডাউনলোড; বদলানোর কোনো ব্যবস্থা নেই)
-function formPdf_(no) {
+function formPdf_(no, r) {
   var a = applicationRow_(no); if (!a) return { ok: false, error: 'notfound' };
-  var id = driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')); if (!id) return { ok: false, error: 'nopdf' };
-  return { ok: true, name: 'Application-' + slug_(cell_(a.t, a.row, 'ফরম নম্বর') || no) + '.pdf', data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
+  var reg = r && r.kind === 'reg', col = reg ? 'নিবন্ধন ফরম লিংক' : 'পিডিএফ লিংক';     // নিবন্ধন ফরম: কর্তৃপক্ষ স্বাক্ষরসহ আপলোড করে লিংক বসায়
+  var id = driveId_(cell_(a.t, a.row, col)); if (!id) return { ok: false, error: reg ? 'noreg' : 'nopdf' };
+  return { ok: true, name: (reg ? 'Registration-' : 'Application-') + slug_(cell_(a.t, a.row, 'ফরম নম্বর') || no) + '.pdf', data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
+}
+function addRegColumn_() {   // আবেদন শিটে "নিবন্ধন ফরম লিংক" কলাম না থাকলে শেষে যোগ করে
+  var sh = SpreadsheetApp.openById(CONFIG.MAIN_SHEET_ID).getSheetByName(CONFIG.APPLY_TAB); if (!sh) return;
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  if (head.indexOf('নিবন্ধন ফরম লিংক') < 0) sh.getRange(1, head.length + 1).setValue('নিবন্ধন ফরম লিংক').setFontWeight('bold');
 }
 
 // ---------------------------------------------------------------- নিউজফিড (সব সদস্য লিখতে ও দেখতে পারে)
@@ -511,7 +518,7 @@ function receiptPdf_(no, r) {
 
 // ---------------------------------------------------------------- সেটআপ / পরীক্ষা (এডিটর থেকে Run)
 function setup() {
-  accSheet_(); readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB); readSheet_(CONFIG.RECEIPT_SHEET_ID, CONFIG.RECEIPT_TAB);
+  accSheet_(); addRegColumn_(); readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB); readSheet_(CONFIG.RECEIPT_SHEET_ID, CONFIG.RECEIPT_TAB);
   DriveApp.getRootFolder(); secret_();
   MailApp.getRemainingDailyQuota();
   Logger.log('অনুমতি ঠিক আছে। আজকের বাকি ইমেইল কোটা: ' + MailApp.getRemainingDailyQuota());
