@@ -216,6 +216,9 @@ def build_home():
 
 
 def build_pages():
+    import glob
+    for f in glob.glob(os.path.join(ROOT, 'pages', '*-20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.html')):   # মুছে ফেলা পোস্টের পুরনো পেইজ সরায়
+        os.remove(f)
     for slug, title in MENU:
         extra = ''
         if slug == 'mysrijon': continue   # নিচে আলাদাভাবে তৈরি
