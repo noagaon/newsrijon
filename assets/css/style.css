@@ -445,8 +445,11 @@ small.inl{font-weight:400;color:#555}
 .form-pdfs .form-pdf { margin: 0; }
 .form-pdf .btn { margin: 4px 6px 0 0; }
 [data-cardctl] .grid-form { display: block; }
-[data-cardctl] .field { margin-bottom: 4px; }
+[data-cardctl] .field { margin-bottom: 5pt; }
+[data-cardctl] .field input { margin: 0; }
 [data-cardctl] .field label { margin-bottom: 0; }
 [data-cardctl] h2 { margin-bottom: 8px; }
 .photo-up .lbl { margin: 0 0 4px; }
 .form-pdfs { margin-top: 16px; }
+.acct-top { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.forgot-link { margin: 10px 0 0; }

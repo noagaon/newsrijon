@@ -3,20 +3,14 @@
 from site_lib import *
 
 
-def body():
-    return '''<div id="acct" class="acct">
+def _base():
+    return '''<div id="acct" class="acct" data-mode="@MODE@">
 <noscript><p class="status error">এই পাতা চালাতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
-<div class="mys-intro" id="aIntro">
-  <p class="btn-row" id="aIntroBtns"><a class="btn btn-primary" href="#signup">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="#login">লগইন করুন</a></p>
-  <h2>অংশগ্রহণ থেকে পরিবর্তনের পথে</h2>
-  <p>একটি সংগঠনের শক্তি শুধু তার নিয়ম-কাঠামো বা কার্যক্রমে নয়; বরং তার সবচেয়ে বড় শক্তি হলো তার সদস্যরা। একজন সদস্য হওয়া মানে শুধু একটি তালিকায় নিজের নাম যুক্ত করা নয়—এটি একটি মূল্যবোধ, দায়িত্ব ও ইতিবাচক পরিবর্তনের সঙ্গে নিজেকে যুক্ত করার অঙ্গীকার।</p>
-  <p>আপনি যদি মনে করেন, আপনার সময়, মেধা, অভিজ্ঞতা ও সামর্থ্য কোনো ভালো কাজে অবদান রাখতে পারে, তাহলে সদস্য হওয়ার আবেদন হতে পারে সেই পথচলার প্রথম ধাপ।</p>
-  <p class="muted">সংগঠনের সদস্যরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
-</div>
+
 <div id="aStatus" class="status" role="status" aria-live="polite"></div>
 
 <div id="aGuest">
-  <div class="tabs-links" id="aGuestTabs">
+  <div class="tabs-links" id="aGuestTabs" hidden>
     <a href="#" data-g="login">লগইন</a><a href="#" data-g="signup">অ্যাকাউন্ট খুলুন</a><a href="#" data-g="forgot">পাসওয়ার্ড ভুলে গেছেন?</a>
   </div>
 
@@ -27,6 +21,7 @@ def body():
       <div class="field"><label for="lPass">পাসওয়ার্ড</label><input id="lPass" type="password" autocomplete="current-password" maxlength="100"></div>
     </div>
     <button class="btn btn-primary" id="lGo" type="submit">লগইন করুন</button>
+    <p class="forgot-link"><a href="#" data-go="forgot">পাসওয়ার্ড ভুলে গেছেন?</a></p>
   </form>
 
   <form class="form-card" id="gSignup" data-pane="signup" hidden onsubmit="return false">
@@ -60,6 +55,7 @@ def body():
 
   <form class="form-card" id="gForgot" data-pane="forgot" hidden onsubmit="return false">
     <h2>পাসওয়ার্ড রিকভারি</h2>
+    <p><a href="#" data-go="login">← লগইনে ফিরুন</a></p>
     <div id="fStep1">
       <p>ইউজারনেম দিন — অ্যাকাউন্টের রিকভারি ইমেইলে একটি কোড যাবে।</p>
       <div class="field"><label for="fUser">ইউজারনেম</label><input id="fUser" maxlength="30" autocomplete="username"></div>
@@ -132,3 +128,31 @@ def body():
 </div>
 <script>window.SRIJON_CARD=%s;</script>''' % (
         '{"address":"%s","phone":"%s","email":"%s","slogan":"%s"}' % (SITE['address_full'], SITE['phone'], SITE['email'], SITE['slogan']))
+
+
+
+TOP = {
+    'signup': '<a class="btn btn-outline" href="mysrijon-login.html">লগইন করুন</a>',
+    'login': '<a class="btn btn-outline" href="mysrijon.html">ব্যাক করুন</a>',
+    'account': '<a class="btn btn-outline" href="mysrijon.html">ব্যাক করুন</a>',
+}
+
+
+def intro():
+    """আমার সৃজন মূল পাতা (শুধু পরিচিতি ও দুটি বোতাম)"""
+    return '''<div class="mys-intro">
+  <p class="btn-row"><a class="btn btn-primary" href="mysrijon-signup.html">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="mysrijon-login.html">লগইন করুন</a></p>
+  <h2>অংশগ্রহণ থেকে পরিবর্তনের পথে</h2>
+  <p>একটি সংগঠনের শক্তি শুধু তার নিয়ম-কাঠামো বা কার্যক্রমে নয়; বরং তার সবচেয়ে বড় শক্তি হলো তার সদস্যরা। একজন সদস্য হওয়া মানে শুধু একটি তালিকায় নিজের নাম যুক্ত করা নয়—এটি একটি মূল্যবোধ, দায়িত্ব ও ইতিবাচক পরিবর্তনের সঙ্গে নিজেকে যুক্ত করার অঙ্গীকার।</p>
+  <p>আপনি যদি মনে করেন, আপনার সময়, মেধা, অভিজ্ঞতা ও সামর্থ্য কোনো ভালো কাজে অবদান রাখতে পারে, তাহলে সদস্য হওয়ার আবেদন হতে পারে সেই পথচলার প্রথম ধাপ।</p>
+  <p class="muted">সংগঠনের সদস্যরাই অ্যাকাউন্ট খুলতে পারবেন। অ্যাকাউন্টে নিজের প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব পাবেন।</p>
+</div>
+<script>(function(){var m={'#signup':'mysrijon-signup.html','#login':'mysrijon-login.html','#forgot':'mysrijon-login.html#forgot'}[location.hash];if(m)location.replace(m);})();</script>'''
+
+
+def body(mode='account'):
+    """mode: signup | login | account"""
+    h = _base().replace('@MODE@', mode)
+    if mode == 'account':
+        h = h.replace('<div id="aGuest">', '<div id="aGuest" hidden>', 1)
+    return '<div class="acct-top">%s</div>' % TOP[mode] + h

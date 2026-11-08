@@ -4,6 +4,7 @@
   var $ = function (id) { return document.getElementById(id); };
   if (!$('acct')) return;
   var CFG = window.SRIJON_CONFIG || {}, TK = 'srijon_acct_token', token = '', me = null, loaded = {};
+  var MODE = $('acct').dataset.mode || 'account', P_LOGIN = 'mysrijon-login.html', P_ACC = 'mysrijon-account.html';
   var BN = '০১২৩৪৫৬৭৮৯';
   function bn(s) { return String(s).replace(/\d/g, function (d) { return BN[d]; }); }
   function money(n) { return '৳ ' + bn(Number(n || 0).toLocaleString('en-US')); }
@@ -45,7 +46,8 @@
   var gTabs = $('aGuestTabs').querySelectorAll('a'), panes = { login: $('gLogin'), signup: $('gSignup'), forgot: $('gForgot') };
   function gShow(k) { Object.keys(panes).forEach(function (x) { panes[x].hidden = x !== k; }); Array.prototype.forEach.call(gTabs, function (a) { a.classList.toggle('active', a.dataset.g === k); }); status('', ''); }
   Array.prototype.forEach.call(gTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); gShow(a.dataset.g); }); });
-  function fromHash() { gShow(/^#(signup|forgot)$/.test(location.hash) ? location.hash.slice(1) : 'login'); }
+  function fromHash() { gShow(MODE === 'signup' ? 'signup' : (location.hash === '#forgot' ? 'forgot' : 'login')); }
+  document.addEventListener('click', function (e) { var a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); gShow(a.dataset.go); } });
   fromHash(); window.addEventListener('hashchange', function () { if (!$('aGuest').hidden) fromHash(); });
 
   /* ---------- লগইন ---------- */
@@ -101,7 +103,7 @@
       var u = $('sUser').value.trim().toLowerCase(); ['sPass', 'sPass2', 'sNid'].forEach(function (i) { $(i).value = ''; }); ticket = '';
       $('sStep1').hidden = true; $('sStep2').hidden = true; $('sDone').hidden = false;
       $('sDoneMsg').textContent = (r.name || '') + ', সংগঠনের সদস্য অ্যাকাউন্টে আপনাকে স্বাগতম! আপনার অ্যাকাউন্ট সফলভাবে খোলা হয়েছে। সদস্য নম্বর: ' + (r.memberNo || signNo) + ', ইউজারনেম: ' + u + '। এখন লগইন করে প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব দেখুন।';
-      $('sToLogin').onclick = function () { $('sDone').hidden = true; $('sStep1').hidden = false; lockIdentity(false); suggestList(); $('sType').value = ''; gShow('login'); $('lUser').value = u; $('lPass').focus(); };
+      $('sToLogin').onclick = function () { location.href = P_LOGIN; return; $('sDone').hidden = true; $('sStep1').hidden = false; lockIdentity(false); suggestList(); $('sType').value = ''; gShow('login'); $('lUser').value = u; $('lPass').focus(); };
     });
   });
 
@@ -136,13 +138,9 @@
     if ((k === 'idcard' || k === 'photocard') && window.SrijonCard) window.SrijonCard.render();
   }
   Array.prototype.forEach.call(uTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); tab(a.dataset.t); }); });
-  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); $('aUser').hidden = true; $('aGuest').hidden = false; $('aIntro').hidden = false; }
+  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); if (MODE === 'account') { location.replace(P_LOGIN); return; } $('aUser').hidden = true; }
   $('uOut').addEventListener('click', function () { call({ action: 'acct_logout', token: token }).catch(function () {}); logoutLocal(); status('info', 'লগআউট হয়েছে।'); });
-  function enter(r) {
-    token = r.token; store(token); me = r; loaded = {};
-    $('aGuest').hidden = true; $('aIntro').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.name || ''; $('uSub').textContent = 'সদস্য নম্বর: ' + (r.memberNo || '') + (r.username ? ' • ইউজারনেম: ' + r.username : '');
-    status('', ''); tab('profile');
-  }
+  function enter(r) { token = r.token; store(token); location.href = P_ACC; }   // লগইন সফল → সদস্য অ্যাকাউন্ট পেইজ
   function api(action, extra) { var p = { action: action, token: token }; for (var k in extra) p[k] = extra[k]; return call(p).then(function (r) { if (r && r.error === 'session') { logoutLocal(); status('error', errMsg(r)); throw new Error('session'); } return r; }); }
 
   function loadProfile() {
@@ -261,10 +259,14 @@
   });
 
   if (!CFG.ACCOUNT_URL) status('info', 'অ্যাকাউন্ট সেবা শিগগিরই চালু হচ্ছে।');
-  else if (stored()) {   // পাতা রিফ্রেশে সেশন ফিরিয়ে আনা
+  else if (stored()) {   // সেশন থাকলে: লগইন/খোলার পেইজ থেকে সরাসরি অ্যাকাউন্টে; অ্যাকাউন্ট পেইজে প্রোফাইল দেখানো
     token = stored();
-    call({ action: 'acct_profile', token: token }).then(function (r) { if (r && r.ok) { me = {}; $('aGuest').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.card.name; $('uSub').textContent = 'সদস্য নম্বর: ' + r.card.no; loaded.profile = 0; tab('profile'); } else logoutLocal(); }).catch(logoutLocal);
-  }
+    call({ action: 'acct_profile', token: token }).then(function (r) {
+      if (!(r && r.ok)) { if (r && r.error === 'session') logoutLocal(); else if (MODE === 'account') status('error', errMsg(r)); return; }
+      if (MODE !== 'account') { location.replace(P_ACC); return; }
+      me = {}; $('aUser').hidden = false; $('uName').textContent = r.card.name; $('uSub').textContent = 'সদস্য নম্বর: ' + r.card.no; loaded.profile = 0; tab('profile');
+    }).catch(function () { if (MODE === 'account') status('error', 'সংযোগে সমস্যা। পাতাটি রিফ্রেশ করুন।'); });
+  } else if (MODE === 'account') location.replace(P_LOGIN);
   /* ---------- পাসওয়ার্ড দেখান ---------- */
   ['lPass', 'sPass', 'fPass'].forEach(function (id) {
     var inp = $(id); if (!inp) return; var ids = id === 'lPass' ? [id] : [id, id + '2'];

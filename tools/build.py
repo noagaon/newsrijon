@@ -87,7 +87,7 @@ def home_body():
     S.append(sec('আমার সৃজন',
                  '<h3 class="mini">অংশগ্রহণ থেকে পরিবর্তনের পথে</h3>'
                  + p('একটি সংগঠনের শক্তি শুধু তার নিয়ম-কাঠামো বা কার্যক্রমে নয়; বরং তার সবচেয়ে বড় শক্তি হলো তার সদস্যরা। একজন সদস্য হওয়া মানে শুধু একটি তালিকায় নিজের নাম যুক্ত করা নয়—এটি একটি মূল্যবোধ, দায়িত্ব ও ইতিবাচক পরিবর্তনের সঙ্গে নিজেকে যুক্ত করার অঙ্গীকার।')
-                 + '<p class="btn-row">' + more_link(href('mysrijon')) + ' ' + btn('অ্যাকাউন্ট খুলুন', href('mysrijon', 'signup'), 'primary') + btn('লগইন করুন', href('mysrijon', 'login'), 'outline') + '</p>',
+                 + '<p class="btn-row">' + more_link(href('mysrijon')) + ' ' + btn('অ্যাকাউন্ট খুলুন', 'pages/mysrijon-signup.html', 'primary') + btn('লগইন করুন', 'pages/mysrijon-login.html', 'outline') + '</p>',
                  None, id_='mysrijon'))
     S.append(sec('প্রাক্তন সভাপতি',
                  p('একজন সভাপতির দায়িত্ব শুধু একটি পদ অলংকরণ নয়; বরং সংগঠনের পথচলায় নেতৃত্ব দেওয়া, সদস্যদের ঐক্যবদ্ধ রাখা এবং প্রতিকূল সময়ে সাহস ও প্রজ্ঞার সঙ্গে সিদ্ধান্ত নেওয়া। আমাদের প্রাক্তন সভাপতিগণ তাঁদের দায়িত্ব পালনের মাধ্যমে')
@@ -166,7 +166,7 @@ def home_bar():
     <input id="qBox" type="search" placeholder="🔍 সাইটে খুঁজুন…" autocomplete="off" maxlength="80">
     <div id="qRes" class="search-res" hidden></div>
   </form>
-  <div class="home-bar-btns"><a class="btn btn-primary" href="pages/mysrijon.html#signup">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="pages/mysrijon.html#login">লগইন করুন</a></div>
+  <div class="home-bar-btns"><a class="btn btn-primary" href="pages/mysrijon-signup.html">অ্যাকাউন্ট খুলুন</a><a class="btn btn-outline" href="pages/mysrijon-login.html">লগইন করুন</a></div>
 </div></section>
 '''
 
@@ -232,7 +232,12 @@ def build_pages():
     import card_page
     html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
     import account_page
-    write('pages/mysrijon.html', page('mysrijon', account_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>', title='আমার সৃজন').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
+    NOIDX = lambda h: h.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1)
+    ACC_JS = '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>'
+    write('pages/mysrijon.html', page('mysrijon', account_page.intro(), '', title='আমার সৃজন'))
+    write('pages/mysrijon-signup.html', NOIDX(page('mysrijon', account_page.body('signup'), ACC_JS, title='অ্যাকাউন্ট খুলুন', parent='mysrijon')))
+    write('pages/mysrijon-login.html', NOIDX(page('mysrijon', account_page.body('login'), ACC_JS, title='লগইন', parent='mysrijon')))
+    write('pages/mysrijon-account.html', NOIDX(page('mysrijon', account_page.body('account'), ACC_JS, title='সদস্য অ্যাকাউন্ট', parent='mysrijon', mid=[('mysrijon-login.html', 'লগইন')])))
     write('pages/account.html', '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>আমার সৃজন</title><script>location.replace("mysrijon.html"+location.hash)</script><p><a href="mysrijon.html">আমার সৃজন</a></p>')
     write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
 
