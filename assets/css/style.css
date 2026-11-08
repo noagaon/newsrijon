@@ -453,3 +453,4 @@ small.inl{font-weight:400;color:#555}
 .form-pdfs { margin-top: 16px; }
 .acct-top { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 .forgot-link { margin: 10px 0 0; }
+.acct-top .btn { font-size: 14pt; padding: 4px 12px; min-height: 0; line-height: 1.3; }
