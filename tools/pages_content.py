@@ -262,7 +262,7 @@ BODY['structure'] = (
 )
 
 # ৬. সদস্য তালিকা
-MEMBER_HEADS = ['ক্রম', 'নাম', 'সদস্য নম্বর', 'সদস্যপদ লাভের তারিখ', 'অবস্থা']
+MEMBER_HEADS = ['ক্রম', 'ছবি', 'নাম', 'সদস্য নম্বর', 'সদস্যপদ লাভের তারিখ', 'অবস্থা']
 
 # অবস্থা: ক্রম নম্বর (১ থেকে) অনুযায়ী; তালিকায় না থাকলে Active
 INACTIVE = {'general': {5, 8, 9, 10, 11, 12, 13}, 'junior': {1, 2, 3, 4, 6, 7, 8}}
@@ -280,7 +280,7 @@ def member_status(key, no):
 
 
 def member_rows(key):
-    return [(str(i + 1), n, no, d or '—', member_status(key, i + 1)) for i, (n, no, d) in enumerate(MEMBERS[key])]
+    return [(str(i + 1), Raw('<span class="mph" data-no="%s" role="img" aria-label="%s-এর ছবি"></span>' % (esc(no), esc(n))), n, no, d or '—', member_status(key, i + 1)) for i, (n, no, d) in enumerate(MEMBERS[key])]
 
 
 BODY['members'] = (

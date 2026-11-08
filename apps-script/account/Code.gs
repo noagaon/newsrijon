@@ -54,6 +54,7 @@ function doPost(e) {
   try {
     var r = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (r.website) return json_({ ok: false, error: 'rejected' });                 // হানিপট
+    if (r.action === 'public_photos' || r.action === 'public_photo') return json_(publicRate_() ? { ok: false, error: 'busy' } : (r.action === 'public_photos' ? publicPhotos_(r) : publicPhotoBig_(r)));
     var cache = CacheService.getScriptCache(), k = 'am_' + Math.floor(Date.now() / 60000);
     var n = Number(cache.get(k) || 0) + 1; cache.put(k, String(n), 120);
     if (n > CONFIG.MAX_PER_MIN) return json_({ ok: false, error: 'busy' });
@@ -335,8 +336,8 @@ var PROFILE_GROUPS = [
 var MASKED = { 'এনআইডি': 4, 'জন্মনিবন্ধন সনদ নম্বর': 4 };
 
 function applicationRow_(no) {
-  var acc = findAccount_(no); if (!acc) return null;
-  var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB), fn = String(acc.v[C.FORM] || '');
+  var acc = findAccount_(no);
+  var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB), fn = acc ? String(acc.v[C.FORM] || '') : '';
   for (var i = t.rows.length - 1; i >= 0; i--) {
     var row = t.rows[i];
     if (fn ? cell_(t, row, 'ফরম নম্বর') === fn : noEq_(cell_(t, row, 'সদস্য নম্বর'), no)) return { t: t, row: row };
@@ -370,6 +371,43 @@ function photo_(no) {
   var b = DriveApp.getFileById(id).getBlob();
   if (b.getBytes().length > 9 * 1024 * 1024) return { ok: false, error: 'toolarge' };
   return { ok: true, mime: b.getContentType() || 'image/jpeg', data: Utilities.base64Encode(b.getBytes()) };
+}
+
+// ---------------------------------------------------------------- সদস্য তালিকার ছোট ছবি (ওয়েবসাইটে সবার জন্য খোলা)
+// শুধু ROSTER-এর সদস্যদের ছবি যায়। আবেদন শিটের "ছবি প্রকাশ" কলামে "না" লিখলে ওই সদস্যের ছবি দেখানো হয় না (কলাম না থাকলে সবার দেখায়)।
+function publicRate_() {
+  var c = CacheService.getScriptCache(), k = 'pm_' + Math.floor(Date.now() / 60000), n = Number(c.get(k) || 0) + 1;
+  c.put(k, String(n), 120); return n > 240;
+}
+function publicPhotoId_(no) {
+  if (!rosterOf_(no)) return '';
+  var a = applicationRow_(no); if (!a) return '';
+  if (/^\s*(না|no)\s*$/i.test(cell_(a.t, a.row, 'ছবি প্রকাশ'))) return '';
+  var acc = findAccount_(no);
+  return (acc && String(acc.v[C.PHOTO] || '')) || driveId_(cell_(a.t, a.row, 'ছবির লিংক'));
+}
+function publicPhotos_(r) {
+  var list = (r.nos || []).slice(0, 10), c = CacheService.getScriptCache(), out = {};
+  list.forEach(function (no) {
+    no = String(no || '').slice(0, 30); if (!no) return;
+    var key = 'pt_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, normNo_(no))).slice(0, 20), v = c.get(key);
+    if (v === null) {
+      v = '-';
+      try {
+        var id = publicPhotoId_(no);
+        if (id) { var b = DriveApp.getFileById(id).getThumbnail(); if (b) v = 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(b.getBytes()); }
+      } catch (e) { v = '-'; }
+      if (v.length < 95000) c.put(key, v, v === '-' ? 3600 : 21600);
+    }
+    if (v !== '-') out[no] = v;
+  });
+  return { ok: true, photos: out };
+}
+function publicPhotoBig_(r) {      // জুম: বড় ছবি (৭০০ কিলোবাইটের বেশি হলে থাম্বনেইল)
+  var no = String(r.no || '').slice(0, 30), id = publicPhotoId_(no); if (!id) return { ok: false, error: 'nophoto' };
+  var f = DriveApp.getFileById(id), b = f.getBlob(), bytes = b.getBytes();
+  if (bytes.length > 700 * 1024) { var t = f.getThumbnail(); if (t) { b = t; bytes = t.getBytes(); } }
+  return { ok: true, photo: 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(bytes) };
 }
 
 // ---------------------------------------------------------------- আবেদন ফরমের মূল পিডিএফ (শুধু ডাউনলোড; বদলানোর কোনো ব্যবস্থা নেই)

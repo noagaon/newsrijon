@@ -235,6 +235,7 @@ def build_pages():
         else:
             body = pc.BODY[slug]
         if slug == 'members':
+            extra = '<script src="../config.js"></script><script src="../assets/js/member-photos.js" defer></script>'
             body = '<p class="lead">সদস্য আবেদন করে থাকলে নিজের অ্যাকাউন্টে ঢুকে প্রোফাইল, আইডি কার্ড, ফটোকার্ড, রসিদ ও চাঁদার হিসাব দেখুন। <a class="btn btn-primary" href="mysrijon.html">আমার সৃজন (লগইন / খুলুন)</a></p>' + body
         if slug in ('notices', 'news'):
             body = body.replace('@@POSTS:%s@@' % slug, ct.post_list(slug, ct.load(slug), empty=EMPTY[slug]))
