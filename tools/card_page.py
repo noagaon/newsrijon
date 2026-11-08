@@ -19,7 +19,7 @@ def body():
     <div class="field"><label for="cTypeText">সদস্য ধরণ (কার্ডে যা লেখা থাকবে)</label><input id="cTypeText" type="text" maxlength="30" autocomplete="off"></div>
     <div class="field"><label for="cDate">সদস্যপদ লাভের তারিখ</label><input id="cDate" type="text" maxlength="20" autocomplete="off"></div>
     <div class="field"><label for="cPhoto">সদস্যের ছবি</label><input id="cPhoto" type="file" accept="image/*"></div>
-    <div class="field"><label for="cZoom">ছবি বড়-ছোট (ফ্রেম একই থাকে)</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
+    <div class="field"><label for="cZoom">ছবি বড়-ছোট</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
     <div class="field"><label for="cPx">ছবি ডানে-বামে</label><input id="cPx" type="range" min="-100" max="100" step="1" value="0"></div>
     <div class="field"><label for="cPy">ছবি উপরে-নিচে</label><input id="cPy" type="range" min="-100" max="100" step="1" value="0"></div>
   </div>
