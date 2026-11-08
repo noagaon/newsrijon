@@ -136,11 +136,11 @@
     if ((k === 'idcard' || k === 'photocard') && window.SrijonCard) window.SrijonCard.render();
   }
   Array.prototype.forEach.call(uTabs, function (a) { a.addEventListener('click', function (e) { e.preventDefault(); tab(a.dataset.t); }); });
-  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); $('aUser').hidden = true; $('aGuest').hidden = false; $('aIntroBtns').hidden = false; }
+  function logoutLocal() { token = ''; me = null; loaded = {}; store(''); $('aUser').hidden = true; $('aGuest').hidden = false; $('aIntro').hidden = false; }
   $('uOut').addEventListener('click', function () { call({ action: 'acct_logout', token: token }).catch(function () {}); logoutLocal(); status('info', 'লগআউট হয়েছে।'); });
   function enter(r) {
     token = r.token; store(token); me = r; loaded = {};
-    $('aGuest').hidden = true; $('aIntroBtns').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.name || ''; $('uSub').textContent = 'সদস্য নম্বর: ' + (r.memberNo || '') + (r.username ? ' • ইউজারনেম: ' + r.username : '');
+    $('aGuest').hidden = true; $('aIntro').hidden = true; $('aUser').hidden = false; $('uName').textContent = r.name || ''; $('uSub').textContent = 'সদস্য নম্বর: ' + (r.memberNo || '') + (r.username ? ' • ইউজারনেম: ' + r.username : '');
     status('', ''); tab('profile');
   }
   function api(action, extra) { var p = { action: action, token: token }; for (var k in extra) p[k] = extra[k]; return call(p).then(function (r) { if (r && r.error === 'session') { logoutLocal(); status('error', errMsg(r)); throw new Error('session'); } return r; }); }
