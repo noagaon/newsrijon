@@ -107,18 +107,32 @@
   /* ---------- ফটোকার্ড (১২৪০×১৭৪৮ = A6 পোর্ট্রেট, ৩০০ ডিপিআই) ---------- */
   function en(t) { t = String(t || ''); return /প্রবাসী/.test(t) ? 'Expatriate Member' : /জুনিয়র/.test(t) ? 'Junior Member' : /দাতা/.test(t) ? 'Donor Member' : /সাধারণ/.test(t) ? 'General Member' : ''; }
   function drawPhotoCard(cv) {
-    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = info();
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = info(), ex = /প্রবাসী/.test(d.type);   // ex: প্রবাসী সদস্যের আলাদা ডিজাইন (OVERSEAS MEMBER)
     var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#ffffff'); bg.addColorStop(.62, '#f6f9e4'); bg.addColorStop(1, '#e6efb6'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    // উপরের সবুজ বাঁকা আকার
-    var tg = ctx.createLinearGradient(0, 0, W, H * .6); tg.addColorStop(0, '#0f6b46'); tg.addColorStop(.55, '#58b08a'); tg.addColorStop(1, '#d4ecde');
-    ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(620, 0); ctx.bezierCurveTo(900, 40, 1150, 250, W, 420); ctx.lineTo(W, 440); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
+    var SERIF = '"Times New Roman",Times,serif';
+    function leaf() { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(560, 0); ctx.bezierCurveTo(800, 0, 945, 190, 925, 410); ctx.bezierCurveTo(900, 470, 640, 500, 380, 690); ctx.bezierCurveTo(200, 820, 60, 960, 0, 1100); ctx.closePath(); }
+    // উপরের সবুজ আকার
+    if (ex) {   // প্রবাসী: বামে বড় পাতার আকার (ডানে ছুঁচালো মাথা), লোগো ডানে
+      var eg = ctx.createLinearGradient(0, 0, 900, 1000); eg.addColorStop(0, '#0a7a42'); eg.addColorStop(.45, '#3fa070'); eg.addColorStop(.8, '#9fd1b8'); eg.addColorStop(1, 'rgba(207,233,217,0)');
+      ctx.fillStyle = eg; leaf(); ctx.fill();
+    } else {
+      var tg = ctx.createLinearGradient(0, 0, W, H * .6); tg.addColorStop(0, '#0f6b46'); tg.addColorStop(.55, '#58b08a'); tg.addColorStop(1, '#d4ecde');
+      ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(620, 0); ctx.bezierCurveTo(900, 40, 1150, 250, W, 420); ctx.lineTo(W, 440); ctx.lineTo(W, 800); ctx.bezierCurveTo(700, 850, 60, 720, 0, 250); ctx.closePath(); ctx.fill();
+    }
     // লোগো ও নাম
-    var LX = 195, TX = 385;   // লোগো ও নাম বামে সরানো
-    if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, 190, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, 190 - lh / 2 - 4, lw - 8, lh - 8); }
-    text(ctx, 'সৃজনশীল', TX, 130, 700, 112, '#fff', FIXF, 'left', W - TX - 120); text(ctx, 'তরুণ সংঘ', TX, 250, 700, 112, '#fff', FIXF, 'left', W - TX - 120);
-    text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 335, 700, 38, '#ffe2bd', '"Times New Roman",Times,serif', 'left', W - TX - 120);
+    var LX = 195, TX = 385;   // লোগো ও নাম
+    if (ex) {
+      var EX = 1028, EY = 216;
+      if (logo) { var ew = 300, eh = ew * logo.height / logo.width; ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.16)'; ctx.shadowBlur = 18; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(EX, EY, 160, 0, 7); ctx.fill(); ctx.restore(); ctx.drawImage(logo, EX - ew / 2 + 4, EY - eh / 2 - 4, ew - 8, eh - 8); }
+      text(ctx, 'সৃজনশীল তরুণ সংঘ', 60, 290, 700, 100, '#fff', FIXF, 'left', 760);
+      text(ctx, 'SRIJONSHIL TARUN SANGHA', 64, 392, 700, 38, '#fff3dc', SERIF, 'left', 640);
+    } else {
+      if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, 190, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, 190 - lh / 2 - 4, lw - 8, lh - 8); }
+      text(ctx, 'সৃজনশীল তরুণ সংঘ', TX, 172, 700, 88, '#fff', FIXF, 'left', 620);   // এক লাইনে
+      text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 262, 700, 38, '#ffe2bd', SERIF, 'left', 600);
+    }
     // ছবি
-    var px = Math.round(W * .36), py = 440, pw = W - px, ph = 760;
+    var px = Math.round(W * (ex ? .40 : .36)), py = ex ? 470 : 440, pw = W - px, ph = ex ? 720 : 760;
     var tc = document.createElement('canvas'); tc.width = W; tc.height = H; var tx2 = tc.getContext('2d');
     drawPhoto(tx2, px, py, pw, ph, function () { tx2.beginPath(); tx2.moveTo(px + 170, py); tx2.lineTo(W, py); tx2.lineTo(W, py + ph); tx2.lineTo(px + 170, py + ph); tx2.arcTo(px, py + ph, px, py + ph - 170, 170); tx2.lineTo(px, py + 170); tx2.arcTo(px, py, px + 170, py, 170); tx2.closePath(); });
     // বাম দিকে হালকা গ্লো (মিলিয়ে যাওয়া), নিচের গ্লোর মতো
@@ -128,14 +142,17 @@
     var fg = ctx.createLinearGradient(0, py + ph - 130, 0, py + ph + 4); fg.addColorStop(0, 'rgba(246,249,228,0)'); fg.addColorStop(1, 'rgba(246,249,228,1)'); ctx.fillStyle = fg; ctx.fillRect(px, py + ph - 130, pw, 134);
     // খাড়া লেখা
     // খাড়া লেখা দুই লাইনে: GENERAL / MEMBER (আগের বড় Times স্টাইল), সব ধরণে একই আকার
-    var WORD = (en(d.type).split(' ')[0] || '').toUpperCase(), SERIF = '"Times New Roman",Times,serif', fs = 120;
+    var WORD = ex ? 'OVERSEAS' : (en(d.type).split(' ')[0] || '').toUpperCase(), fs = 120;
     font(ctx, 700, fs, SERIF); while (ctx.measureText('EXPATRIATE').width > 700 && fs > 30) { fs--; font(ctx, 700, fs, SERIF); }
     ctx.save(); ctx.translate(55, py + ph - 20); ctx.rotate(-Math.PI / 2);
     if (WORD) text(ctx, WORD, 0, 78, 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left');     // উপরের (বাঁ) লাইন
     text(ctx, 'MEMBER', 0, 78 + Math.round(fs * 1.02), 700, fs, 'rgba(15,107,70,.28)', SERIF, 'left'); ctx.restore();
-    ctx.save(); ctx.translate(317, py + ph - 20); ctx.rotate(-Math.PI / 2); text(ctx, d.type, 0, 0, 500, 46, 'rgba(60,60,60,.75)', FIXF, 'left'); ctx.restore();
+    if (ex) {   // সবুজ অংশের উপরে পড়া অক্ষর সাদাটে, যাতে মিলিয়ে না যায়
+      ctx.save(); leaf(); ctx.clip(); ctx.translate(55, py + ph - 20); ctx.rotate(-Math.PI / 2);
+      text(ctx, WORD, 0, 78, 700, fs, 'rgba(255,255,255,.5)', SERIF, 'left'); text(ctx, 'MEMBER', 0, 78 + Math.round(fs * 1.02), 700, fs, 'rgba(255,255,255,.5)', SERIF, 'left'); ctx.restore();
+    }
     // নাম, নম্বর
-    var tx = 96, tw = W - 2 * tx, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;
+    var tx = ex ? 470 : 96, tw = ex ? W - 470 - 50 : W - 2 * tx, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;
     wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, tx, y, 700, nsz, '#111', FIXF, 'left', tw); y += nsz + 14; });
     y += 8; text(ctx, d.type, tx, y, 600, 62, OR, FIXF, 'left', tw); y += 66;
     text(ctx, 'সদস্য নম্বর # ' + d.no, tx, y, 500, 52, '#222', SANS, 'left', tw); y += 56;
