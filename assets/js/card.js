@@ -56,51 +56,56 @@
     ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(logo, W / 2 - size / 2, H / 2 - h / 2, size, h); ctx.restore();
   }
   function info() {
-    return { name: $('cName').value.trim() || 'সদস্যের নাম', no: $('cNo').value.trim() || 'STS/GM/0000', type: $('cTypeText').value.trim() || 'সদস্য', date: $('cDate').value.trim() };
+    return { name: $('cName').value.trim() || 'সদস্যের নাম', no: $('cNo').value.trim() || 'STS/GM/0000', type: $('cTypeText').value.trim() || 'সদস্য', date: $('cDate').value.trim(), blood: $('cBlood') ? $('cBlood').value.trim() : '' };
   }
 
-  /* ---------- আইডি কার্ড: সামনে (১০১২×৬৩৮ = ৮৫.৬×৫৪ মিমি, ৩০০ ডিপিআই) ---------- */
+  /* ---------- আইডি কার্ড: লম্বালম্বি ৭×১০ সেমি (৮২৭×১১৮১ = ৭০×১০০ মিমি, ৩০০ ডিপিআই) ---------- */
   function drawFront(cv) {
-    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = info();
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); watermark(ctx, W, H, 420, .06);
-    var g = ctx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, G1); g.addColorStop(1, '#1b7048'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 150);
-    ctx.fillStyle = OR; ctx.fillRect(0, 150, W, 8);
-    if (logo) { var lw = 104, lh = lw * logo.height / logo.width; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(70, 76, 58, 0, 7); ctx.fill(); ctx.drawImage(logo, 70 - lw / 2 + 2, 76 - lh / 2 - 2, lw - 6, lh - 6); }
-    text(ctx, 'সৃজনশীল তরুণ সংঘ', 150, 55, 700, 58, '#fff', FIXF, 'left', 600);
-    text(ctx, 'SRIJONSHIL TARUN SANGHA', 152, 100, 700, 26, '#ffd9a8', '"Times New Roman",Times,serif', 'left', 600);
-    text(ctx, 'নোয়াগাঁও, টুকেরবাজার, সিলেট • স্থাপিত ২০১১', 152, 130, 400, 22, '#d9efe2', SANS, 'left', 640);
-    text(ctx, 'সদস্য পরিচয়পত্র', W - 36, 55, 700, 30, '#fff', FIXF, 'right');
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = info(), SERIF = '"Times New Roman",Times,serif';
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); watermark(ctx, W, H, 480, .035);
+    var g = ctx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, G1); g.addColorStop(1, '#1b7048'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 290);
+    ctx.fillStyle = OR; ctx.fillRect(0, 290, W, 8);
+    if (logo) { var lw = 112, lh = lw * logo.height / logo.width; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(W / 2, 84, 64, 0, 7); ctx.fill(); ctx.drawImage(logo, W / 2 - lw / 2 + 2, 84 - lh / 2 - 2, lw - 6, lh - 6); }
+    text(ctx, 'সৃজনশীল তরুণ সংঘ', W / 2, 180, 700, 58, '#fff', FIXF, 'center', W - 60);
+    text(ctx, 'SRIJONSHIL TARUN SANGHA', W / 2, 224, 700, 26, '#ffd9a8', SERIF, 'center', W - 80);
+    text(ctx, 'নোয়াগাঁও, টুকেরবাজার, সিলেট • স্থাপিত ২০১১', W / 2, 260, 400, 22, '#d9efe2', SANS, 'center', W - 60);
+    text(ctx, 'সদস্য পরিচয়পত্র', W / 2, 336, 700, 34, G1, FIXF, 'center');
     // ছবি
-    var px = 40, py = 186, pw = 250, ph = 310;
+    var pw = 290, ph = 360, px = Math.round((W - pw) / 2), py = 372;
     ctx.fillStyle = G2; rrect(ctx, px - 6, py - 6, pw + 12, ph + 12, 28); ctx.fill();
     drawPhoto(ctx, px, py, pw, ph, function () { rrect(ctx, px, py, pw, ph, 22); });
-    // লেখা
-    var tx = 326, tw = W - tx - 34, lines = wrapLines(ctx, d.name, tw, 700, 50, FIXF), y = 232;
-    var nsz = lines.length > 1 ? 42 : 50;
-    wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, tx, y, 700, nsz, '#111', FIXF, 'left', tw); y += nsz + 10; });
-    y += 8; text(ctx, d.type, tx, y, 700, 38, OR, FIXF, 'left', tw); y += 58;
-    text(ctx, 'সদস্য নম্বর', tx, y, 400, 24, '#555', FIXF, 'left'); y += 36;
-    text(ctx, d.no, tx, y, 700, 40, G1, SANS, 'left', tw); y += 52;
-    if (d.date) { text(ctx, 'সদস্যপদ লাভের তারিখ: ' + bn(d.date), tx, y, 400, 24, '#333', FIXF, 'left', tw); }
+    // লেখা (মাঝে)
+    var tw = W - 70, y = 782, nsz = wrapLines(ctx, d.name, tw, 700, 52, FIXF).length > 1 ? 44 : 52;
+    wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, W / 2, y, 700, nsz, '#111', FIXF, 'center', tw); y += nsz + 8; });
+    y += 6; text(ctx, d.type, W / 2, y, 700, 38, OR, FIXF, 'center', tw); y += 46;
+    text(ctx, 'সদস্য নম্বর', W / 2, y, 400, 22, '#555', FIXF, 'center'); y += 32;
+    text(ctx, d.no, W / 2, y, 700, 42, G1, SANS, 'center', tw); y += 50;
+    if (d.blood) {
+      text(ctx, 'রক্তের গ্রুপ:', W / 2 - 24, y, 600, 30, '#333', FIXF, 'right');
+      ctx.fillStyle = '#c62828'; rrect(ctx, W / 2 + 6, y - 24, 112, 48, 24); ctx.fill();
+      text(ctx, d.blood, W / 2 + 62, y, 700, 32, '#fff', SANS, 'center', 96); y += 54;
+    }
+    if (d.date) text(ctx, 'সদস্যপদ লাভের তারিখ: ' + bn(d.date), W / 2, y, 400, 24, '#333', FIXF, 'center', tw);
     ctx.fillStyle = G2; ctx.fillRect(0, H - 58, W, 58);
-    text(ctx, CFG.slogan || '', W / 2, H - 29, 500, 24, '#fff', FIXF, 'center', W - 60);
+    text(ctx, CFG.slogan || '', W / 2, H - 29, 500, 24, '#fff', FIXF, 'center', W - 50);
     ctx.fillStyle = OR; ctx.fillRect(0, H - 62, W, 4);
   }
   function drawBack(cv) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); watermark(ctx, W, H, 420, .07);
-    var g = ctx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, G1); g.addColorStop(1, '#1b7048'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 96);
-    ctx.fillStyle = OR; ctx.fillRect(0, 96, W, 6);
-    text(ctx, 'সৃজনশীল তরুণ সংঘ', W / 2, 48, 700, 46, '#fff', FIXF, 'center', W - 80);
-    var y = 150;
-    function row(label, val) { text(ctx, label, 50, y, 700, 26, G1, FIXF, 'left'); text(ctx, val, 210, y, 400, 26, '#111', SANS, 'left', W - 250); y += 46; }
-    row('ঠিকানা:', 'নোয়াগাঁও, টুকেরবাজার, ৩৯ নং ওয়ার্ড,'); y -= 12; text(ctx, 'সিলেট সিটি কর্পোরেশন, সিলেট।', 210, y, 400, 26, '#111', SANS, 'left'); y += 52;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); watermark(ctx, W, H, 520, .07);
+    var g = ctx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, G1); g.addColorStop(1, '#1b7048'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 110);
+    ctx.fillStyle = OR; ctx.fillRect(0, 110, W, 6);
+    text(ctx, 'সৃজনশীল তরুণ সংঘ', W / 2, 56, 700, 52, '#fff', FIXF, 'center', W - 60);
+    var y = 190;
+    function row(label, val) { text(ctx, label, 50, y, 700, 28, G1, FIXF, 'left'); text(ctx, val, 200, y, 400, 26, '#111', SANS, 'left', W - 240); y += 46; }
+    row('ঠিকানা:', 'নোয়াগাঁও, টুকেরবাজার,'); y -= 10; text(ctx, '৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন,', 200, y, 400, 26, '#111', FIXF, 'left', W - 240); y += 36; text(ctx, 'সিলেট।', 200, y, 400, 26, '#111', FIXF, 'left'); y += 46;
     row('ফোন:', bn(CFG.phone || '')); row('ইমেইল:', CFG.email || '');
-    y += 4; text(ctx, 'এই কার্ডটি সংগঠনের সম্পত্তি। কুড়িয়ে পেলে উপরের ঠিকানায় ফেরত দিন।', W / 2, y, 400, 22, '#555', FIXF, 'center', W - 70);
+    y += 14;
+    wrapLines(ctx, 'এই কার্ডটি সংগঠনের সম্পত্তি। কুড়িয়ে পেলে উপরের ঠিকানায় ফেরত দিন।', W - 100, 400, 24, FIXF).forEach(function (ln) { text(ctx, ln, W / 2, y, 400, 24, '#555', FIXF, 'center', W - 100); y += 34; });
     // স্বাক্ষর
-    var sy = H - 96; ctx.save(); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.setLineDash([.1, 10]);
-    ctx.beginPath(); ctx.moveTo(60, sy); ctx.lineTo(380, sy); ctx.moveTo(W - 380, sy); ctx.lineTo(W - 60, sy); ctx.stroke(); ctx.restore();
-    text(ctx, 'কার্ডধারীর স্বাক্ষর', 220, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center'); text(ctx, 'কর্তৃপক্ষের স্বাক্ষর', W - 220, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center');
+    var sy = H - 110; ctx.save(); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.setLineDash([.1, 10]);
+    ctx.beginPath(); ctx.moveTo(40, sy); ctx.lineTo(360, sy); ctx.moveTo(W - 360, sy); ctx.lineTo(W - 40, sy); ctx.stroke(); ctx.restore();
+    text(ctx, 'কার্ডধারীর স্বাক্ষর', 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center'); text(ctx, 'কর্তৃপক্ষের স্বাক্ষর', W - 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center');
     ctx.fillStyle = G2; ctx.fillRect(0, H - 22, W, 22);
   }
 
@@ -182,10 +187,10 @@
   $('cIdPdf').addEventListener('click', function () {      // A4 পাতায় আসল মাপে সামনে ও পেছনে
     var S = 300 / 25.4, A4W = Math.round(210 * S), A4H = Math.round(297 * S), c = document.createElement('canvas'); c.width = A4W; c.height = A4H;
     var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, A4W, A4H);
-    var cw = 85.6 * S, ch = 54 * S, x = (A4W - cw) / 2, y1 = 20 * S, y2 = y1 + ch + 14 * S;
-    ctx.drawImage($('cvFront'), x, y1, cw, ch); ctx.drawImage($('cvBack'), x, y2, cw, ch);
-    ctx.strokeStyle = '#999'; ctx.lineWidth = 2; ctx.strokeRect(x, y1, cw, ch); ctx.strokeRect(x, y2, cw, ch);
-    text(ctx, 'আসল মাপ ৮৫.৬ × ৫৪ মিমি — কেটে নিন; সামনে-পেছনে জুড়ে লেমিনেট করুন।', A4W / 2, y2 + ch + 12 * S, 400, 34, '#666', FIXF, 'center');
+    var cw = 70 * S, ch = 100 * S, gap = 12 * S, x1 = (A4W - 2 * cw - gap) / 2, x2 = x1 + cw + gap, y1 = 28 * S;
+    ctx.drawImage($('cvFront'), x1, y1, cw, ch); ctx.drawImage($('cvBack'), x2, y1, cw, ch);
+    ctx.strokeStyle = '#999'; ctx.lineWidth = 2; ctx.strokeRect(x1, y1, cw, ch); ctx.strokeRect(x2, y1, cw, ch);
+    text(ctx, 'আসল মাপ ৭ × ১০ সেমি (৭০ × ১০০ মিমি) — কেটে নিন; সামনে-পেছনে জুড়ে লেমিনেট করুন।', A4W / 2, y1 + ch + 12 * S, 400, 34, '#666', FIXF, 'center');
     pdf(c, 595.28, 841.89, 'ID-' + slug() + '.pdf', 'id');
   });
   $('cPhotoPdf').addEventListener('click', function () { pdf($('cvPhoto'), 105 * MM, 148 * MM, 'PhotoCard-' + slug() + '.pdf', 'photo'); });
@@ -207,9 +212,9 @@
     if (m) { $('cName').value = m.n; $('cNo').value = m.no; $('cDate').value = m.d || ''; }
     schedule();
   });
-  ['cName', 'cNo', 'cTypeText', 'cDate', 'cZoom', 'cPx', 'cPy', 'cSize'].forEach(function (id) { if ($(id)) $(id).addEventListener('input', schedule); });
+  ['cName', 'cNo', 'cTypeText', 'cDate', 'cBlood', 'cZoom', 'cPx', 'cPy', 'cSize'].forEach(function (id) { if ($(id)) $(id).addEventListener('input', schedule); });
   window.SrijonCard = {   // অ্যাকাউন্ট পাতা থেকে ব্যবহারের জন্য
-    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; schedule(); },
+    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; schedule(); },
     photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
     render: schedule
   };

@@ -17,6 +17,7 @@ def body():
     <div class="field span2"><label for="cName">নাম</label><input id="cName" type="text" maxlength="60" autocomplete="off"></div>
     <div class="field"><label for="cNo">সদস্য নম্বর</label><input id="cNo" type="text" maxlength="20" autocomplete="off"></div>
     <div class="field"><label for="cTypeText">সদস্য ধরণ (কার্ডে যা লেখা থাকবে)</label><input id="cTypeText" type="text" maxlength="30" autocomplete="off"></div>
+    <div class="field"><label for="cBlood">রক্তের গ্রুপ (ঐচ্ছিক)</label><select id="cBlood"><option value="">— নেই —</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
     <div class="field"><label for="cDate">সদস্যপদ লাভের তারিখ</label><input id="cDate" type="text" maxlength="20" autocomplete="off"></div>
     <div class="field"><label for="cPhoto">সদস্যের ছবি</label><input id="cPhoto" type="file" accept="image/*"></div>
     <div class="field"><label for="cZoom">ছবি বড়-ছোট</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
@@ -35,8 +36,8 @@ def body():
   </div>
 </form>
 <div class="card-preview">
-  <figure><canvas id="cvFront" width="1012" height="638"></canvas><figcaption>আইডি কার্ড — সামনে</figcaption></figure>
-  <figure><canvas id="cvBack" width="1012" height="638"></canvas><figcaption>আইডি কার্ড — পেছনে</figcaption></figure>
+  <figure><canvas id="cvFront" width="827" height="1181"></canvas><figcaption>আইডি কার্ড — সামনে</figcaption></figure>
+  <figure><canvas id="cvBack" width="827" height="1181"></canvas><figcaption>আইডি কার্ড — পেছনে</figcaption></figure>
   <figure class="portrait"><canvas id="cvPhoto" width="1240" height="1748"></canvas><figcaption>ফটোকার্ড</figcaption></figure>
 </div></div>''' % ''.join('<option value="%s">%s</option>' % (k, esc(t)) for k, t in TYPES)
         + '<script>window.SRIJON_CARD=%s;</script>' % (

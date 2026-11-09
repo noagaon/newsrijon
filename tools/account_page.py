@@ -97,14 +97,14 @@ def _base():
       <div class="field"><label for="cPx">ডানে-বামে</label><input id="cPx" type="range" min="-100" max="100" step="1" value="0"></div>
       <div class="field"><label for="cPy">উপরে-নিচে</label><input id="cPy" type="range" min="-100" max="100" step="1" value="0"></div>
     </div>
-    <input id="cName" type="hidden"><input id="cNo" type="hidden"><input id="cTypeText" type="hidden"><input id="cDate" type="hidden">
+    <input id="cName" type="hidden"><input id="cNo" type="hidden"><input id="cTypeText" type="hidden"><input id="cDate" type="hidden"><input id="cBlood" type="hidden">
     <div id="cStatus" class="status" role="status" aria-live="polite"></div>
   </div>
 
   <section data-tab="idcard" hidden>
     <div class="card-tool"><div class="card-preview">
-      <figure><canvas id="cvFront" width="1012" height="638"></canvas><figcaption>সামনে</figcaption></figure>
-      <figure><canvas id="cvBack" width="1012" height="638"></canvas><figcaption>পেছনে</figcaption></figure>
+      <figure><canvas id="cvFront" width="827" height="1181"></canvas><figcaption>সামনে</figcaption></figure>
+      <figure><canvas id="cvBack" width="827" height="1181"></canvas><figcaption>পেছনে</figcaption></figure>
     </div></div>
     <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cIdPdf">⬇️ আইডি কার্ড (PDF)</button>
     <button class="btn btn-outline" type="button" id="cFrontPng">সামনে (ছবি)</button><button class="btn btn-outline" type="button" id="cBackPng">পেছনে (ছবি)</button></div>

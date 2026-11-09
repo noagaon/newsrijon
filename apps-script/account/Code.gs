@@ -357,7 +357,7 @@ function profile_(no) {
     }).filter(function (x) { return x.v !== ''; }) };
   });
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
-  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '' },
+  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '', blood: String(cell_(a.t, a.row, 'রক্ত গ্রুপ') || '').slice(0, 10) },
     hasFormPdf: !!driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')),
     hasRegPdf: !!driveId_(cell_(a.t, a.row, 'নিবন্ধন ফরম লিংক')),
     hasPhoto: !!(String(acc0_(no, C.PHOTO)) || driveId_(cell_(a.t, a.row, 'ছবির লিংক'))),
