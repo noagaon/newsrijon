@@ -159,10 +159,10 @@
       text(ctx, 'সৃজনশীল তরুণ সংঘ', 60, 290, 700, 100, '#fff', FIXF, 'left', 760);
       text(ctx, 'SRIJONSHIL TARUN SANGHA', 64, 392, 700, 38, '#fff3dc', SERIF, 'left', 640);
     } else {
-      var LY = 250;   // লোগো ও নাম নিচে নামানো (সবুজ অংশের নিচের দিকে)
+      var LY = 340, NY = 305;   // লোগো (১ নং দাগে) ও নাম (২ নং দাগে) নামানো
       if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, LY, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, LY - lh / 2 - 4, lw - 8, lh - 8); }
-      text(ctx, 'সৃজনশীল তরুণ সংঘ', TX, LY - 18, 700, 88, '#fff', FIXF, 'left', 720);   // এক লাইনে
-      text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, LY + 72, 700, 38, '#ffe2bd', SERIF, 'left', 700);
+      text(ctx, 'সৃজনশীল তরুণ সংঘ', TX, NY, 700, 88, '#fff', FIXF, 'left', 720);   // এক লাইনে
+      text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, NY + 92, 700, 38, '#ffe2bd', SERIF, 'left', 700);
     }
     // ছবি
     var px = Math.round(W * (ex ? .40 : .36)), py = ex ? 470 : 440, pw = W - px, ph = ex ? 720 : 760;
