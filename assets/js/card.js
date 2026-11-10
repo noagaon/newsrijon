@@ -159,9 +159,10 @@
       text(ctx, 'সৃজনশীল তরুণ সংঘ', 60, 290, 700, 100, '#fff', FIXF, 'left', 760);
       text(ctx, 'SRIJONSHIL TARUN SANGHA', 64, 392, 700, 38, '#fff3dc', SERIF, 'left', 640);
     } else {
-      if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, 190, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, 190 - lh / 2 - 4, lw - 8, lh - 8); }
-      text(ctx, 'সৃজনশীল তরুণ সংঘ', TX, 172, 700, 88, '#fff', FIXF, 'left', 620);   // এক লাইনে
-      text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, 262, 700, 38, '#ffe2bd', SERIF, 'left', 600);
+      var LY = 250;   // লোগো ও নাম নিচে নামানো (সবুজ অংশের নিচের দিকে)
+      if (logo) { var lw = 230, lh = lw * logo.height / logo.width; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(LX, LY, 150, 0, 7); ctx.fill(); ctx.drawImage(logo, LX - lw / 2 + 3, LY - lh / 2 - 4, lw - 8, lh - 8); }
+      text(ctx, 'সৃজনশীল তরুণ সংঘ', TX, LY - 18, 700, 88, '#fff', FIXF, 'left', 720);   // এক লাইনে
+      text(ctx, 'SRIJONSHIL TARUN SANGHA', TX + 4, LY + 72, 700, 38, '#ffe2bd', SERIF, 'left', 700);
     }
     // ছবি
     var px = Math.round(W * (ex ? .40 : .36)), py = ex ? 470 : 440, pw = W - px, ph = ex ? 720 : 760;
@@ -184,7 +185,7 @@
       text(ctx, WORD, 0, 78, 700, fs, 'rgba(255,255,255,.5)', SERIF, 'left'); text(ctx, 'MEMBER', 0, 78 + Math.round(fs * 1.02), 700, fs, 'rgba(255,255,255,.5)', SERIF, 'left'); ctx.restore();
     }
     // নাম, নম্বর
-    var tx = ex ? 470 : 96, tw = ex ? W - 470 - 50 : W - 2 * tx, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;
+    var tx = ex ? 470 : 320, tw = ex ? W - 470 - 50 : W - 320 - 80, y = 1307, nl = wrapLines(ctx, d.name, tw, 700, 104, FIXF), nsz = nl.length > 1 ? 88 : 104;
     wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, tx, y, 700, nsz, '#111', FIXF, 'left', tw); y += nsz + 14; });
     y += 8; text(ctx, d.type, tx, y, 600, 62, OR, FIXF, 'left', tw); y += 66;
     text(ctx, 'সদস্য নম্বর # ' + d.no, tx, y, 500, 52, '#222', SANS, 'left', tw); y += 56;
