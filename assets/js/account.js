@@ -155,6 +155,7 @@
       }).join('') + '<p class="muted">এনআইডি/জন্মনিবন্ধন নম্বরের শেষ ৪ সংখ্যা ছাড়া বাকি অংশ নিরাপত্তার জন্য ঢেকে দেখানো হয়। তথ্যে ভুল থাকলে কর্তৃপক্ষকে জানান।</p>';
       if (window.SrijonCard) window.SrijonCard.set(r.card);
       loaded.sv = r.saved; showSaved(r.saved);
+      if (r.hasSig) api('acct_sig_get').then(function (g) { if (g.ok) showSig('data:' + g.mime + ';base64,' + g.data); }).catch(function () {});
       if (r.hasPhoto) api('acct_photo').then(function (p) { if (p.ok && window.SrijonCard) { var du = 'data:' + p.mime + ';base64,' + p.data; window.SrijonCard.photo(du); $('aPhotoImg').src = du; $('aPhotoImg').hidden = false; } }).catch(function () {});
     }).catch(function () { loaded.profile = 0; });
   }
@@ -216,6 +217,17 @@
       else status('error', errMsg(r));
     }).catch(function () {});
   };
+  // সদস্যের স্বাক্ষর: স্বচ্ছ PNG বানিয়ে অ্যাকাউন্টে সংরক্ষণ → আইডি কার্ডে নিজে থেকে বসে
+  var sigFile = null;
+  function showSig(url) { $('aSigImg').src = url; $('aSigImg').hidden = false; if (window.SrijonCard) window.SrijonCard.sig('m', url); }
+  $('aSigFile').addEventListener('change', function () { sigFile = this.files[0] || null; $('aSigGo').disabled = !sigFile; });
+  $('aSigGo').addEventListener('click', function () {
+    if (!sigFile || !window.SrijonCard) return; var btn = this; btn.disabled = true;
+    window.SrijonCard.fileToSig(sigFile).then(function (u) {
+      if (!u) { btn.disabled = false; status('error', 'স্বাক্ষর চেনা যায়নি। সাদা কাগজে গাঢ় কালিতে সই করে স্পষ্ট ছবি দিন।'); return; }
+      run(btn, { action: 'acct_sig_upload', token: token, data: u }, function () { showSig(u); $('aSigFile').value = ''; sigFile = null; btn.disabled = true; status('info', 'স্বাক্ষর সংরক্ষিত হয়েছে। আইডি কার্ডের পেছনে ব্যবহার হবে।'); });
+    });
+  });
   // ছবি আপলোড: ছোট করে JPEG বানিয়ে পাঠানো
   var upFile = null;
   $('aPhotoFile').addEventListener('change', function () { upFile = this.files[0] || null; $('aPhotoGo').disabled = !upFile; });

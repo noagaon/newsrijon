@@ -241,6 +241,10 @@
   });
   ['cName', 'cNo', 'cTypeText', 'cDate', 'cBlood', 'cZoom', 'cPx', 'cPy', 'cSize'].forEach(function (id) { if ($(id)) $(id).addEventListener('input', schedule); });
   window.SrijonCard = {   // অ্যাকাউন্ট পাতা থেকে ব্যবহারের জন্য
+    sig: function (k, url) { if (url) loadSigUrl(k, url); else { setSig(k, null); schedule(); } },
+    fileToSig: function (file) {   // ছবির ফাইল → স্বচ্ছ পটভূমির PNG (dataURL), না পারলে null
+      return new Promise(function (ok) { var r = new FileReader(); r.onload = function () { var i = new Image(); i.onload = function () { ok(cleanSig(i)); }; i.onerror = function () { ok(null); }; i.src = r.result; }; r.onerror = function () { ok(null); }; r.readAsDataURL(file); });
+    },
     set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; schedule(); },
     photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
     render: schedule
