@@ -494,3 +494,6 @@ small.inl{font-weight:400;color:#555}
 .mph-zoom button { position: absolute; top: 12px; right: 14px; background: none; border: 0; color: #fff; font-size: 1.6rem; cursor: pointer; }
 .table-wrap:has(.mph) th:nth-child(2), .table-wrap:has(.mph) td:nth-child(2) { width: 1%; padding-left: 4px; padding-right: 4px; text-align: center; }
 .table-wrap:has(.mph) th:nth-child(1), .table-wrap:has(.mph) td:nth-child(1) { padding-right: 4px; }
+.sig-up { margin: 12px 0; }
+.sig-up .field { margin-bottom: 8px; }
+.sig-clear { margin-top: 4px; padding: 2px 12px; }

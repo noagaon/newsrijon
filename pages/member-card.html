@@ -54,6 +54,11 @@
     <div class="field"><label for="cBlood">রক্তের গ্রুপ (ঐচ্ছিক)</label><select id="cBlood"><option value="">— নেই —</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
     <div class="field"><label for="cDate">সদস্যপদ লাভের তারিখ</label><input id="cDate" type="text" maxlength="20" autocomplete="off"></div>
     <div class="field"><label for="cPhoto">সদস্যের ছবি</label><input id="cPhoto" type="file" accept="image/*"></div>
+    <div class="sig-up" data-sigctl>
+    <div class="field"><label for="cSigM">সদস্যের স্বাক্ষর (সাদা কাগজে সই করে ছবি তুলে দিন)</label><input id="cSigM" type="file" accept="image/*"><button type="button" class="btn btn-outline sig-clear" data-clear="m" hidden>মুছুন</button></div>
+    <div class="field"><label for="cSigA">কর্তৃপক্ষের স্বাক্ষর</label><input id="cSigA" type="file" accept="image/*"><button type="button" class="btn btn-outline sig-clear" data-clear="a" hidden>মুছুন</button></div>
+    <p class="muted">স্বাক্ষর আইডি কার্ডের পেছনে ছাপা হবে; ছবির সাদা পটভূমি নিজে থেকে বাদ যায়। স্বাক্ষর এই ডিভাইসেই সংরক্ষিত থাকে।</p>
+    </div>
     <div class="field"><label for="cZoom">ছবি বড়-ছোট</label><input id="cZoom" type="range" min="0.4" max="3" step="0.05" value="1"></div>
     <div class="field"><label for="cPx">ছবি ডানে-বামে</label><input id="cPx" type="range" min="-100" max="100" step="1" value="0"></div>
     <div class="field"><label for="cPy">ছবি উপরে-নিচে</label><input id="cPy" type="range" min="-100" max="100" step="1" value="0"></div>

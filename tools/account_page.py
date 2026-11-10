@@ -106,6 +106,11 @@ def _base():
       <figure><canvas id="cvFront" width="827" height="1181"></canvas><figcaption>সামনে</figcaption></figure>
       <figure><canvas id="cvBack" width="827" height="1181"></canvas><figcaption>পেছনে</figcaption></figure>
     </div></div>
+    <div class="sig-up" data-sigctl>
+      <div class="field"><label for="cSigM">সদস্যের স্বাক্ষর (সাদা কাগজে সই করে ছবি তুলে দিন)</label><input id="cSigM" type="file" accept="image/*"><button type="button" class="btn btn-outline sig-clear" data-clear="m" hidden>মুছুন</button></div>
+      <div class="field"><label for="cSigA">কর্তৃপক্ষের স্বাক্ষর</label><input id="cSigA" type="file" accept="image/*"><button type="button" class="btn btn-outline sig-clear" data-clear="a" hidden>মুছুন</button></div>
+      <p class="muted">স্বাক্ষর আইডি কার্ডের পেছনে ছাপা হবে; ছবির সাদা পটভূমি নিজে থেকে বাদ যায়। স্বাক্ষর এই ডিভাইসেই সংরক্ষিত থাকে।</p>
+    </div>
     <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cIdPdf">⬇️ আইডি কার্ড (PDF)</button>
     <button class="btn btn-outline" type="button" id="cFrontPng">সামনে (ছবি)</button><button class="btn btn-outline" type="button" id="cBackPng">পেছনে (ছবি)</button></div>
     <p class="muted saved-line" id="savedId">পিডিএফ ডাউনলোড করলে কার্ডটি আপনার অ্যাকাউন্টে নিজে থেকে সংরক্ষিত হয়।</p>

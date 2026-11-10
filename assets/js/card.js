@@ -55,6 +55,29 @@
     if (!logo) return; var h = size * logo.height / logo.width;
     ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(logo, W / 2 - size / 2, H / 2 - h / 2, size, h); ctx.restore();
   }
+  /* ---------- স্বাক্ষর আপলোড (এই ডিভাইসে সংরক্ষিত) ---------- */
+  var sigM = null, sigA = null, SK = { m: 'srijon_sig_m', a: 'srijon_sig_a' };
+  function setSig(k, img) { if (k === 'm') sigM = img; else sigA = img; var b = document.querySelector('[data-clear="' + k + '"]'); if (b) b.hidden = !img; }
+  function loadSigUrl(k, url) { var i = new Image(); i.onload = function () { setSig(k, i); schedule(); }; i.src = url; }
+  function cleanSig(img) {   // আকার ছোট করে, সাদা পটভূমি স্বচ্ছ করে
+    var m = Math.min(1, 700 / img.width), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * m)); c.height = Math.max(1, Math.round(img.height * m));
+    var x = c.getContext('2d'); x.drawImage(img, 0, 0, c.width, c.height); var d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+    for (var i = 0; i < p.length; i += 4) { var lum = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2], a = lum >= 215 ? 0 : lum <= 120 ? 255 : Math.round((215 - lum) / 95 * 255); p[i] = p[i + 1] = p[i + 2] = Math.min(lum, 40); p[i + 3] = a; }
+    x.putImageData(d, 0, 0);
+    var minX = c.width, minY = c.height, maxX = 0, maxY = 0;   // খালি কিনারা ছেঁটে ফেলা
+    for (var yy = 0; yy < c.height; yy++) for (var xx = 0; xx < c.width; xx++) if (p[(yy * c.width + xx) * 4 + 3] > 30) { if (xx < minX) minX = xx; if (xx > maxX) maxX = xx; if (yy < minY) minY = yy; if (yy > maxY) maxY = yy; }
+    if (maxX <= minX || maxY <= minY) return null;
+    var o = document.createElement('canvas'); o.width = maxX - minX + 1; o.height = maxY - minY + 1; o.getContext('2d').drawImage(c, minX, minY, o.width, o.height, 0, 0, o.width, o.height); return o.toDataURL('image/png');
+  }
+  ['m', 'a'].forEach(function (k) {
+    var inp = $(k === 'm' ? 'cSigM' : 'cSigA'); if (!inp) return;
+    try { var sv = localStorage.getItem(SK[k]); if (sv) loadSigUrl(k, sv); } catch (e) {}
+    inp.addEventListener('change', function () {
+      var f = this.files && this.files[0]; if (!f) return; if (!/^image\//.test(f.type)) { this.value = ''; return; }
+      var r = new FileReader(); r.onload = function () { var i = new Image(); i.onload = function () { var u = cleanSig(i); inp.value = ''; if (!u) { if ($('cStatus')) { $('cStatus').className = 'status error'; $('cStatus').textContent = 'স্বাক্ষর চেনা যায়নি। সাদা কাগজে গাঢ় কালিতে সই করে স্পষ্ট ছবি দিন।'; } return; } try { localStorage.setItem(SK[k], u); } catch (e) {} loadSigUrl(k, u); }; i.src = r.result; }; r.readAsDataURL(f);
+    });
+  });
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.sig-clear'); if (!b) return; var k = b.dataset.clear; try { localStorage.removeItem(SK[k]); } catch (e2) {} setSig(k, null); schedule(); });
   function info() {
     return { name: $('cName').value.trim() || 'সদস্যের নাম', no: $('cNo').value.trim() || 'STS/GM/0000', type: $('cTypeText').value.trim() || 'সদস্য', date: $('cDate').value.trim(), blood: $('cBlood') ? $('cBlood').value.trim() : '' };
   }
@@ -105,6 +128,10 @@
     // স্বাক্ষর
     var sy = H - 110; ctx.save(); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.setLineDash([.1, 10]);
     ctx.beginPath(); ctx.moveTo(40, sy); ctx.lineTo(360, sy); ctx.moveTo(W - 360, sy); ctx.lineTo(W - 40, sy); ctx.stroke(); ctx.restore();
+    [[sigM, 40, 320], [sigA, W - 360, 320]].forEach(function (g) {      // আপলোড করা স্বাক্ষর, বিন্দুর লাইনের ঠিক উপরে
+      if (!g[0]) return; var bw = g[2], bh = 110, k = Math.min(bw / g[0].width, bh / g[0].height), w = g[0].width * k, h = g[0].height * k;
+      ctx.drawImage(g[0], g[1] + (bw - w) / 2, sy - 8 - h, w, h);
+    });
     text(ctx, 'কার্ডধারীর স্বাক্ষর', 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center'); text(ctx, 'কর্তৃপক্ষের স্বাক্ষর', W - 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center');
     ctx.fillStyle = G2; ctx.fillRect(0, H - 22, W, 22);
   }
