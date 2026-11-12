@@ -56,6 +56,14 @@
     ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(logo, W / 2 - size / 2, H / 2 - h / 2, size, h); ctx.restore();
   }
   /* ---------- স্বাক্ষর আপলোড (এই ডিভাইসে সংরক্ষিত) ---------- */
+  var vcode = '';       // সার্ভারের দেওয়া যাচাই-কোড (অ্যাকাউন্টের কার্ডে); না থাকলে কিউআর আঁকা হয় না
+  function verifyUrl(d) { return new URL('verify.html?id=' + encodeURIComponent(String(d.no).replace(/\//g, '-')) + '&k=' + vcode, location.href).href; }
+  function drawQR(ctx, d, x, y, size, label, dark) {
+    if (!vcode || !window.SrijonQR) return;
+    ctx.fillStyle = '#fff'; rrect(ctx, x - 10, y - 10, size + 20, size + (label ? 52 : 20), 14); ctx.fill();
+    window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size);
+    if (label) text(ctx, label, x + size / 2, y + size + 20, 700, 20, '#0a6b12', FIXF, 'center', size + 10);
+  }
   var sigM = null, sigA = null, SK = { m: 'srijon_sig_m', a: 'srijon_sig_a' };
   function setSig(k, img) { if (k === 'm') sigM = img; else sigA = img; var b = document.querySelector('[data-clear="' + k + '"]'); if (b) b.hidden = !img; }
   function loadSigUrl(k, url) { var i = new Image(); i.onload = function () { setSig(k, i); schedule(); }; i.src = url; }
@@ -155,6 +163,7 @@
     // নিচের পটি
     ctx.fillStyle = '#16892a'; ctx.fillRect(0, 1122, W, H - 1122);
     text(ctx, CFG.slogan || '', W / 2, 1152, 700, 26, '#fff', FIXF, 'center', W - 50);
+    drawQR(ctx, d, 612, 826, 170, 'স্ক্যান করে যাচাই করুন');
   }
   function drawBack(cv) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -175,6 +184,7 @@
       if (!g[0]) return; var bw = g[2], bh = 110, k = Math.min(bw / g[0].width, bh / g[0].height), w = g[0].width * k, h = g[0].height * k;
       ctx.drawImage(g[0], g[1] + (bw - w) / 2, sy - 8 - h, w, h);
     });
+    if (!/সাধারণ/.test(info().type)) drawQR(ctx, info(), Math.round((W - 240) / 2), 560, 240, 'স্ক্যান করে যাচাই করুন');
     text(ctx, 'কার্ডধারীর স্বাক্ষর', 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center'); text(ctx, 'কর্তৃপক্ষের স্বাক্ষর', W - 200, sy + 30, 400, 24, '#1f4e9e', FIXF, 'center');
     ctx.fillStyle = G2; ctx.fillRect(0, H - 22, W, 22);
   }
@@ -289,7 +299,7 @@
     fileToSig: function (file) {   // ছবির ফাইল → স্বচ্ছ পটভূমির PNG (dataURL), না পারলে null
       return new Promise(function (ok) { var r = new FileReader(); r.onload = function () { var i = new Image(); i.onload = function () { ok(cleanSig(i)); }; i.onerror = function () { ok(null); }; i.src = r.result; }; r.onerror = function () { ok(null); }; r.readAsDataURL(file); });
     },
-    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; schedule(); },
+    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; vcode = o.vcode || ''; schedule(); },
     photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
     render: schedule
   };

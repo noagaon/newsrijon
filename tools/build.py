@@ -255,14 +255,15 @@ def build_pages():
     import receipt_page
     write('pages/subscription-receipt.html', page('support', receipt_page.body(), '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/receipt-pdf.js"></script><script src="../assets/js/receipt.js" defer></script>', title='চাঁদা জমাদানের রসিদ', parent='support', crumb='চাঁদা জমা দিন'))
     import card_page
-    html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
+    html = page('members', card_page.body(), '<script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/qr.js"></script><script src="../assets/js/card.js" defer></script>', title='সদস্য কার্ড তৈরি', parent='members')
     import account_page
     NOIDX = lambda h: h.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1)
-    ACC_JS = '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>'
+    ACC_JS = '<script src="../config.js"></script><script src="../assets/js/members.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/qr.js"></script><script src="../assets/js/card.js" defer></script><script src="../assets/js/account.js" defer></script>'
     write('pages/mysrijon.html', page('mysrijon', account_page.intro(), '', title='আমার সৃজন'))
     write('pages/mysrijon-signup.html', NOIDX(page('mysrijon', account_page.body('signup'), ACC_JS, title='অ্যাকাউন্ট খুলুন', parent='mysrijon')))
     write('pages/mysrijon-login.html', NOIDX(page('mysrijon', account_page.body('login'), ACC_JS, title='লগইন', parent='mysrijon')))
     write('pages/mysrijon-account.html', NOIDX(page('mysrijon', account_page.body('account'), ACC_JS, title='সদস্য অ্যাকাউন্ট', parent='mysrijon', mid=[('mysrijon-login.html', 'লগইন')])))
+    write('pages/verify.html', NOIDX(page('members', '<div id="vf"><p class="lead">যাচাই করা হচ্ছে…</p></div>', '<script src="../config.js"></script><script src="../assets/js/verify.js"></script>', title='পরিচয়পত্র যাচাই', parent='members')))
     write('pages/account.html', '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>আমার সৃজন</title><script>location.replace("mysrijon.html"+location.hash)</script><p><a href="mysrijon.html">আমার সৃজন</a></p>')
     write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
 

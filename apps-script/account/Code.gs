@@ -54,6 +54,7 @@ function doPost(e) {
   try {
     var r = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (r.website) return json_({ ok: false, error: 'rejected' });                 // হানিপট
+    if (r.action === 'verify') return json_(publicRate_() ? { ok: false, error: 'busy' } : verifyMember_(r));
     if (r.action === 'public_photos' || r.action === 'public_photo') return json_(publicRate_() ? { ok: false, error: 'busy' } : (r.action === 'public_photos' ? publicPhotos_(r) : publicPhotoBig_(r)));
     var cache = CacheService.getScriptCache(), k = 'am_' + Math.floor(Date.now() / 60000);
     var n = Number(cache.get(k) || 0) + 1; cache.put(k, String(n), 120);
@@ -359,7 +360,7 @@ function profile_(no) {
     }).filter(function (x) { return x.v !== ''; }) };
   });
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
-  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '', blood: String(cell_(a.t, a.row, 'রক্ত গ্রুপ') || '').slice(0, 10) },
+  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '', blood: String(cell_(a.t, a.row, 'রক্ত গ্রুপ') || '').slice(0, 10), vcode: verifyCode_((ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no) },
     hasSig: !!String(acc0_(no, C.SIG) || ''),
     hasFormPdf: !!driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')),
     hasRegPdf: !!driveId_(cell_(a.t, a.row, 'নিবন্ধন ফরম লিংক')),
@@ -411,6 +412,26 @@ function publicPhotoBig_(r) {      // জুম: বড় ছবি (৭০০ 
   var f = DriveApp.getFileById(id), b = f.getBlob(), bytes = b.getBytes();
   if (bytes.length > 700 * 1024) { var t = f.getThumbnail(); if (t) { b = t; bytes = t.getBytes(); } }
   return { ok: true, photo: 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(bytes) };
+}
+
+// ---------------------------------------------------------------- আইডি কার্ডের কিউআর যাচাই (সবার জন্য খোলা)
+// কিউআরে শুধু সদস্য নম্বর + একটি গোপন-কী-ভিত্তিক যাচাই-কোড থাকে; তথ্য এখান থেকে আসে। কোড শিটে জমা থাকে না, প্রতিবার হিসাব হয়।
+function verifyCode_(no) {
+  var sig = Utilities.computeHmacSha256Signature('verify|' + normNo_(no), secret_()), h = '';
+  for (var i = 0; i < 4; i++) h += ('0' + (sig[i] & 255).toString(16)).slice(-2);
+  return h;
+}
+function verifyMember_(r) {
+  var no = String(r.no || '').slice(0, 30), k = String(r.k || '').toLowerCase().slice(0, 12), ro = no && rosterOf_(no);
+  if (!ro || k !== verifyCode_(ro[1])) return { ok: false, error: 'invalid' };
+  var out = { ok: true, name: ro[0], no: ro[1], date: ro[2], type: ro[3], status: 'সক্রিয়', photo: '' };
+  try {
+    var a = applicationRow_(ro[1]);
+    if (a) { var st = String(cell_(a.t, a.row, 'সদস্যপদের অবস্থা') || '').trim(); if (st) out.status = st; }   // ঐচ্ছিক কলাম: স্থগিত / বাতিল ইত্যাদি লিখলে এখানে দেখাবে
+    var id = publicPhotoId_(ro[1]);
+    if (id) { var b = DriveApp.getFileById(id).getThumbnail(); if (b) out.photo = 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(b.getBytes()); }
+  } catch (e) {}
+  return out;
 }
 
 // ---------------------------------------------------------------- আবেদন ফরমের মূল পিডিএফ (শুধু ডাউনলোড; বদলানোর কোনো ব্যবস্থা নেই)
