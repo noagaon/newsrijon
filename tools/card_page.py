@@ -38,6 +38,7 @@ def body():
     <button class="btn btn-outline" type="button" id="cFrontPng">আইডি — সামনে (ছবি)</button>
     <button class="btn btn-outline" type="button" id="cBackPng">আইডি — পেছনে (ছবি)</button>
     <button class="btn btn-outline" type="button" id="cPhotoPng">ফটোকার্ড (ছবি)</button>
+    <button class="btn btn-outline" type="button" id="cQrSvg">কিউআর কোড (SVG)</button>
   </div>
 </form>
 <div class="card-preview">

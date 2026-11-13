@@ -58,11 +58,11 @@
   /* ---------- স্বাক্ষর আপলোড (এই ডিভাইসে সংরক্ষিত) ---------- */
   var vcode = '';       // সার্ভারের দেওয়া যাচাই-কোড (অ্যাকাউন্টের কার্ডে); না থাকলে কিউআর আঁকা হয় না
   function verifyUrl(d) { return new URL('verify.html?id=' + encodeURIComponent(String(d.no).replace(/\//g, '-')) + '&k=' + vcode, location.href).href; }
-  function drawQR(ctx, d, x, y, size, label, dark) {
+  function drawQR(ctx, d, x, y, size, label, frame) {
     if (!vcode || !window.SrijonQR) return;
-    ctx.fillStyle = '#fff'; rrect(ctx, x - 10, y - 10, size + 20, size + (label ? 52 : 20), 14); ctx.fill();
-    window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size);
-    if (label) text(ctx, label, x + size / 2, y + size + 20, 700, 20, '#0a6b12', FIXF, 'center', size + 10);
+    var pad = frame ? 12 : 10; ctx.fillStyle = frame || '#fff'; rrect(ctx, x - pad, y - pad, size + 2 * pad, size + pad + (label ? 42 : pad), 12); ctx.fill();
+    window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size, logo);
+    if (label) text(ctx, label, x + size / 2, y + size + 22, 700, 20, '#0a6b12', FIXF, 'center', size + 10);
   }
   var sigM = null, sigA = null, SK = { m: 'srijon_sig_m', a: 'srijon_sig_a' };
   function setSig(k, img) { if (k === 'm') sigM = img; else sigA = img; var b = document.querySelector('[data-clear="' + k + '"]'); if (b) b.hidden = !img; }
@@ -130,8 +130,8 @@
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, SERIF = '"Times New Roman",Times,serif', CX = 440;
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
     // নিচের দিকের সবুজ গ্রেডিয়েন্ট
-    var g = ctx.createLinearGradient(0, 398, 0, 1122); g.addColorStop(0, '#f4f8f5'); g.addColorStop(.22, '#c6ebd2'); g.addColorStop(.5, '#2f9a55'); g.addColorStop(.78, '#0d6a34'); g.addColorStop(1, '#03240f');
-    ctx.fillStyle = g; ctx.fillRect(0, 398, W, 1122 - 398); ctx.fillStyle = '#03240f'; ctx.fillRect(0, 1100, W, 40);
+    var g = ctx.createLinearGradient(0, 328, 0, 1122); g.addColorStop(0, '#f4f8f5'); g.addColorStop(.22, '#c6ebd2'); g.addColorStop(.5, '#2f9a55'); g.addColorStop(.78, '#0d6a34'); g.addColorStop(1, '#03240f');
+    ctx.fillStyle = g; ctx.fillRect(0, 328, W, 1122 - 328); ctx.fillStyle = '#03240f'; ctx.fillRect(0, 1100, W, 40);
     // বামের সবুজ পটি ও কোণের ত্রিভুজ
     ctx.fillStyle = '#0a8a0f'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(69, 0); ctx.lineTo(69, 545); ctx.lineTo(0, 606); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#8fd47a'; ctx.beginPath(); ctx.moveTo(69, 0); ctx.lineTo(186, 0); ctx.lineTo(69, 96); ctx.closePath(); ctx.fill();
@@ -141,29 +141,31 @@
     ctx.beginPath(); ctx.moveTo(690, 305); ctx.quadraticCurveTo(770, 335, W, 335); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, 940); ctx.quadraticCurveTo(50, 940, 86, 988); ctx.stroke(); ctx.restore();
     // লোগো, নাম
-    if (logo) { var lw = 172, lh = lw * logo.height / logo.width; ctx.drawImage(logo, CX - lw / 2, 96 - lh / 2, lw, lh); }
-    text(ctx, 'সৃজনশীল তরুণ সংঘ', CX, 236, 700, 64, '#0a6b12', FIXF, 'center', 700);
-    text(ctx, 'SRIJONSHIL TARUN SANGHA', CX, 282, 700, 30, '#b08a1a', SERIF, 'center', 520);
-    text(ctx, 'পরিচয়পত্র', CX, 342, 700, 52, '#1a1a1a', FIXF, 'center');
-    ctx.fillStyle = '#1a1a1a'; [[CX - 150, 1], [CX + 150, -1]].forEach(function (q) { ctx.beginPath(); ctx.arc(q[0], 342, 4, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(q[0] + 14 * q[1], 342, 2.5, 0, 7); ctx.fill(); });
+    if (logo) { var lw = 190, lh = lw * logo.height / logo.width; ctx.drawImage(logo, W - 40 - lw, 104 - lh / 2, lw, lh); }
+    text(ctx, 'সৃজনশীল তরুণ সংঘ', 84, 120, 700, 62, '#0a6b12', FIXF, 'left', 560);
+    text(ctx, 'SRIJONSHIL TARUN SANGHA', 84, 168, 700, 30, '#b08a1a', SERIF, 'left', 520);
+    text(ctx, 'পরিচয়পত্র', CX, 262, 700, 52, '#1a1a1a', FIXF, 'center');
+    ctx.fillStyle = '#1a1a1a'; [[CX - 150, 1], [CX + 150, -1]].forEach(function (q) { ctx.beginPath(); ctx.arc(q[0], 262, 4, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(q[0] + 14 * q[1], 262, 2.5, 0, 7); ctx.fill(); });
     // ছবি
-    var px = 399, py = 398, pw = 320, ph = 330;
+    var px = 399, py = 328, pw = 320, ph = 330;
     drawPhoto(ctx, px, py, pw, ph, function () { ctx.beginPath(); ctx.rect(px, py, pw, ph); });
     // খাড়া শব্দ
     var WORD = (en(d.type).split(' ')[0] || '').toUpperCase(), fs = 64;
-    ctx.save(); ctx.translate(76, 730); ctx.rotate(-Math.PI / 2);
+    ctx.save(); ctx.translate(76, 660); ctx.rotate(-Math.PI / 2);
     text(ctx, WORD, 0, 34, 700, fs, 'rgba(140,190,215,.85)', SERIF, 'left', 330); text(ctx, 'MEMBER', 0, 34 + 82, 700, fs, 'rgba(140,190,215,.85)', SERIF, 'left', 330); ctx.restore();
     // সদস্যের তথ্য
-    var x = 127, tw = W - x - 40, y = 812, nsz = wrapLines(ctx, d.name, tw, 700, 56, FIXF).length > 1 ? 44 : 56;
+    var x = 127, tw = W - x - 40, y = 744, nsz = wrapLines(ctx, d.name, tw, 700, 56, FIXF).length > 1 ? 44 : 56;
     wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, x, y, 700, nsz, '#fff', FIXF, 'left', tw); y += nsz + 8; });
-    y += 14; text(ctx, d.type, x, y, 700, 46, '#ffb300', FIXF, 'left', tw); y += 52;
+    var serial = (String(d.no).match(/(\d+)\s*$/) || [])[1];
+    if (serial) { text(ctx, 'পরিচয়পত্র নম্বর: 2011-' + (1000 + parseInt(serial, 10)), x, y, 700, 34, '#e9e6b4', SANS, 'left', tw); y += 46; }
+    y += 6; text(ctx, d.type, x, y, 700, 46, '#ffb300', FIXF, 'left', tw); y += 52;
     text(ctx, 'সদস্য নম্বর # ' + d.no, x, y, 700, 34, '#fff', SANS, 'left', tw); y += 42;
     if (d.date) { text(ctx, 'সদস্যপদ লাভের তারিখ: ' + bn(d.date), x, y, 400, 26, '#fff', FIXF, 'left', tw); y += 38; }
     if (d.blood) text(ctx, 'রক্ত গ্রুপ: ' + bnBlood(d.blood), x, y, 600, 28, '#fff', FIXF, 'left', tw);
     // নিচের পটি
     ctx.fillStyle = '#16892a'; ctx.fillRect(0, 1122, W, H - 1122);
     text(ctx, CFG.slogan || '', W / 2, 1152, 700, 26, '#fff', FIXF, 'center', W - 50);
-    drawQR(ctx, d, 612, 826, 170, 'স্ক্যান করে যাচাই করুন');
+    drawQR(ctx, d, W - 46 - 232, 806, 232, '', '#00968a');
   }
   function drawBack(cv) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -277,6 +279,7 @@
   $('cPhotoPdf').addEventListener('click', function () { pdf($('cvPhoto'), 105 * MM, 148 * MM, 'PhotoCard-' + slug() + '.pdf', 'photo'); });
   $('cFrontPng').addEventListener('click', function () { png($('cvFront'), 'ID-front-' + slug() + '.png'); });
   $('cBackPng').addEventListener('click', function () { png($('cvBack'), 'ID-back-' + slug() + '.png'); });
+  if ($('cQrSvg')) $('cQrSvg').addEventListener('click', function () { SrijonCard.qrSvg(); });
   $('cPhotoPng').addEventListener('click', function () { png($('cvPhoto'), 'PhotoCard-' + slug() + '.png'); });
 
   /* ---------- ইনপুট ---------- */
@@ -301,7 +304,14 @@
     },
     set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; vcode = o.vcode || ''; schedule(); },
     photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
-    render: schedule
+    render: schedule,
+    qrSvg: function () {           // কিউআর (ECC H + মাঝে লোগো) SVG হিসেবে ডাউনলোড
+      if (!vcode || !window.SrijonQR) { status('error', 'কিউআর পেতে সদস্য অ্যাকাউন্টে লগইন করুন।'); return; }
+      var href = '', w = 1, h = 1;
+      if (logo) { var c = document.createElement('canvas'); c.width = logo.width; c.height = logo.height; c.getContext('2d').drawImage(logo, 0, 0); href = c.toDataURL('image/png'); w = logo.width; h = logo.height; }
+      var blob = new Blob([window.SrijonQR.svg(verifyUrl(info()), href, w, h)], { type: 'image/svg+xml' });
+      download(URL.createObjectURL(blob), 'QR-' + slug() + '.svg');
+    }
   };
   if ($('cPhoto')) $('cPhoto').addEventListener('change', function () {
     var f = this.files[0]; if (!f) return;

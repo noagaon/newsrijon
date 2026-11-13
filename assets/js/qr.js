@@ -1,9 +1,9 @@
-/* ছোট কিউআর কোড জেনারেটর (বাইট মোড, ECC M, ভার্সন ১–১০; ইউআরএল-এর জন্য যথেষ্ট) — কোনো বাইরের লাইব্রেরি লাগে না */
+/* ছোট কিউআর কোড জেনারেটর (বাইট মোড, ECC H, ভার্সন ১–১০, মাঝে লোগো, SVG আউটপুট; ইউআরএল-এর জন্য যথেষ্ট) — কোনো বাইরের লাইব্রেরি লাগে না */
 (function () {
   'use strict';
-  var DATA = [16, 28, 44, 64, 86, 108, 124, 154, 182, 216];       // ভার্সন ১–১০, ECC M: ডেটা কোডওয়ার্ড
-  var EPB = [10, 16, 26, 18, 24, 16, 18, 22, 22, 26];             // প্রতি ব্লকে ECC কোডওয়ার্ড
-  var NB = [1, 1, 1, 2, 2, 4, 4, 4, 5, 5];                        // ব্লক সংখ্যা
+  var DATA = [9, 16, 26, 36, 46, 60, 66, 86, 100, 122];           // ভার্সন ১–১০, ECC H (৩০%): ডেটা কোডওয়ার্ড
+  var EPB = [17, 28, 22, 16, 22, 28, 26, 26, 24, 28];             // প্রতি ব্লকে ECC কোডওয়ার্ড
+  var NB = [1, 1, 2, 4, 4, 4, 5, 6, 8, 8];                        // ব্লক সংখ্যা
   var ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
   var EXP = [], LOG = [];
   (function () { var x = 1; for (var i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11D; } for (i = 255; i < 512; i++) EXP[i] = EXP[i - 255]; })();
@@ -45,7 +45,7 @@
       var al = ALIGN[ver - 1];
       al.forEach(function (ay, a) { al.forEach(function (ax, b) { if ((a === 0 && b === 0) || (a === 0 && b === al.length - 1) || (a === al.length - 1 && b === 0)) return; for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) set(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }); });
       // ফরম্যাট ও ভার্সন তথ্য (জায়গা সংরক্ষণ)
-      var fmt = ((0 << 3 | mask) << 10 | bch(0 << 3 | mask, 0x537, 10)) ^ 0x5412;
+      var fmt = ((2 << 3 | mask) << 10 | bch(2 << 3 | mask, 0x537, 10)) ^ 0x5412;   // ECC H = ২
       for (i = 0; i <= 5; i++) set(8, i, (fmt >> i) & 1); set(8, 7, (fmt >> 6) & 1); set(8, 8, (fmt >> 7) & 1); set(7, 8, (fmt >> 8) & 1);
       for (i = 9; i < 15; i++) set(14 - i, 8, (fmt >> i) & 1);
       for (i = 0; i < 8; i++) set(n - 1 - i, 8, (fmt >> i) & 1);
@@ -86,15 +86,36 @@
     p += Math.floor(Math.abs(dark * 20 - n * n * 10) / (n * n)) * 10;
     return p;
   }
+  var QUIET = 4;          // চারপাশের সাদা ফাঁকা জায়গা (Quiet Zone), মডিউল হিসেবে — স্ট্যান্ডার্ড ন্যূনতম ৪
+  var LOGO = .34;         // লোগোর বক্সের পাশ = কোডের পাশের ৩৪% → ক্ষেত্রফল ≈ ১১.৬% (১০–১৫% এর মধ্যে)
+  function logoBox(n) { var k = Math.round(n * LOGO); if ((n - k) % 2) k++; return { k: k, o: (n - k) / 2 }; }
   window.SrijonQR = {
-    matrix: build,
-    /* ক্যানভাসে কিউআর আঁকে: (x,y) থেকে size×size বক্সে, চারপাশে সাদা মার্জিন সহ */
-    draw: function (ctx, text, x, y, size) {
+    matrix: build, QUIET: QUIET,
+    /* ক্যানভাসে আঁকে: (x,y) থেকে size×size বক্সে; চারপাশে সাদা Quiet Zone; মাঝে লোগো (img এলিমেন্ট) */
+    draw: function (ctx, text, x, y, size, logo) {
       var m = build(text); if (!m) return false;
-      var n = m.length, q = 3, cell = size / (n + 2 * q);
-      ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';
-      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (m[r][c]) ctx.fillRect(Math.round(x + (c + q) * cell), Math.round(y + (r + q) * cell), Math.ceil(cell), Math.ceil(cell));
+      var n = m.length, cell = Math.max(1, Math.floor(size / (n + 2 * QUIET))), ox = x + Math.round((size - cell * (n + 2 * QUIET)) / 2), oy = y + Math.round((size - cell * (n + 2 * QUIET)) / 2);
+      ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';     // মডিউল পূর্ণসংখ্যার পিক্সেলে — ঝাপসা হয় না
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (m[r][c]) ctx.fillRect(ox + (c + QUIET) * cell, oy + (r + QUIET) * cell, cell, cell);
+      if (logo) {
+        var b = logoBox(n), bw = b.k * cell, pad = bw * .08, iw = bw - 2 * pad, cx = ox + (n + 2 * QUIET) * cell / 2, cy = oy + (n + 2 * QUIET) * cell / 2;
+        ctx.fillStyle = '#fff'; ctx.fillRect(cx - bw / 2, cy - bw / 2, bw, bw);
+        var s = Math.min(iw / logo.width, iw / logo.height); ctx.drawImage(logo, cx - logo.width * s / 2, cy - logo.height * s / 2, logo.width * s, logo.height * s);
+      }
       return true;
+    },
+    /* স্বয়ংসম্পূর্ণ SVG টেক্সট; logoHref = লোগোর data: ইউআরএল (না দিলে লোগো ছাড়া) */
+    svg: function (text, logoHref, logoW, logoH) {
+      var m = build(text); if (!m) return '';
+      var n = m.length, T = n + 2 * QUIET, d = '';
+      for (var r = 0; r < n; r++) { var c = 0; while (c < n) { if (m[r][c]) { var st = c; while (c < n && m[r][c]) c++; d += 'M' + (st + QUIET) + ' ' + (r + QUIET) + 'h' + (c - st) + 'v1h-' + (c - st) + 'z'; } else c++; } }
+      var o = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ' + T + ' ' + T + '" width="1024" height="1024" shape-rendering="crispEdges">'
+        + '<rect width="' + T + '" height="' + T + '" fill="#fff"/><path d="' + d + '" fill="#000"/>';
+      if (logoHref) {
+        var b = logoBox(n), bx = QUIET + b.o, pad = b.k * .08, iw = b.k - 2 * pad, sc = Math.min(iw / logoW, iw / logoH), w = logoW * sc, h = logoH * sc;
+        o += '<rect x="' + bx + '" y="' + bx + '" width="' + b.k + '" height="' + b.k + '" fill="#fff"/><image x="' + (T / 2 - w / 2).toFixed(3) + '" y="' + (T / 2 - h / 2).toFixed(3) + '" width="' + w.toFixed(3) + '" height="' + h.toFixed(3) + '" xlink:href="' + logoHref + '" href="' + logoHref + '"/>';
+      }
+      return o + '</svg>';
     }
   };
 })();

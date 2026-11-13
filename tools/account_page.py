@@ -123,7 +123,7 @@ def _base():
   </section>
   <section data-tab="photocard" hidden>
     <div class="card-tool"><div class="card-preview"><figure class="portrait"><canvas id="cvPhoto" width="1240" height="1748"></canvas><figcaption>ফটোকার্ড</figcaption></figure></div></div>
-    <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cPhotoPdf">⬇️ ফটোকার্ড (PDF)</button><button class="btn btn-outline" type="button" id="cPhotoPng">ফটোকার্ড (ছবি)</button></div>
+    <div class="rcpt-tools"><button class="btn btn-primary" type="button" id="cPhotoPdf">⬇️ ফটোকার্ড (PDF)</button><button class="btn btn-outline" type="button" id="cPhotoPng">ফটোকার্ড (ছবি)</button><button class="btn btn-outline" type="button" id="cQrSvg">কিউআর কোড (SVG)</button></div>
     <p class="muted saved-line" id="savedPhoto">পিডিএফ ডাউনলোড করলে কার্ডটি আপনার অ্যাকাউন্টে নিজে থেকে সংরক্ষিত হয়।</p>
   </section>
 
