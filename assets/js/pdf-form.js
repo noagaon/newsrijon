@@ -482,6 +482,12 @@
     ctx.fillText('আবেদনকারীর স্বাক্ষর–', 303, 719);
     dotted(ctx, 394, 564, 727);
 
+    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর)
+    if (d.vcode && d.formNo && window.SrijonQR) {
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 40, 727, 64, logo, 1 / (SCALE * K));
+      ctx.fillStyle = '#000'; ctx.font = font(500, 8.6); ctx.textAlign = 'left';
+      ctx.fillText('ফরম ও আইডি কার্ডের', 110, 750); ctx.fillText('যাচাই-কিউআর', 110, 762); ctx.fillText('(স্ক্যান করে দেখুন)', 110, 774);
+    }
     // সদস্যপদ লাভের তারিখ (ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
     ctx.fillRect(230, 743, 132, 31);

@@ -56,7 +56,7 @@ var APPLY_HEADERS = [
   'শিক্ষাগত যোগ্যতা', 'পেশা', 'ধর্ম', 'এনআইডি', 'জন্মনিবন্ধন সনদ নম্বর', 'ফোন', 'ওয়াটসঅ্যাপ', 'ইমেইল',
   'স্থায়ী: বিভাগ', 'স্থায়ী: জেলা', 'স্থায়ী: উপজেলা/সিটি', 'স্থায়ী: থানা', 'স্থায়ী: ইউনিয়ন/পৌরসভা', 'স্থায়ী: ওয়ার্ড',
   'স্থায়ী: পোস্ট অফিস', 'স্থায়ী: গ্রাম', 'স্থায়ী: পাড়া',
-  'বর্তমান ঠিকানা', 'বর্তমান বসবাসরত দেশের নাম', 'পিডিএফ লিংক', 'অবস্থা', 'সূত্র/সুপারিশ', 'ছবি', 'ছবির লিংক', 'সূত্র/সুপারিশ প্রমাণক', 'অনুমোদনকারী'
+  'বর্তমান ঠিকানা', 'বর্তমান বসবাসরত দেশের নাম', 'পিডিএফ লিংক', 'অবস্থা', 'সূত্র/সুপারিশ', 'ছবি', 'ছবির লিংক', 'সূত্র/সুপারিশ প্রমাণক', 'অনুমোদনকারী', 'যাচাই কোড'
 ];
 var FEEDBACK_HEADERS = ['সময়', 'নাম', 'যোগাযোগ', 'মতামত'];
 
@@ -573,6 +573,7 @@ function submit_(d) {
     props.setProperty(key, String(seq));
     var formNo = 'STS-' + t.year + '-' + ('0000' + seq).slice(-4);
 
+    var vcode = 'v' + Utilities.getUuid().replace(/-/g, '').slice(0, 9);      // ফরম ও আইডি কার্ডের কিউআর-এর গোপন যাচাই-কোড (প্রতি আবেদনে আলাদা)
     var cur = d.addrSame ? 'স্থায়ী ঠিকানার অনুরূপ' : safe_(d.currentText, 500);
     var rec = {
       'ফরম নম্বর': formNo, 'জমার সময়': t.sheet, 'সদস্য ধরণ': CONFIG.TYPE_LABEL[type], 'নিবন্ধন ফি (টাকা)': fee, 'সদস্য নম্বর': '',
@@ -584,7 +585,7 @@ function submit_(d) {
       'স্থায়ী: বিভাগ': safe_(p.div, 40), 'স্থায়ী: জেলা': safe_(p.dist, 40), 'স্থায়ী: উপজেলা/সিটি': safe_(p.upa, 60), 'স্থায়ী: থানা': safe_(p.thana, 60),
       'স্থায়ী: ইউনিয়ন/পৌরসভা': safe_(p.union, 80), 'স্থায়ী: ওয়ার্ড': safe_(p.ward, 40),
       'স্থায়ী: পোস্ট অফিস': safe_(p.po, 80), 'স্থায়ী: গ্রাম': safe_(p.village, 80), 'স্থায়ী: পাড়া': safe_(p.para, 80),
-      'বর্তমান ঠিকানা': cur, 'বর্তমান বসবাসরত দেশের নাম': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'সূত্র/সুপারিশ': CONFIG.REF_LABEL[ref], 'সূত্র/সুপারিশ প্রমাণক': ref === 'none' ? '' : proof, 'অনুমোদনকারী': preq.rec['অনুমোদনকারী'], 'ছবি': '', 'ছবির লিংক': ''
+      'বর্তমান ঠিকানা': cur, 'বর্তমান বসবাসরত দেশের নাম': safe_(d.country, 60), 'পিডিএফ লিংক': '', 'অবস্থা': 'পিডিএফ অপেক্ষমাণ', 'যাচাই কোড': vcode, 'সূত্র/সুপারিশ': CONFIG.REF_LABEL[ref], 'সূত্র/সুপারিশ প্রমাণক': ref === 'none' ? '' : proof, 'অনুমোদনকারী': preq.rec['অনুমোদনকারী'], 'ছবি': '', 'ছবির লিংক': ''
     };
     var row = appendByHeader_(sh, rec);
     psh.getRange(preq.row, colOf_(psh, 'অবস্থা')).setValue(ST.USED);
@@ -594,7 +595,7 @@ function submit_(d) {
     var token = Utilities.getUuid();
     CacheService.getScriptCache().put('tok_' + formNo, token + '|' + row + '|' + type, 6 * 60 * 60);
 
-    return { ok: true, formNo: formNo, token: token, timestamp: t.sheet, timestampBn: t.bn, prefill: { father: d.father, mother: d.mother, dob: d.dob, gender: d.gender, religion: d.religion } };
+    return { ok: true, formNo: formNo, vcode: vcode, token: token, timestamp: t.sheet, timestampBn: t.bn, prefill: { father: d.father, mother: d.mother, dob: d.dob, gender: d.gender, religion: d.religion } };
   } finally {
     lock.releaseLock();
   }

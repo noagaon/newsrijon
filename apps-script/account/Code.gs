@@ -360,7 +360,7 @@ function profile_(no) {
     }).filter(function (x) { return x.v !== ''; }) };
   });
   var type = (ro && ro[3]) || cell_(a.t, a.row, 'সদস্য ধরণ');
-  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '', blood: String(cell_(a.t, a.row, 'রক্ত গ্রুপ') || '').slice(0, 10), vcode: verifyCode_((ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no) },
+  return { ok: true, groups: groups, card: { name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), no: (ro && ro[1]) || cell_(a.t, a.row, 'সদস্য নম্বর') || no, type: type, date: (ro && ro[2]) || '', blood: String(cell_(a.t, a.row, 'রক্ত গ্রুপ') || '').slice(0, 10), vcode: vcodeOf_(a), formNo: cell_(a.t, a.row, 'ফরম নম্বর') },
     hasSig: !!String(acc0_(no, C.SIG) || ''),
     hasFormPdf: !!driveId_(cell_(a.t, a.row, 'পিডিএফ লিংক')),
     hasRegPdf: !!driveId_(cell_(a.t, a.row, 'নিবন্ধন ফরম লিংক')),
@@ -414,23 +414,31 @@ function publicPhotoBig_(r) {      // জুম: বড় ছবি (৭০০ 
   return { ok: true, photo: 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(bytes) };
 }
 
-// ---------------------------------------------------------------- আইডি কার্ডের কিউআর যাচাই (সবার জন্য খোলা)
-// কিউআরে শুধু সদস্য নম্বর + একটি গোপন-কী-ভিত্তিক যাচাই-কোড থাকে; তথ্য এখান থেকে আসে। কোড শিটে জমা থাকে না, প্রতিবার হিসাব হয়।
-function verifyCode_(no) {
-  var sig = Utilities.computeHmacSha256Signature('verify|' + normNo_(no), secret_()), h = '';
-  for (var i = 0; i < 4; i++) h += ('0' + (sig[i] & 255).toString(16)).slice(-2);
-  return h;
+// ---------------------------------------------------------------- কিউআর যাচাই (সবার জন্য খোলা)
+// একই কিউআর আবেদন ফরমে ও আইডি কার্ডে বসে: লিংকে থাকে ফরম নম্বর (f) ও আবেদন-শিটের "যাচাই কোড" (k)। তথ্য সবসময় শিট থেকে আসে।
+function vcodeOf_(a) {      // কোড-ছাড়া পুরোনো আবেদনের জন্য প্রথমবার চাইলে তৈরি করে শিটে লিখে রাখে
+  var cur = cell_(a.t, a.row, 'যাচাই কোড').trim();
+  if (cur) return cur;
+  var sh = a.t.sh, col = a.t.head.indexOf('যাচাই কোড') + 1, r = a.t.rows.indexOf(a.row) + 2;
+  if (!col) { col = sh.getLastColumn() + 1; sh.getRange(1, col).setValue('যাচাই কোড').setFontWeight('bold'); }
+  cur = 'v' + Utilities.getUuid().replace(/-/g, '').slice(0, 9);
+  sh.getRange(r, col).setNumberFormat('@').setValue(cur);
+  return cur;
 }
 function verifyMember_(r) {
-  var no = String(r.no || '').slice(0, 30), k = String(r.k || '').toLowerCase().slice(0, 12), ro = no && rosterOf_(no);
-  if (!ro || k !== verifyCode_(ro[1])) return { ok: false, error: 'invalid' };
-  var out = { ok: true, name: ro[0], no: ro[1], date: ro[2], type: ro[3], status: 'সক্রিয়', photo: '' };
-  try {
-    var a = applicationRow_(ro[1]);
-    if (a) { var st = String(cell_(a.t, a.row, 'সদস্যপদের অবস্থা') || '').trim(); if (st) out.status = st; }   // ঐচ্ছিক কলাম: স্থগিত / বাতিল ইত্যাদি লিখলে এখানে দেখাবে
-    var id = publicPhotoId_(ro[1]);
-    if (id) { var b = DriveApp.getFileById(id).getThumbnail(); if (b) out.photo = 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(b.getBytes()); }
-  } catch (e) {}
+  var f = String(r.f || '').trim().slice(0, 20), k = String(r.k || '').trim().toLowerCase().slice(0, 16);
+  if (!f || !k) return { ok: false, error: 'invalid' };
+  var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB), a = null;
+  for (var i = t.rows.length - 1; i >= 0; i--) if (cell_(t, t.rows[i], 'ফরম নম্বর') === f) { a = { t: t, row: t.rows[i] }; break; }
+  var code = a ? cell_(a.t, a.row, 'যাচাই কোড').trim().toLowerCase() : '';
+  if (!a || !code || code !== k) return { ok: false, error: 'invalid' };
+  var no = cell_(a.t, a.row, 'সদস্য নম্বর').trim(), ro = no && rosterOf_(no), st = cell_(a.t, a.row, 'অবস্থা'), ov = cell_(a.t, a.row, 'সদস্যপদের অবস্থা').trim();
+  var out = { ok: true, formNo: f, name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), type: cell_(a.t, a.row, 'সদস্য ধরণ'), no: '', date: '', photo: '', kind: 'applicant', status: /বাতিল/.test(st) ? 'বাতিল' : 'আবেদন জমা হয়েছে — অনুমোদনের অপেক্ষায়' };
+  if (ro && !/বাতিল/.test(st)) {      // অনুমোদিত সদস্য: নম্বর, তারিখ ও ছবি দেখায়
+    out.kind = 'member'; out.no = ro[1]; out.date = ro[2]; out.type = ro[3] || out.type; out.name = ro[0] || out.name; out.status = 'সক্রিয়';
+    try { var id = publicPhotoId_(ro[1]); if (id) { var b = DriveApp.getFileById(id).getThumbnail(); if (b) out.photo = 'data:' + (b.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(b.getBytes()); } } catch (e) {}
+  }
+  if (ov) out.status = ov;      // ঐচ্ছিক কলাম "সদস্যপদের অবস্থা": স্থগিত / বাতিল ইত্যাদি লিখলে সেটাই দেখায়
   return out;
 }
 

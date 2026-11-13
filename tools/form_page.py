@@ -235,5 +235,6 @@ def membership_body():
 FORM_SCRIPTS = '''<script src="../config.js"></script>
 <script src="../assets/js/members.js"></script>
 <script src="../assets/js/flags.js"></script>
+<script src="../assets/js/qr.js"></script>
 <script src="../assets/js/pdf-form.js" defer></script>
 <script src="../assets/js/apply.js" defer></script>'''

@@ -57,9 +57,10 @@
   }
   /* ---------- স্বাক্ষর আপলোড (এই ডিভাইসে সংরক্ষিত) ---------- */
   var vcode = '';       // সার্ভারের দেওয়া যাচাই-কোড (অ্যাকাউন্টের কার্ডে); না থাকলে কিউআর আঁকা হয় না
-  function verifyUrl(d) { return new URL('verify.html?id=' + encodeURIComponent(String(d.no).replace(/\//g, '-')) + '&k=' + vcode, location.href).href; }
+  var formNo = '';       // কিউআর ফরম নম্বর ধরে চলে — ফরমের কিউআরের সাথে হুবহু এক
+  function verifyUrl() { return window.SrijonQR.verifyUrl(formNo, vcode); }
   function drawQR(ctx, d, x, y, size, label, frame) {
-    if (!vcode || !window.SrijonQR) return;
+    if (!vcode || !formNo || !window.SrijonQR) return;
     var pad = frame ? 12 : 10; ctx.fillStyle = frame || '#fff'; rrect(ctx, x - pad, y - pad, size + 2 * pad, size + pad + (label ? 42 : pad), 12); ctx.fill();
     window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size, logo);
     if (label) text(ctx, label, x + size / 2, y + size + 22, 700, 20, '#0a6b12', FIXF, 'center', size + 10);
@@ -168,7 +169,7 @@
     text(ctx, CFG.slogan || '', 470, 1562, 700, 38, '#fff', FIXF, 'center', 800);
     ctx.restore();
     // কিউআর: নিচে মাঝখানে, সবুজ-নীল ফ্রেমে (পূর্ণসংখ্যার পিক্সেলে আঁকা, তাই স্কেলের বাইরে)
-    if (vcode && window.SrijonQR) {
+    if (vcode && formNo && window.SrijonQR) {
       var fx = Math.round(344 * k), fy = Math.round(1242 * k), fs = Math.round(253 * k), pad = Math.round(22 * k);
       ctx.fillStyle = '#009688'; ctx.fillRect(fx, fy, fs, fs);
       window.SrijonQR.draw(ctx, verifyUrl(d), fx + pad, fy + pad, fs - 2 * pad, logo);
@@ -312,11 +313,11 @@
     fileToSig: function (file) {   // ছবির ফাইল → স্বচ্ছ পটভূমির PNG (dataURL), না পারলে null
       return new Promise(function (ok) { var r = new FileReader(); r.onload = function () { var i = new Image(); i.onload = function () { ok(cleanSig(i)); }; i.onerror = function () { ok(null); }; i.src = r.result; }; r.onerror = function () { ok(null); }; r.readAsDataURL(file); });
     },
-    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; vcode = o.vcode || ''; schedule(); },
+    set: function (o) { $('cName').value = o.name || ''; $('cNo').value = o.no || ''; $('cTypeText').value = o.type || ''; $('cDate').value = o.date || ''; if ($('cBlood')) $('cBlood').value = o.blood || ''; vcode = o.vcode || ''; formNo = o.formNo || ''; schedule(); },
     photo: function (src) { var im = new Image(); im.onload = function () { photo = im; schedule(); }; im.src = src; },
     render: schedule,
     qrSvg: function () {           // কিউআর (ECC H + মাঝে লোগো) SVG হিসেবে ডাউনলোড
-      if (!vcode || !window.SrijonQR) { status('error', 'কিউআর পেতে সদস্য অ্যাকাউন্টে লগইন করুন।'); return; }
+      if (!vcode || !formNo || !window.SrijonQR) { status('error', 'কিউআর পেতে সদস্য অ্যাকাউন্টে লগইন করুন।'); return; }
       var href = '', w = 1, h = 1;
       if (logo) { var c = document.createElement('canvas'); c.width = logo.width; c.height = logo.height; c.getContext('2d').drawImage(logo, 0, 0); href = c.toDataURL('image/png'); w = logo.width; h = logo.height; }
       var blob = new Blob([window.SrijonQR.svg(verifyUrl(info()), href, w, h)], { type: 'image/svg+xml' });

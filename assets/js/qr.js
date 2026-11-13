@@ -92,9 +92,10 @@
   window.SrijonQR = {
     matrix: build, QUIET: QUIET,
     /* ক্যানভাসে আঁকে: (x,y) থেকে size×size বক্সে; চারপাশে সাদা Quiet Zone; মাঝে লোগো (img এলিমেন্ট) */
-    draw: function (ctx, text, x, y, size, logo) {
-      var m = build(text); if (!m) return false;
-      var n = m.length, cell = Math.max(1, Math.floor(size / (n + 2 * QUIET))), ox = x + Math.round((size - cell * (n + 2 * QUIET)) / 2), oy = y + Math.round((size - cell * (n + 2 * QUIET)) / 2);
+    verifyUrl: function (formNo, code) { return new URL('verify.html?f=' + encodeURIComponent(formNo) + '&k=' + encodeURIComponent(code), location.href).href; },
+    draw: function (ctx, text, x, y, size, logo, unit) {      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
+      var m = build(text); if (!m) return false; unit = unit || 1;
+      var n = m.length, cell = Math.max(unit, Math.floor(size / (n + 2 * QUIET) / unit) * unit), off = Math.round((size - cell * (n + 2 * QUIET)) / 2 / unit) * unit, ox = x + off, oy = y + off;
       ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';     // মডিউল পূর্ণসংখ্যার পিক্সেলে — ঝাপসা হয় না
       for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (m[r][c]) ctx.fillRect(ox + (c + QUIET) * cell, oy + (r + QUIET) * cell, cell, cell);
       if (logo) {

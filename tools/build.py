@@ -231,7 +231,7 @@ def build_pages():
         elif slug == 'help':
             import help_page
             body = help_page.body()
-            extra = '<script src="../config.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/help.js" defer></script>'
+            extra = '<script src="../config.js"></script><script src="../assets/js/qr.js"></script><script src="../assets/js/pdf-form.js"></script><script src="../assets/js/help.js" defer></script>'
         else:
             body = pc.BODY[slug]
         if slug == 'members':
