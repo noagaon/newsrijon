@@ -124,48 +124,55 @@
     text(ctx, CFG.slogan || '', W / 2, H - 29, 500, 24, '#fff', FIXF, 'center', W - 50);
     ctx.fillStyle = OR; ctx.fillRect(0, H - 62, W, 4);
   }
-  /* ---------- সাধারণ সদস্যের আইডি কার্ড (সামনে) ---------- */
+  /* ---------- সাধারণ সদস্যের আইডি কার্ড (সামনে): ৭০×১১৯ মিমি; ডিজাইন ৯৪১×১৬০০ মাপের স্থানাঙ্কে আঁকা, k দিয়ে ছোট-বড় ---------- */
   function drawFrontGeneral(cv, d) {
     d = d || info();
-    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, SERIF = '"Times New Roman",Times,serif', CX = 440;
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-    // নিচের দিকের সবুজ গ্রেডিয়েন্ট
-    var g = ctx.createLinearGradient(0, 328, 0, 1122); g.addColorStop(0, '#f4f8f5'); g.addColorStop(.22, '#c6ebd2'); g.addColorStop(.5, '#2f9a55'); g.addColorStop(.78, '#0d6a34'); g.addColorStop(1, '#03240f');
-    ctx.fillStyle = g; ctx.fillRect(0, 328, W, 1122 - 328); ctx.fillStyle = '#03240f'; ctx.fillRect(0, 1100, W, 40);
-    // বামের সবুজ পটি ও কোণের ত্রিভুজ
-    ctx.fillStyle = '#0a8a0f'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(69, 0); ctx.lineTo(69, 545); ctx.lineTo(0, 606); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#8fd47a'; ctx.beginPath(); ctx.moveTo(69, 0); ctx.lineTo(186, 0); ctx.lineTo(69, 96); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#8fd47a'; ctx.beginPath(); ctx.moveTo(W, 1018); ctx.lineTo(W, 1122); ctx.lineTo(703, 1122); ctx.closePath(); ctx.fill();
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, k = W / 941, SERIF = '"Times New Roman",Times,serif';
+    ctx.save(); ctx.scale(k, k);
+    ctx.fillStyle = '#f4f6f8'; ctx.fillRect(0, 0, 941, 1600);
+    // নিচের সবুজ গ্রেডিয়েন্ট
+    var g = ctx.createLinearGradient(0, 520, 0, 1522); g.addColorStop(0, '#f4f6f8'); g.addColorStop(.17, '#bfe8c8'); g.addColorStop(.42, '#2f9a55'); g.addColorStop(.72, '#0d6a34'); g.addColorStop(1, '#03240f');
+    ctx.fillStyle = g; ctx.fillRect(0, 520, 941, 1002);
+    // কোণের ত্রিভুজ ও বামের সবুজ পটি
+    ctx.fillStyle = '#8fd47a'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(212, 0); ctx.lineTo(0, 212); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#12a315'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(78, 0); ctx.lineTo(78, 738); ctx.lineTo(0, 826); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#8fd47a'; ctx.beginPath(); ctx.moveTo(941, 1378); ctx.lineTo(941, 1522); ctx.lineTo(800, 1522); ctx.closePath(); ctx.fill();
     // হালকা বাঁকা রেখা
-    ctx.save(); ctx.strokeStyle = 'rgba(143,212,122,.55)'; ctx.lineWidth = 9; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(690, 305); ctx.quadraticCurveTo(770, 335, W, 335); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, 940); ctx.quadraticCurveTo(50, 940, 86, 988); ctx.stroke(); ctx.restore();
-    // লোগো, নাম
-    if (logo) { var lw = 190, lh = lw * logo.height / logo.width; ctx.drawImage(logo, W - 40 - lw, 104 - lh / 2, lw, lh); }
-    text(ctx, 'সৃজনশীল তরুণ সংঘ', 84, 120, 700, 62, '#0a6b12', FIXF, 'left', 560);
-    text(ctx, 'SRIJONSHIL TARUN SANGHA', 84, 168, 700, 30, '#b08a1a', SERIF, 'left', 520);
-    text(ctx, 'পরিচয়পত্র', CX, 262, 700, 52, '#1a1a1a', FIXF, 'center');
-    ctx.fillStyle = '#1a1a1a'; [[CX - 150, 1], [CX + 150, -1]].forEach(function (q) { ctx.beginPath(); ctx.arc(q[0], 262, 4, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(q[0] + 14 * q[1], 262, 2.5, 0, 7); ctx.fill(); });
-    // ছবি
-    var px = 399, py = 328, pw = 320, ph = 330;
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(160,225,150,.6)'; ctx.lineWidth = 14;
+    ctx.beginPath(); ctx.moveTo(755, 392); ctx.quadraticCurveTo(850, 440, 941, 428); ctx.stroke();
+    ctx.strokeStyle = 'rgba(210,245,205,.95)'; ctx.lineWidth = 16; ctx.beginPath(); ctx.moveTo(0, 1300); ctx.quadraticCurveTo(55, 1325, 90, 1384); ctx.stroke(); ctx.restore();
+    // নাম, লোগো
+    text(ctx, 'সৃজনশীল তরুণ সংঘ', 95, 165, 700, 76, '#0a6b12', FIXF, 'left', 580);
+    text(ctx, 'SRIJONSHIL TARUN SANGHA', 95, 234, 700, 38, '#b08a1a', SERIF, 'left', 505);
+    if (logo) { var lw = 222, lh = lw * logo.height / logo.width; ctx.drawImage(logo, 800 - lw / 2, 212 - lh / 2, lw, lh); }
+    text(ctx, 'পরিচয়পত্র', 470, 350, 700, 74, '#1a1a1a', FIXF, 'center', 330);
+    ctx.fillStyle = '#1a1a1a'; [[232, 1], [706, -1]].forEach(function (q) { ctx.beginPath(); ctx.arc(q[0], 350, 5, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(q[0] + 22 * q[1], 350, 11, 7, 0, 0, 7); ctx.fill(); });
+    // ছবি (কোণা চৌকো, ফ্রেম ছাড়া)
+    var px = 452, py = 420, pw = 335, ph = 417;
     drawPhoto(ctx, px, py, pw, ph, function () { ctx.beginPath(); ctx.rect(px, py, pw, ph); });
     // খাড়া শব্দ
-    var WORD = (en(d.type).split(' ')[0] || '').toUpperCase(), fs = 64;
-    ctx.save(); ctx.translate(76, 660); ctx.rotate(-Math.PI / 2);
-    text(ctx, WORD, 0, 34, 700, fs, 'rgba(140,190,215,.85)', SERIF, 'left', 330); text(ctx, 'MEMBER', 0, 34 + 82, 700, fs, 'rgba(140,190,215,.85)', SERIF, 'left', 330); ctx.restore();
+    var WORD = (en(d.type).split(' ')[0] || '').toUpperCase();
+    ctx.save(); ctx.translate(214, 840); ctx.rotate(-Math.PI / 2);
+    text(ctx, WORD, 0, 34, 700, 80, 'rgba(140,190,215,.85)', SERIF, 'left', 395); text(ctx, 'MEMBER', 0, 142, 700, 80, 'rgba(140,190,215,.85)', SERIF, 'left', 395); ctx.restore();
     // সদস্যের তথ্য
-    var x = 127, tw = W - x - 40, y = 744, nsz = wrapLines(ctx, d.name, tw, 700, 56, FIXF).length > 1 ? 44 : 56;
-    wrapLines(ctx, d.name, tw, 700, nsz, FIXF).slice(0, 2).forEach(function (ln) { text(ctx, ln, x, y, 700, nsz, '#fff', FIXF, 'left', tw); y += nsz + 8; });
+    var x = 92, tw = 700 - x;
+    text(ctx, d.name, x, 910, 700, 66, '#fff', FIXF, 'left', tw);
     var serial = (String(d.no).match(/(\d+)\s*$/) || [])[1];
-    if (serial) { text(ctx, 'পরিচয়পত্র নম্বর: 2011-' + (1000 + parseInt(serial, 10)), x, y, 700, 34, '#e9e6b4', SANS, 'left', tw); y += 46; }
-    y += 6; text(ctx, d.type, x, y, 700, 46, '#ffb300', FIXF, 'left', tw); y += 52;
-    text(ctx, 'সদস্য নম্বর # ' + d.no, x, y, 700, 34, '#fff', SANS, 'left', tw); y += 42;
-    if (d.date) { text(ctx, 'সদস্যপদ লাভের তারিখ: ' + bn(d.date), x, y, 400, 26, '#fff', FIXF, 'left', tw); y += 38; }
-    if (d.blood) text(ctx, 'রক্ত গ্রুপ: ' + bnBlood(d.blood), x, y, 600, 28, '#fff', FIXF, 'left', tw);
+    if (serial) text(ctx, 'পরিচয়পত্র নম্বর: 2011-' + (1000 + parseInt(serial, 10)), x, 978, 700, 46, '#e9e6b4', SANS, 'left', tw);
+    text(ctx, d.type, x, 1040, 700, 56, '#ffa000', FIXF, 'left', tw);
+    text(ctx, 'সদস্য নম্বর # ' + d.no, x + 3, 1098, 700, 40, '#fff', SANS, 'left', tw);
+    if (d.date) text(ctx, 'সদস্যপদ লাভের তারিখ: ' + bn(d.date), x + 3, 1143, 400, 28, '#fff', FIXF, 'left', tw);
+    if (d.blood) text(ctx, 'রক্ত গ্রুপ: ' + bnBlood(d.blood), x + 5, 1192, 400, 26, '#fff', FIXF, 'left', tw);
     // নিচের পটি
-    ctx.fillStyle = '#16892a'; ctx.fillRect(0, 1122, W, H - 1122);
-    text(ctx, CFG.slogan || '', W / 2, 1152, 700, 26, '#fff', FIXF, 'center', W - 50);
-    drawQR(ctx, d, W - 46 - 232, 806, 232, '', '#00968a');
+    ctx.fillStyle = '#16892a'; ctx.fillRect(0, 1522, 941, 78);
+    text(ctx, CFG.slogan || '', 470, 1562, 700, 38, '#fff', FIXF, 'center', 800);
+    ctx.restore();
+    // কিউআর: নিচে মাঝখানে, সবুজ-নীল ফ্রেমে (পূর্ণসংখ্যার পিক্সেলে আঁকা, তাই স্কেলের বাইরে)
+    if (vcode && window.SrijonQR) {
+      var fx = Math.round(344 * k), fy = Math.round(1242 * k), fs = Math.round(253 * k), pad = Math.round(22 * k);
+      ctx.fillStyle = '#009688'; ctx.fillRect(fx, fy, fs, fs);
+      window.SrijonQR.draw(ctx, verifyUrl(d), fx + pad, fy + pad, fs - 2 * pad, logo);
+    }
   }
   function drawBack(cv) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -254,7 +261,10 @@
 
   /* ---------- রেন্ডার ও ডাউনলোড ---------- */
   var timer = null;
-  function render() { drawFront($('cvFront')); drawBack($('cvBack')); drawPhotoCard($('cvPhoto')); }
+  function render() {
+    var gen = /সাধারণ/.test(info().type), hh = gen ? 1406 : 1181;      // সাধারণ সদস্যের কার্ড ৭০×১১৯ মিমি, বাকিরা ৭০×১০০ মিমি
+    ['cvFront', 'cvBack'].forEach(function (id) { var c = $(id); if (c.height !== hh) c.height = hh; });
+    drawFront($('cvFront')); drawBack($('cvBack')); drawPhotoCard($('cvPhoto')); }
   function schedule() { clearTimeout(timer); timer = setTimeout(render, 60); }
   function download(href, name) { var a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 1500); }
   function slug() { return (info().no || 'card').replace(/[^A-Za-z0-9]+/g, '-'); }
@@ -270,10 +280,10 @@
   $('cIdPdf').addEventListener('click', function () {      // A4 পাতায় আসল মাপে সামনে ও পেছনে
     var S = 300 / 25.4, A4W = Math.round(210 * S), A4H = Math.round(297 * S), c = document.createElement('canvas'); c.width = A4W; c.height = A4H;
     var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, A4W, A4H);
-    var cw = 70 * S, ch = 100 * S, gap = 12 * S, x1 = (A4W - 2 * cw - gap) / 2, x2 = x1 + cw + gap, y1 = 28 * S;
+    var mmH = Math.round(70 * $('cvFront').height / $('cvFront').width), cw = 70 * S, ch = mmH * S, gap = 12 * S, x1 = (A4W - 2 * cw - gap) / 2, x2 = x1 + cw + gap, y1 = 28 * S;
     ctx.drawImage($('cvFront'), x1, y1, cw, ch); ctx.drawImage($('cvBack'), x2, y1, cw, ch);
     ctx.strokeStyle = '#999'; ctx.lineWidth = 2; ctx.strokeRect(x1, y1, cw, ch); ctx.strokeRect(x2, y1, cw, ch);
-    text(ctx, 'আসল মাপ ৭ × ১০ সেমি (৭০ × ১০০ মিমি) — কেটে নিন; সামনে-পেছনে জুড়ে লেমিনেট করুন।', A4W / 2, y1 + ch + 12 * S, 400, 34, '#666', FIXF, 'center');
+    text(ctx, 'আসল মাপ ৭০ × ' + bn(String(mmH)) + ' মিমি — কেটে নিন; সামনে-পেছনে জুড়ে লেমিনেট করুন।', A4W / 2, y1 + ch + 12 * S, 400, 34, '#666', FIXF, 'center');
     pdf(c, 595.28, 841.89, 'ID-' + slug() + '.pdf', 'id');
   });
   $('cPhotoPdf').addEventListener('click', function () { pdf($('cvPhoto'), 105 * MM, 148 * MM, 'PhotoCard-' + slug() + '.pdf', 'photo'); });
