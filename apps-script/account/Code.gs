@@ -427,11 +427,12 @@ function vcodeOf_(a) {      // কোড-ছাড়া পুরোনো আ�
 }
 function verifyMember_(r) {
   var f = String(r.f || '').trim().slice(0, 20), k = String(r.k || '').trim().toLowerCase().slice(0, 16);
-  if (!f || !k) return { ok: false, error: 'invalid' };
+  if (/^\d{4}-\d+$/.test(f)) f = 'STS-' + f;      // ছোট লিংকে 'STS-' বাদ থাকে
+  if (!f || k.length < 7) return { ok: false, error: 'invalid' };
   var t = readSheet_(CONFIG.MAIN_SHEET_ID, CONFIG.APPLY_TAB), a = null;
   for (var i = t.rows.length - 1; i >= 0; i--) if (cell_(t, t.rows[i], 'ফরম নম্বর') === f) { a = { t: t, row: t.rows[i] }; break; }
   var code = a ? cell_(a.t, a.row, 'যাচাই কোড').trim().toLowerCase() : '';
-  if (!a || !code || code !== k) return { ok: false, error: 'invalid' };
+  if (!a || !code || code.indexOf(k) !== 0) return { ok: false, error: 'invalid' };      // ছোট লিংকে কোডের প্রথম ৭ অক্ষরই থাকে
   var no = cell_(a.t, a.row, 'সদস্য নম্বর').trim(), ro = no && rosterOf_(no), st = cell_(a.t, a.row, 'অবস্থা'), ov = cell_(a.t, a.row, 'সদস্যপদের অবস্থা').trim();
   var out = { ok: true, formNo: f, name: normName_(cell_(a.t, a.row, 'নাম (বাংলা)')), type: cell_(a.t, a.row, 'সদস্য ধরণ'), no: '', date: '', photo: '', kind: 'applicant', status: /বাতিল/.test(st) ? 'বাতিল' : 'আবেদন জমা হয়েছে — অনুমোদনের অপেক্ষায়' };
   if (ro && !/বাতিল/.test(st)) {      // অনুমোদিত সদস্য: নম্বর, তারিখ ও ছবি দেখায়

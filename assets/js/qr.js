@@ -5,6 +5,8 @@
   var EPB = [17, 28, 22, 16, 22, 28, 26, 26, 24, 28];             // প্রতি ব্লকে ECC কোডওয়ার্ড
   var NB = [1, 1, 2, 4, 4, 4, 5, 6, 8, 8];                        // ব্লক সংখ্যা
   var ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
+  var TAB = { H: { d: DATA, e: EPB, n: NB, f: 2 },              // ECC H (৩০%) — লোগো বসানোর জন্য
+    Q: { d: [13, 22, 34, 48, 62, 76, 88, 110, 132, 154], e: [13, 22, 18, 26, 18, 24, 18, 22, 20, 24], n: [1, 1, 2, 2, 4, 4, 6, 6, 8, 8], f: 3 } };   // ECC Q (২৫%) — ছোট জায়গায় কম ঘর
   var EXP = [], LOG = [];
   (function () { var x = 1; for (var i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11D; } for (i = 255; i < 512; i++) EXP[i] = EXP[i - 255]; })();
   function gmul(a, b) { return a && b ? EXP[LOG[a] + LOG[b]] : 0; }
@@ -17,7 +19,8 @@
   function utf8(s) { return unescape(encodeURIComponent(s)).split('').map(function (c) { return c.charCodeAt(0); }); }
   function bch(v, poly, deg) { var d = v << deg; var top = 31 - Math.clz32(poly); for (var i = 31 - Math.clz32(d); i >= top; i--) if ((d >> i) & 1) d ^= poly << (i - top); return d; }
 
-  function build(text) {
+  function build(text, lvl) {
+    var T = TAB[lvl === 'Q' ? 'Q' : 'H'], DATA = T.d, EPB = T.e, NB = T.n;
     var bytes = utf8(text), ver = 0;
     for (var v = 0; v < 10; v++) if (bytes.length + 2 <= DATA[v]) { ver = v + 1; break; }
     if (!ver) return null;
@@ -45,7 +48,7 @@
       var al = ALIGN[ver - 1];
       al.forEach(function (ay, a) { al.forEach(function (ax, b) { if ((a === 0 && b === 0) || (a === 0 && b === al.length - 1) || (a === al.length - 1 && b === 0)) return; for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) set(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }); });
       // ফরম্যাট ও ভার্সন তথ্য (জায়গা সংরক্ষণ)
-      var fmt = ((2 << 3 | mask) << 10 | bch(2 << 3 | mask, 0x537, 10)) ^ 0x5412;   // ECC H = ২
+      var fmt = ((T.f << 3 | mask) << 10 | bch(T.f << 3 | mask, 0x537, 10)) ^ 0x5412;   // ECC H = ২, Q = ৩
       for (i = 0; i <= 5; i++) set(8, i, (fmt >> i) & 1); set(8, 7, (fmt >> 6) & 1); set(8, 8, (fmt >> 7) & 1); set(7, 8, (fmt >> 8) & 1);
       for (i = 9; i < 15; i++) set(14 - i, 8, (fmt >> i) & 1);
       for (i = 0; i < 8; i++) set(n - 1 - i, 8, (fmt >> i) & 1);
@@ -92,9 +95,9 @@
   window.SrijonQR = {
     matrix: build, QUIET: QUIET,
     /* ক্যানভাসে আঁকে: (x,y) থেকে size×size বক্সে; চারপাশে সাদা Quiet Zone; মাঝে লোগো (img এলিমেন্ট) */
-    verifyUrl: function (formNo, code) { return new URL('verify.html?f=' + encodeURIComponent(formNo) + '&k=' + encodeURIComponent(code), location.href).href; },
-    draw: function (ctx, text, x, y, size, logo, unit) {      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
-      var m = build(text); if (!m) return false; unit = unit || 1;
+    verifyUrl: function (formNo, code) { return new URL('../v.html?f=' + encodeURIComponent(String(formNo).replace(/^STS-/, '')) + '&k=' + encodeURIComponent(String(code).slice(0, 7)), location.href).href; },   // ছোট লিংক = কম ঘর
+    draw: function (ctx, text, x, y, size, logo, unit, lvl) {      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
+      var m = build(text, lvl); if (!m) return false; unit = unit || 1;
       var n = m.length, cell = Math.max(unit, Math.floor(size / (n + 2 * QUIET) / unit) * unit), off = Math.round((size - cell * (n + 2 * QUIET)) / 2 / unit) * unit, ox = x + off, oy = y + off;
       ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';     // মডিউল পূর্ণসংখ্যার পিক্সেলে — ঝাপসা হয় না
       for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (m[r][c]) ctx.fillRect(ox + (c + QUIET) * cell, oy + (r + QUIET) * cell, cell, cell);
