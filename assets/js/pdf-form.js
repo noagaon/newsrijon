@@ -484,7 +484,7 @@
 
     // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর)
     if (d.vcode && d.formNo && window.SrijonQR) {
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 40, 731, 56, null, 1 / (SCALE * K), 'Q');   // ফরমে ২ সেমির জায়গা: লোগো ছাড়া, ECC Q — ঘর কম ও বড়
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 40, 731, 56, d._qlogo, 1 / (SCALE * K));   // ফরমে ২ সেমির জায়গা: লোগোসহ, ECC H
       ctx.fillStyle = '#000'; ctx.font = font(500, 8.6); ctx.textAlign = 'left';
       ctx.fillText('ফরম ও আইডি কার্ডের', 110, 750); ctx.fillText('যাচাই-কিউআর', 110, 762); ctx.fillText('(স্ক্যান করে দেখুন)', 110, 774);
     }
@@ -576,13 +576,14 @@
       return Promise.all([
         loadImage(logoUrl).catch(function () { return null; }),
         data.photoDataUrl ? loadImage(data.photoDataUrl).catch(function () { return null; }) : Promise.resolve(null),
-        flagCode ? loadImage(new URL('../assets/flags/' + flagCode + '.png', location.href).href).catch(function () { return null; }) : Promise.resolve(null)
+        flagCode ? loadImage(new URL('../assets/flags/' + flagCode + '.png', location.href).href).catch(function () { return null; }) : Promise.resolve(null),
+        loadImage(new URL('../assets/img/logo-qr.png', location.href).href).catch(function () { return null; })
       ]);
     }).then(function (imgs) {
       var canvas = document.createElement('canvas');
       canvas.width = W * SCALE;
       canvas.height = H * SCALE;
-      data._flag = imgs[2];
+      data._flag = imgs[2]; data._qlogo = imgs[3];
       draw(canvas, data, imgs[0], imgs[1]);
       return canvasToJpeg(canvas).then(function (jpeg) {
         var bytes = jpegToPdf(jpeg, canvas.width, canvas.height, 'Srijonshil Tarun Sangha - Membership Form');

@@ -90,10 +90,12 @@
     return p;
   }
   var QUIET = 4;          // চারপাশের সাদা ফাঁকা জায়গা (Quiet Zone), মডিউল হিসেবে — স্ট্যান্ডার্ড ন্যূনতম ৪
+  var LOGO_F = .52;       // লোগোর প্রস্থ = কোডের ৫২% (ECC H-এ পরীক্ষিত; ঢাকা পড়ে প্রায় ১৬% ঘর, সীমা ৩০%)
   var LOGO = .34;         // লোগোর বক্সের পাশ = কোডের পাশের ৩৪% → ক্ষেত্রফল ≈ ১১.৬% (১০–১৫% এর মধ্যে)
   function logoBox(n) { var k = Math.round(n * LOGO); if ((n - k) % 2) k++; return { k: k, o: (n - k) / 2 }; }
   window.SrijonQR = {
     matrix: build, QUIET: QUIET,
+    modules: function (text) { var m = build(text); return m ? m.length + 2 * QUIET : 0; },       // ফাঁকা জায়গাসহ মোট ঘর
     /* ক্যানভাসে আঁকে: (x,y) থেকে size×size বক্সে; চারপাশে সাদা Quiet Zone; মাঝে লোগো (img এলিমেন্ট) */
     verifyUrl: function (formNo, code) { return new URL('../v.html?f=' + encodeURIComponent(String(formNo).replace(/^STS-/, '')) + '&k=' + encodeURIComponent(String(code).slice(0, 7)), location.href).href; },   // ছোট লিংক = কম ঘর
     draw: function (ctx, text, x, y, size, logo, unit, lvl) {      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
@@ -101,10 +103,9 @@
       var n = m.length, cell = Math.max(unit, Math.floor(size / (n + 2 * QUIET) / unit) * unit), off = Math.round((size - cell * (n + 2 * QUIET)) / 2 / unit) * unit, ox = x + off, oy = y + off;
       ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';     // মডিউল পূর্ণসংখ্যার পিক্সেলে — ঝাপসা হয় না
       for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (m[r][c]) ctx.fillRect(ox + (c + QUIET) * cell, oy + (r + QUIET) * cell, cell, cell);
-      if (logo) {
-        var b = logoBox(n), bw = b.k * cell, pad = bw * .08, iw = bw - 2 * pad, cx = ox + (n + 2 * QUIET) * cell / 2, cy = oy + (n + 2 * QUIET) * cell / 2;
-        ctx.fillStyle = '#fff'; ctx.fillRect(cx - bw / 2, cy - bw / 2, bw, bw);
-        var s = Math.min(iw / logo.width, iw / logo.height); ctx.drawImage(logo, cx - logo.width * s / 2, cy - logo.height * s / 2, logo.width * s, logo.height * s);
+      if (logo) {       // লোগো কোডের মাঝে, সাদা বক্স ছাড়া (লোগোর নিজের সাদা কিনারা আছে); প্রস্থ = কোডের LOGO_F অংশ
+        var lw = LOGO_F * n * cell, lh = lw * logo.height / logo.width, cx = ox + (n + 2 * QUIET) * cell / 2, cy = oy + (n + 2 * QUIET) * cell / 2;
+        ctx.drawImage(logo, cx - lw / 2, cy - lh / 2, lw, lh);
       }
       return true;
     },
@@ -116,8 +117,8 @@
       var o = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ' + T + ' ' + T + '" width="1024" height="1024" shape-rendering="crispEdges">'
         + '<rect width="' + T + '" height="' + T + '" fill="#fff"/><path d="' + d + '" fill="#000"/>';
       if (logoHref) {
-        var b = logoBox(n), bx = QUIET + b.o, pad = b.k * .08, iw = b.k - 2 * pad, sc = Math.min(iw / logoW, iw / logoH), w = logoW * sc, h = logoH * sc;
-        o += '<rect x="' + bx + '" y="' + bx + '" width="' + b.k + '" height="' + b.k + '" fill="#fff"/><image x="' + (T / 2 - w / 2).toFixed(3) + '" y="' + (T / 2 - h / 2).toFixed(3) + '" width="' + w.toFixed(3) + '" height="' + h.toFixed(3) + '" xlink:href="' + logoHref + '" href="' + logoHref + '"/>';
+        var w = LOGO_F * n, h = w * logoH / logoW;
+        o += '<image x="' + (T / 2 - w / 2).toFixed(3) + '" y="' + (T / 2 - h / 2).toFixed(3) + '" width="' + w.toFixed(3) + '" height="' + h.toFixed(3) + '" xlink:href="' + logoHref + '" href="' + logoHref + '"/>';
       }
       return o + '</svg>';
     }

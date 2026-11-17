@@ -10,7 +10,7 @@
   var BN = '০১২৩৪৫৬৭৮৯';
   function bn(s) { return String(s).replace(/\d/g, function (d) { return BN[d]; }); }
   var KEY = { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', donor: 'দাতা সদস্য', junior: 'জুনিয়র সদস্য' };
-  var logo = null, photo = null;
+  var logo = null, qlogo = null, photo = null;
 
   function load(src) { return new Promise(function (res) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = function () { res(null); }; i.src = src; }); }
   function fonts() {
@@ -62,7 +62,7 @@
   function drawQR(ctx, d, x, y, size, label, frame) {
     if (!vcode || !formNo || !window.SrijonQR) return;
     var pad = frame ? 12 : 10; ctx.fillStyle = frame || '#fff'; rrect(ctx, x - pad, y - pad, size + 2 * pad, size + pad + (label ? 42 : pad), 12); ctx.fill();
-    window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size, logo);
+    window.SrijonQR.draw(ctx, verifyUrl(d), x, y, size, qlogo);
     if (label) text(ctx, label, x + size / 2, y + size + 22, 700, 20, '#0a6b12', FIXF, 'center', size + 10);
   }
   var sigM = null, sigA = null, SK = { m: 'srijon_sig_m', a: 'srijon_sig_a' };
@@ -170,9 +170,10 @@
     ctx.restore();
     // কিউআর: নিচে মাঝখানে, সবুজ-নীল ফ্রেমে (পূর্ণসংখ্যার পিক্সেলে আঁকা, তাই স্কেলের বাইরে)
     if (vcode && formNo && window.SrijonQR) {
-      var fx = Math.round(344 * k), fy = Math.round(1242 * k), fs = Math.round(253 * k), pad = Math.round(22 * k);
+      var pad = Math.round(22 * k), mods = window.SrijonQR.modules(verifyUrl(d)), inner = Math.ceil((253 * k - 2 * pad) / mods) * mods,      // ভেতরের বক্স = ঘরের পূর্ণসংখ্যা গুণ → প্রতিটি ঘর সর্বোচ্চ বড়
+          fs = inner + 2 * pad, fx = Math.round(470 * k - fs / 2), fy = Math.round(1368 * k - fs / 2);
       ctx.fillStyle = '#009688'; ctx.fillRect(fx, fy, fs, fs);
-      window.SrijonQR.draw(ctx, verifyUrl(d), fx + pad, fy + pad, fs - 2 * pad, logo);
+      window.SrijonQR.draw(ctx, verifyUrl(d), fx + pad, fy + pad, inner, qlogo);
     }
   }
   function drawBack(cv) {
@@ -319,7 +320,7 @@
     qrSvg: function () {           // কিউআর (ECC H + মাঝে লোগো) SVG হিসেবে ডাউনলোড
       if (!vcode || !formNo || !window.SrijonQR) { status('error', 'কিউআর পেতে সদস্য অ্যাকাউন্টে লগইন করুন।'); return; }
       var href = '', w = 1, h = 1;
-      if (logo) { var c = document.createElement('canvas'); c.width = logo.width; c.height = logo.height; c.getContext('2d').drawImage(logo, 0, 0); href = c.toDataURL('image/png'); w = logo.width; h = logo.height; }
+      if (qlogo) { var c = document.createElement('canvas'); c.width = qlogo.width; c.height = qlogo.height; c.getContext('2d').drawImage(qlogo, 0, 0); href = c.toDataURL('image/png'); w = qlogo.width; h = qlogo.height; }
       var blob = new Blob([window.SrijonQR.svg(verifyUrl(info()), href, w, h)], { type: 'image/svg+xml' });
       download(URL.createObjectURL(blob), 'QR-' + slug() + '.svg');
     }
@@ -333,6 +334,6 @@
     im.src = u;
   });
 
-  Promise.all([fonts(), load(new URL('../assets/img/logo.webp', location.href).href)]).then(function (r) { logo = r[1]; render(); });
+  Promise.all([fonts(), load(new URL('../assets/img/logo.webp', location.href).href), load(new URL('../assets/img/logo-qr.png', location.href).href)]).then(function (r) { logo = r[1]; qlogo = r[2]; render(); });
   render();
 })();
