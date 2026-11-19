@@ -8,8 +8,9 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#2f0a58';              // ব্যবহারকারীর পূরণ করা তথ্যের রং (বেগুনী)
-  var LABEL = '#000';               // ফরমের স্থায়ী লেখা (কালো)
+  var INK = '#000';                 // আবেদনকারীর লেখা: কালো (ফন্ট স্টাইল আগের মতোই)
+  var LABEL = '#002060';            // ফরমের ক্ষেত্রের লেখা: নেভি-নীল (নমুনা পিডিএফ অনুযায়ী)
+  var NAVY = '#002060', RED = '#ff0000', GRN = '#70ad47', SIGN = '#1f3864';
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
 
@@ -56,9 +57,9 @@
     return s;
   }
 
-  function dotted(ctx, x1, x2, y) {
+  function dotted(ctx, x1, x2, y, color) {
     ctx.save();
-    ctx.strokeStyle = '#222';
+    ctx.strokeStyle = color || NAVY;
     ctx.lineWidth = 1.2;
     ctx.setLineDash([1.4, 3.2]);
     ctx.lineCap = 'round';
@@ -199,7 +200,7 @@
   // ======== নতুন ডিজাইন: প্রদত্ত নমুনা পিডিএফ (A4, ৫৯৫.৩২ × ৮৪১.৯২ pt) অনুযায়ী; সব মাপ pt-এ ========
   var K = 96 / 72;                                // pt → px
   var PW = 595.32, PH = 841.92;
-  var G = '#2e6b2e';                              // অঙ্গীকারনামার সবুজ
+  var G = '#70ad47';                              // অঙ্গীকারনামার সবুজ
 
   // লেবেল + ডটেড লাইন + মান (মান লাইনের উপরে)
   function fld(ctx, x, y, label, value, xEnd, size) {
@@ -219,7 +220,7 @@
 
   // হলদে ঘর (উপরের দুই সারি): লেবেল বাঁয়ে, ঘর নির্দিষ্ট জায়গায়
   function yBox(ctx, lx, ly, label, bx, by, bw, bh, value, vSize, vWeight) {
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = RED;
     ctx.font = font(700, 11.4);
     ctx.fillText(label, lx, ly);
     var lend = lx + ctx.measureText(label).width + 4;     // ঘর লেখার উপর না পড়ে
@@ -285,7 +286,7 @@
     var title = 'সৃজনশীল তরুণ সংঘ';
     var ts = fitFont(ctx, title, 700, 62, 372, 30);
     ctx.font = font(700, ts);
-    ctx.fillStyle = '#c4551a';
+    ctx.fillStyle = '#c55a11';
     archText(ctx, title, CX + 2, 83, 5);
 
     ctx.fillStyle = '#000';
@@ -327,13 +328,13 @@
     ctx.clip();
     if (photo) drawCover(ctx, photo, 487, 80, 87, 101);
     ctx.restore();
-    ctx.strokeStyle = '#3a4a9a';
+    ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.2;
     roundRect(ctx, 487, 80, 87, 101, 9);
     ctx.stroke();
 
     // শিরোনাম পিল
-    ctx.fillStyle = '#f8cbad';
+    ctx.fillStyle = '#92d050';
     roundRect(ctx, 211, 191, 173, 23, 11.5);
     ctx.fill();
     ctx.strokeStyle = '#000';
@@ -441,68 +442,68 @@
       ctx.fillText(d.country + suf, cx0, y - 1);
     } else fld(ctx, L, y, cLabel, cVal, R);
 
-    // অঙ্গীকারনামা
+    // অঙ্গীকারনামা: বাঁয়ে আড়াআড়ি (নিচ থেকে উপরে পড়া) লেখার পাশের ঘর, ডানে সবুজ লেখা (নমুনা পিডিএফ অনুযায়ী)
     ctx.strokeStyle = '#000'; ctx.lineWidth = 0.9;
-    ctx.strokeRect(20, 620, 553, 115);
+    ctx.strokeRect(21, 627, 553, 104);
     ctx.fillStyle = '#f8cbad';
-    roundRect(ctx, 233, 598, 130, 22, 11);
+    roundRect(ctx, 30, 633, 24, 70, 8);
     ctx.fill();
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.1; ctx.stroke();
-    ctx.fillStyle = '#000';
-    ctx.font = font(700, 16.5);
-    ctx.textAlign = 'center';
-    ctx.fillText('অঙ্গীকারনামা', 298, 614.3);
-    ctx.textAlign = 'left';
+    ctx.save(); ctx.translate(42.6, 668); ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#000'; ctx.textAlign = 'center';
+    var vs = 15.5; ctx.font = font(700, vs);
+    while (ctx.measureText('অঙ্গীকারনামা').width > 62 && vs > 9) { vs -= 0.3; ctx.font = font(700, vs); }
+    ctx.fillText('অঙ্গীকারনামা', 0, 5.2);
+    ctx.restore(); ctx.textAlign = 'left';
 
     var CM7 = 7 / 2.54 * 72;                        // ৭ সে.মি. ফাঁকা (হাতে নাম লেখার জায়গা)
     var body = 'এই মর্মে স্বেচ্ছায় ও স্বজ্ঞানে স্বীকার করছি যে, আমার দেওয়া উপরোল্লিখিত তথ্যসমূহ সত্য ও নির্ভুল। আমি অঙ্গীকার করছি যে, আমি "সৃজনশীল তরুণ সংঘ" -এর গঠনতন্ত্র ও কার্যকরী কমিটির সকল সিদ্ধান্ত মেনে চলবো, সংগঠন ও গঠনতন্ত্র বহির্ভূত কোন কাজ করবো না। গঠনতন্ত্র ও সংগঠন বিরোধী কোন কাজে লিপ্ত থাকলে বা প্রমাণিত হলে কর্তৃপক্ষ আমার বিরুদ্ধে যে ব্যবস্থা গ্রহণ করবেন তা মেনে নিতে বাধ্য থাকবো, এতে আমার কোন আপত্তি থাকবে না।';
     var words = body.split(/\s+/);
     var psize = 12.4, lay;
     for (;;) {                                       // ৪ লাইনে না ধরলে লেখা একটু ছোট করে
-      lay = pledgeLayout(ctx, words, 27, 539, psize, CM7);
+      lay = pledgeLayout(ctx, words, 64, 504, psize, CM7);
       if (lay.lines.length <= 4 || psize <= 10.2) break;
       psize -= 0.2;
     }
     ctx.font = font(500, psize);
     ctx.fillStyle = G;
     lay.lines.forEach(function (ln, i) {
-      var by = 638 + i * 16.5, cx = 27, last = i === lay.lines.length - 1;
+      var by = 640 + i * 16.5, cx = 64, last = i === lay.lines.length - 1;
       var ww = 0, nsp = 0;
       ln.forEach(function (it, j) { if (it.t) { ww += it.w; if (j > 0 && ln[j - 1].t) nsp++; } });
       var gapTot = ln.some(function (it) { return it.gap; }) ? CM7 + 10 : 0;
-      var extra = last || nsp === 0 ? 0 : (539 - ww - gapTot - nsp * lay.sp - (ln[0].gap ? 0 : 0)) / nsp;
+      var extra = last || nsp === 0 ? 0 : (504 - ww - gapTot - nsp * lay.sp - (ln[0].gap ? 0 : 0)) / nsp;
       ln.forEach(function (it, j) {
-        if (it.gap) { dotted(ctx, cx + 5, cx + 5 + it.gap, by + 2); cx += it.gap + 10; return; }
+        if (it.gap) { dotted(ctx, cx + 5, cx + 5 + it.gap, by + 2, G); cx += it.gap + 10; return; }
         ctx.fillText(it.t, cx, by);
         cx += it.w + (j < ln.length - 1 ? lay.sp + (ln[j + 1].t && ln[j].t ? Math.max(0, extra) : 0) : 0);
       });
     });
     ctx.fillStyle = G;
     ctx.font = font(500, 12.4);
-    ctx.fillText('আবেদনকারীর স্বাক্ষর–', 303, 719);
-    dotted(ctx, 394, 564, 727);
+    ctx.fillText('আবেদনকারীর স্বাক্ষর–', 296, 713);
+    dotted(ctx, 378, 546, 727, '#000');
 
-    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর)
+    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — নমুনা পিডিএফের জায়গায়: সবুজ-নীল ফ্রেমে, নিচে-মাঝে বাঁয়ে
     if (d.vcode && d.formNo && window.SrijonQR) {
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 40, 731, 56, d._qlogo, 1 / (SCALE * K));   // ফরমে ২ সেমির জায়গা: লোগোসহ, ECC H
-      ctx.fillStyle = '#000'; ctx.font = font(500, 8.6); ctx.textAlign = 'left';
-      ctx.fillText('ফরম ও আইডি কার্ডের', 110, 750); ctx.fillText('যাচাই-কিউআর', 110, 762); ctx.fillText('(স্ক্যান করে দেখুন)', 110, 774);
+      ctx.fillStyle = '#009688'; ctx.fillRect(191, 739, 65, 65);
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 195, 743, 57, d._qlogo, 1 / (SCALE * K));   // ECC H, লোগোসহ
     }
-    // সদস্যপদ লাভের তারিখ (ঘর), সাধারণ সম্পাদক ও সভাপতি
+    // সদস্যপদ লাভের তারিখ (বাদামী কিনারার ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
-    ctx.fillRect(230, 743, 132, 31);
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 0.7;
-    ctx.strokeRect(230, 743, 132, 31);
-    dotted(ctx, 233, 359, 770);
+    ctx.fillRect(264, 739, 133, 65);
+    ctx.strokeStyle = '#843c0c'; ctx.lineWidth = 1.4;
+    ctx.strokeRect(264, 739, 133, 65);
+    dotted(ctx, 272, 390, 779, '#000');
     ctx.fillStyle = '#000';
     ctx.font = font(500, 13.4);
     ctx.textAlign = 'center';
-    ctx.fillText('সদস্যপদ লাভের তারিখ', CX, 789);
-    dotted(ctx, 40, 172, 797.5);
-    dotted(ctx, 421, 555, 797);
-    ctx.fillStyle = '#000';
-    ctx.fillText('সাধারণ সম্পাদক', 107.5, 813.5);
-    ctx.fillText('সভাপতি', 490, 813.5);
+    ctx.fillText('সদস্যপদ লাভের তারিখ', 330.5, 792);
+    dotted(ctx, 43, 170, 787, '#000');
+    dotted(ctx, 421, 570, 785, '#000');
+    ctx.fillStyle = SIGN;
+    ctx.fillText('সাধারণ সম্পাদক', 116.5, 802);
+    ctx.fillText('সভাপতি', 494.5, 802);
 
     // ফুটার: ডাউনলোডের সময় (মধ্যখানে, ইংরেজি হরফে)
     ctx.fillStyle = '#000';
