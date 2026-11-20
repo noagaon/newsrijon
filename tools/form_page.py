@@ -85,6 +85,9 @@ def membership_body():
     <div class="field"><label for="permitFather">২। পিতার নাম: <span class="req">*</span></label><input id="permitFather" type="text" maxlength="100" autocomplete="off" lang="bn"><small class="hint-warn" id="permitFatherHint" hidden>বাংলায় লিখুন</small></div>
     <div class="field"><label for="permitPhone">৩। ফোন নম্বর: <span class="req">*</span></label><input id="permitPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"><small>বাংলা বা ইংরেজি, যেকোনো ভাষায় লিখতে পারবেন</small></div>
   </div>
+  <div class="field"><label for="permitType">৪। সদস্য ধরণ: <span class="req">*</span></label>
+    <select id="permitType"><option value="">— নির্বাচন করুন —</option><option value="general">(ক) সাধারণ সদস্য</option><option value="expat">(খ) প্রবাসী সদস্য</option><option value="junior">(গ) জুনিয়র সদস্য</option><option value="donor">(ঘ) দাতা সদস্য</option></select>
+    <small>এটি মূল ফরমে নিজে থেকে বসে যাবে</small></div>
   <div class="field cap-row"><label for="capAns">নিরাপত্তা প্রশ্ন: <strong id="capQ">…</strong> = ? <span class="req">*</span></label>
     <div class="cap-line"><input id="capAns" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><button type="button" class="linklike" id="capRefresh">নতুন প্রশ্ন</button></div></div>
   <input type="text" id="permitWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">

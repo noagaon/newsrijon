@@ -318,7 +318,7 @@
     // লোগো
     if (logo) {
       var lw = 131.5, lh = lw * logo.height / logo.width;   // চওড়া ৩.৭০ সেমি; উচ্চতা অনুপাত ঠিক রেখে
-      ctx.drawImage(logo, 19.5, 123, lw, lh);   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
+      ctx.drawImage(logo, 19.5, 261 - lh, lw, lh);   // নিচের রেখা = ছবির ঘরের নিচের রেখা (261)   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
     }
 
     // ছবির বক্স
@@ -487,7 +487,7 @@
 
     // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — প্রদত্ত নকশা অনুযায়ী স্লোগানের নিচে, মাঝখানে
     if (d.vcode && d.formNo && window.SrijonQR) {
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 24.5, 177, 49, d._qlogo, 1 / (SCALE * K), 'H', 1);   // ECC H, লোগোসহ
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 32, 176, 64, d._qlogo, 1 / (SCALE * K), 'H', 0);   // ECC H, লোগোসহ
     }
     // সদস্যপদ লাভের তারিখ (বাদামী কিনারার ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
