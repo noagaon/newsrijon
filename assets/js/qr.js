@@ -89,7 +89,7 @@
     p += Math.floor(Math.abs(dark * 20 - n * n * 10) / (n * n)) * 10;
     return p;
   }
-  var QUIET = 4;          // চারপাশের সাদা ফাঁকা জায়গা (Quiet Zone), মডিউল হিসেবে — স্ট্যান্ডার্ড ন্যূনতম ৪
+  var QUIET_STD = 4, QUIET = QUIET_STD;          // চারপাশের সাদা ফাঁকা জায়গা (Quiet Zone), মডিউল হিসেবে — স্ট্যান্ডার্ড ন্যূনতম ৪
   var LOGO_F = .52;       // লোগোর প্রস্থ = কোডের ৫২% (ECC H-এ পরীক্ষিত; ঢাকা পড়ে প্রায় ১৬% ঘর, সীমা ৩০%)
   var LOGO = .34;         // লোগোর বক্সের পাশ = কোডের পাশের ৩৪% → ক্ষেত্রফল ≈ ১১.৬% (১০–১৫% এর মধ্যে)
   function logoBox(n) { var k = Math.round(n * LOGO); if ((n - k) % 2) k++; return { k: k, o: (n - k) / 2 }; }
@@ -98,7 +98,8 @@
     modules: function (text) { var m = build(text); return m ? m.length + 2 * QUIET : 0; },       // ফাঁকা জায়গাসহ মোট ঘর
     /* ক্যানভাসে আঁকে: (x,y) থেকে size×size বক্সে; চারপাশে সাদা Quiet Zone; মাঝে লোগো (img এলিমেন্ট) */
     verifyUrl: function (formNo, code) { return new URL('../v.html?f=' + encodeURIComponent(String(formNo).replace(/^STS-/, '')) + '&k=' + encodeURIComponent(String(code).slice(0, 7)), location.href).href; },   // ছোট লিংক = কম ঘর
-    draw: function (ctx, text, x, y, size, logo, unit, lvl) {      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
+    draw: function (ctx, text, x, y, size, logo, unit, lvl, quiet) {
+      var QUIET = quiet == null ? QUIET_STD : quiet;      // quiet = চারপাশের সাদা ফাঁকা (মডিউল); ছোট করা যায়      // unit: এক ডিভাইস-পিক্সেল = কত একক (পিডিএফে pt); মডিউল তার গুণিতক হয়
       var m = build(text, lvl); if (!m) return false; unit = unit || 1;
       var n = m.length, cell = Math.max(unit, Math.floor(size / (n + 2 * QUIET) / unit) * unit), off = Math.round((size - cell * (n + 2 * QUIET)) / 2 / unit) * unit, ox = x + off, oy = y + off;
       ctx.fillStyle = '#fff'; ctx.fillRect(x, y, size, size); ctx.fillStyle = '#000';     // মডিউল পূর্ণসংখ্যার পিক্সেলে — ঝাপসা হয় না

@@ -203,6 +203,7 @@
   var G = '#38761d';                              // অঙ্গীকারনামার কড়া সবুজ
 
   // লেবেল + ডটেড লাইন + মান (মান লাইনের উপরে)
+  var GAP = 6.5;                                  // লেবেলের পর এক বর্ণ পরিমাণ ফাঁকা
   function fld(ctx, x, y, label, value, xEnd, size) {
     size = size || 12.4;
     ctx.fillStyle = LABEL;
@@ -212,9 +213,9 @@
     dotted(ctx, vx, xEnd, y + 2);
     if (value) {
       ctx.fillStyle = INK;
-      var fs = fitFont(ctx, value, 500, size, xEnd - vx - 1.5, 7, true);
+      var fs = fitFont(ctx, value, 500, size, xEnd - vx - GAP - 1.5, 7, true);
       ctx.font = vfont(500, fs);
-      ctx.fillText(value, vx + 1, y - 1);
+      ctx.fillText(value, vx + GAP, y - 1);
     }
   }
 
@@ -296,28 +297,28 @@
     es = es * 333 / enW0 - 2;                          // নমুনার প্রস্থ থেকে ২ pt ছোট
     ctx.font = 'bold ' + es + 'px "Times New Roman", Times, Georgia, serif';
     var enW = ctx.measureText(en).width;
-    ctx.fillText(en, CX, 127);
-    ctx.fillRect(CX - enW / 2, 130.4, enW, 1.6);
+    ctx.fillText(en, CX, 121);
+    ctx.fillRect(CX - enW / 2, 124.4, enW, 1.6);
 
     var addrLine = 'নোয়াগাঁও, টুকের বাজার, ৩৯ নং ওয়ার্ড, সিলেট সিটি কর্পোরেশন, সিলেট।';
     ctx.font = font(700, 12);
     var as = 12 * enW / ctx.measureText(addrLine).width;      // ইংরেজি নামের ঠিক সমান প্রস্থে (শুরু ও শেষ এক সরলরেখায়)
     ctx.font = font(700, as);
-    ctx.fillText(addrLine, CX, 153);
+    ctx.fillText(addrLine, CX, 147);
 
     var slogan = 'সামাজিক উন্নয়ন ও ন্যায়বিচার, তারুণ্যের অঙ্গীকার';
     ctx.font = font(700, 13.4);
     var sw = ctx.measureText(slogan).width + 3;
     ctx.fillStyle = '#00ffff';
-    ctx.fillRect(CX - sw / 2, 164, sw, 14.5);
+    ctx.fillRect(CX - sw / 2, 158, sw, 14.5);
     ctx.fillStyle = '#000';
-    ctx.fillText(slogan, CX, 175.5);
+    ctx.fillText(slogan, CX, 169.5);
     ctx.textAlign = 'left';
 
     // লোগো
     if (logo) {
-      var lw = 3.70 / 2.54 * 72, lh = lw * logo.height / logo.width;   // চওড়া ৩.৭০ সেমি; উচ্চতা অনুপাত ঠিক রেখে
-      ctx.drawImage(logo, 72 - lw / 2, 198 - lh / 2, lw, lh);   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
+      var lw = 131.5, lh = lw * logo.height / logo.width;   // চওড়া ৩.৭০ সেমি; উচ্চতা অনুপাত ঠিক রেখে
+      ctx.drawImage(logo, 19.5, 123, lw, lh);   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
     }
 
     // ছবির বক্স
@@ -434,9 +435,9 @@
       var vx0 = L + ctx.measureText(cLabel).width + 3;
       var pre = d.countryType === 'প্রবাসী' ? 'প্রবাসী (' : '', suf = d.countryType === 'প্রবাসী' ? ')' : '';
       var fh = 11, fw = fh * d._flag.width / d._flag.height;
-      var fsz = fitFont(ctx, pre + d.country + suf, 500, 12.4, R - vx0 - fw - 8, 7, true);
+      var fsz = fitFont(ctx, pre + d.country + suf, 500, 12.4, R - vx0 - GAP - fw - 8, 7, true);
       ctx.font = vfont(500, fsz); ctx.fillStyle = INK;
-      var cx0 = vx0 + 1;
+      var cx0 = vx0 + GAP;
       ctx.fillText(pre, cx0, y - 1); cx0 += ctx.measureText(pre).width + 1;
       ctx.drawImage(d._flag, cx0, y - 10, fw, fh); cx0 += fw + 3;
       ctx.fillText(d.country + suf, cx0, y - 1);
@@ -446,13 +447,13 @@
     ctx.strokeStyle = '#000'; ctx.lineWidth = 0.9;
     ctx.strokeRect(21, 627, 553, 104);
     ctx.fillStyle = '#f8cbad';
-    roundRect(ctx, 30, 633, 24, 70, 8);
+    roundRect(ctx, 30, 633, 24, 92, 8);
     ctx.fill();
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.1; ctx.stroke();
-    ctx.save(); ctx.translate(42.6, 668); ctx.rotate(-Math.PI / 2);
+    ctx.save(); ctx.translate(42.6, 679); ctx.rotate(-Math.PI / 2);
     ctx.fillStyle = '#000'; ctx.textAlign = 'center';
-    var vs = 15.5; ctx.font = font(700, vs);
-    while (ctx.measureText('অঙ্গীকারনামা').width > 62 && vs > 9) { vs -= 0.3; ctx.font = font(700, vs); }
+    var vs = 17; ctx.font = font(700, vs);
+    while (ctx.measureText('অঙ্গীকারনামা').width > 82 && vs > 9) { vs -= 0.3; ctx.font = font(700, vs); }
     ctx.fillText('অঙ্গীকারনামা', 0, 5.2);
     ctx.restore(); ctx.textAlign = 'left';
 
@@ -486,7 +487,7 @@
 
     // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — প্রদত্ত নকশা অনুযায়ী স্লোগানের নিচে, মাঝখানে
     if (d.vcode && d.formNo && window.SrijonQR) {
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 28, 185, 56, d._qlogo, 1 / (SCALE * K));   // ECC H, লোগোসহ
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 24.5, 177, 49, d._qlogo, 1 / (SCALE * K), 'H', 1);   // ECC H, লোগোসহ
     }
     // সদস্যপদ লাভের তারিখ (বাদামী কিনারার ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
