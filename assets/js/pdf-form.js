@@ -9,8 +9,8 @@
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
   var INK = '#000';                 // আবেদনকারীর লেখা: কালো (ফন্ট স্টাইল আগের মতোই)
-  var LABEL = '#002060';            // ফরমের ক্ষেত্রের লেখা: নেভি-নীল (নমুনা পিডিএফ অনুযায়ী)
-  var NAVY = '#002060', RED = '#ff0000', GRN = '#70ad47', SIGN = '#1f3864';
+  var LABEL = '#7030a0';            // ১–১৬ নং ক্ষেত্রের মূল লেখা: বেগুনি (ডটেড লাইন নেভি-নীলই থাকে)
+  var NAVY = '#002060', RED = '#ff0000', SIGN = '#1f3864';
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
 
@@ -200,7 +200,7 @@
   // ======== নতুন ডিজাইন: প্রদত্ত নমুনা পিডিএফ (A4, ৫৯৫.৩২ × ৮৪১.৯২ pt) অনুযায়ী; সব মাপ pt-এ ========
   var K = 96 / 72;                                // pt → px
   var PW = 595.32, PH = 841.92;
-  var G = '#70ad47';                              // অঙ্গীকারনামার সবুজ
+  var G = '#38761d';                              // অঙ্গীকারনামার কড়া সবুজ
 
   // লেবেল + ডটেড লাইন + মান (মান লাইনের উপরে)
   function fld(ctx, x, y, label, value, xEnd, size) {
@@ -322,20 +322,20 @@
 
     // ছবির বক্স
     ctx.save();
-    roundRect(ctx, 487, 80, 87, 101, 9);
+    roundRect(ctx, 459, 135, 109, 126, 15);
     ctx.fillStyle = '#dae3f3';
     ctx.fill();
     ctx.clip();
-    if (photo) drawCover(ctx, photo, 487, 80, 87, 101);
+    if (photo) drawCover(ctx, photo, 459, 135, 109, 126);
     ctx.restore();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.2;
-    roundRect(ctx, 487, 80, 87, 101, 9);
+    roundRect(ctx, 459, 135, 109, 126, 15);
     ctx.stroke();
 
     // শিরোনাম পিল
     ctx.fillStyle = '#92d050';
-    roundRect(ctx, 211, 191, 173, 23, 11.5);
+    roundRect(ctx, 211, 245, 173, 23, 11.5);
     ctx.fill();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.1;
@@ -343,27 +343,27 @@
     ctx.fillStyle = '#000';
     ctx.font = font(700, 17);
     ctx.textAlign = 'center';
-    ctx.fillText('সদস্য নিবন্ধন ফরম', CX, 208.6);
+    ctx.fillText('সদস্য নিবন্ধন ফরম', CX, 262.6);
     ctx.textAlign = 'left';
 
     // উপরের দুই সারি
     var TYPE_BN = { general: '(ক) সাধারণ সদস্য', expat: '(খ) প্রবাসী সদস্য', junior: '(গ) জুনিয়র সদস্য', donor: '(ঘ) দাতা সদস্য' };
-    yBox(ctx, 27, 246.3, 'ফরম নম্বর:', 70, 235, 126, 17, d.formNo);
-    yBox(ctx, 220, 246.3, 'সদস্য ধরণ:', 268, 235, 141, 17, TYPE_BN[d.memberType] || '', 13.4, 500);
-    yBox(ctx, 420, 246.3, 'সদস্য নম্বর:', 467, 235, 105, 17, d.memberNo || '');
-    yBox(ctx, 25, 271.3, 'সূত্র/সুপারিশ:', 78, 260, 119, 17, (d.reference === 'none' ? 'X' : d.referenceLabel) || '');
-    yBox(ctx, 220, 271.3, 'সূত্র/সুপারিশ প্রমাণক:', 305, 260, 105, 17, (d.reference === 'none' ? 'X' : d.referenceProof) || '');
-    yBox(ctx, 422, 271.3, 'নিবন্ধন ফি:', 467, 259, 106, 18, d.feeText || '');
+    yBox(ctx, 27, 288.3, 'ফরম নম্বর:', 70, 277, 126, 17, d.formNo);
+    yBox(ctx, 220, 288.3, 'সদস্য ধরণ:', 268, 277, 141, 17, TYPE_BN[d.memberType] || '', 13.4, 500);
+    yBox(ctx, 420, 288.3, 'সদস্য নম্বর:', 467, 277, 105, 17, d.memberNo || '');
+    yBox(ctx, 25, 313.3, 'সূত্র/সুপারিশ:', 78, 302, 119, 17, (d.reference === 'none' ? 'X' : d.referenceLabel) || '');
+    yBox(ctx, 220, 313.3, 'সূত্র/সুপারিশ প্রমাণক:', 305, 302, 105, 17, (d.reference === 'none' ? 'X' : d.referenceProof) || '');
+    yBox(ctx, 422, 313.3, 'নিবন্ধন ফি:', 467, 301, 106, 18, d.feeText || '');
 
     if (d.discount) {                                   // ছাড় থাকলে ফি ঘরের ঠিক নিচে
       ctx.fillStyle = '#000'; ctx.font = font(600, 8.4); ctx.textAlign = 'right';
-      ctx.fillText('২০% ছাড়', 573, 286.2); ctx.textAlign = 'left';
+      ctx.fillText('২০% ছাড়', 573, 328.2); ctx.textAlign = 'left';
     }
     // মূল ফিল্ড (বাম কলাম x=25, ডান কলাম x=304.5, তৃতীয় কলাম x=455)
     var L = 25, LE = 288, RX = 304.5, R = 568, T3 = 455;
     var junior = d.memberType === 'junior';
     var p = d.perm || {}, c = d.cur || p;
-    var y = 296, P1 = 20.4, P2 = 16.6;
+    var y = 338, P1 = 20.4, P2 = 16.6;
 
     fld(ctx, L, y, '১। নাম (বাংলায়) এনআইডি অনুযায়ী:', d.nameBn, R + 1); y += P1;
     fld(ctx, 39, y, 'নাম (ইংরেজিতে) এনআইডি অনুযায়ী:', d.nameEn, R + 1); y += P1;
@@ -484,21 +484,20 @@
     ctx.fillText('আবেদনকারীর স্বাক্ষর–', 296, 713);
     dotted(ctx, 378, 546, 727, '#000');
 
-    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — নমুনা পিডিএফের জায়গায়: সবুজ-নীল ফ্রেমে, নিচে-মাঝে বাঁয়ে
+    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — প্রদত্ত নকশা অনুযায়ী স্লোগানের নিচে, মাঝখানে
     if (d.vcode && d.formNo && window.SrijonQR) {
-      ctx.fillStyle = '#009688'; ctx.fillRect(191, 739, 65, 65);
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), 195, 743, 57, d._qlogo, 1 / (SCALE * K));   // ECC H, লোগোসহ
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 28, 185, 56, d._qlogo, 1 / (SCALE * K));   // ECC H, লোগোসহ
     }
     // সদস্যপদ লাভের তারিখ (বাদামী কিনারার ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
-    ctx.fillRect(264, 739, 133, 65);
+    ctx.fillRect(231.5, 739, 130, 65);
     ctx.strokeStyle = '#843c0c'; ctx.lineWidth = 1.4;
-    ctx.strokeRect(264, 739, 133, 65);
-    dotted(ctx, 272, 390, 779, '#000');
+    ctx.strokeRect(231.5, 739, 130, 65);
+    dotted(ctx, 238, 354, 779, '#000');
     ctx.fillStyle = '#000';
     ctx.font = font(500, 13.4);
     ctx.textAlign = 'center';
-    ctx.fillText('সদস্যপদ লাভের তারিখ', 330.5, 792);
+    ctx.fillText('সদস্যপদ লাভের তারিখ', CX, 792);
     dotted(ctx, 43, 170, 787, '#000');
     dotted(ctx, 421, 570, 785, '#000');
     ctx.fillStyle = SIGN;
