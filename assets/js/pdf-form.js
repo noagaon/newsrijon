@@ -59,7 +59,7 @@
 
   function dotted(ctx, x1, x2, y, color) {
     ctx.save();
-    ctx.strokeStyle = color || NAVY;
+    ctx.strokeStyle = color || LABEL;      // ১–১৬ নং ক্ষেত্রের ডটেড লাইনও লেখার মতো বেগুনি
     ctx.lineWidth = 1.2;
     ctx.setLineDash([1.4, 3.2]);
     ctx.lineCap = 'round';
@@ -317,7 +317,7 @@
     // লোগো
     if (logo) {
       var lw = 3.70 / 2.54 * 72, lh = lw * logo.height / logo.width;   // চওড়া ৩.৭০ সেমি; উচ্চতা অনুপাত ঠিক রেখে
-      ctx.drawImage(logo, 72 - lw / 2, 129.5 - lh / 2, lw, lh);
+      ctx.drawImage(logo, 72 - lw / 2, 198 - lh / 2, lw, lh);   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
     }
 
     // ছবির বক্স
@@ -481,8 +481,8 @@
     });
     ctx.fillStyle = G;
     ctx.font = font(500, 12.4);
-    ctx.fillText('আবেদনকারীর স্বাক্ষর–', 296, 713);
-    dotted(ctx, 378, 546, 727, '#000');
+    ctx.textAlign = 'right'; ctx.fillText('আবেদনকারীর স্বাক্ষর–', 373, 716); ctx.textAlign = 'left';      // ডটেডের উপর থেকে সরে বাঁয়ে
+    dotted(ctx, 378, 546, 727, G);
 
     // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — প্রদত্ত নকশা অনুযায়ী স্লোগানের নিচে, মাঝখানে
     if (d.vcode && d.formNo && window.SrijonQR) {
@@ -498,11 +498,11 @@
     ctx.font = font(500, 13.4);
     ctx.textAlign = 'center';
     ctx.fillText('সদস্যপদ লাভের তারিখ', CX, 792);
-    dotted(ctx, 43, 170, 787, '#000');
-    dotted(ctx, 421, 570, 785, '#000');
+    dotted(ctx, 43, 170, 794, '#000');
+    dotted(ctx, 421, 570, 792, '#000');
     ctx.fillStyle = SIGN;
-    ctx.fillText('সাধারণ সম্পাদক', 116.5, 802);
-    ctx.fillText('সভাপতি', 494.5, 802);
+    ctx.fillText('সাধারণ সম্পাদক', 116.5, 809);
+    ctx.fillText('সভাপতি', 494.5, 809);
 
     // ফুটার: ডাউনলোডের সময় (মধ্যখানে, ইংরেজি হরফে)
     ctx.fillStyle = '#000';
