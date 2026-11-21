@@ -392,17 +392,16 @@
       $('memberType').dispatchEvent(new Event('change')); maskField('memberType', false);
     }
     $('nameBn').value = info.name; $('phone').value = info.phone; if (info.father) $('father').value = info.father;
-    if (info.gender) $('gender').value = info.gender;
-    if (info.religion) {
-      var rs = $('religion'), has = Array.prototype.some.call(rs.options, function (o) { return o.value === info.religion; });
-      if (has) { rs.value = info.religion; rs.dispatchEvent(new Event('change')); }
-      else { rs.value = '__other'; rs.dispatchEvent(new Event('change')); $('religionOther').value = info.religion; }
-    }
-    [['mother', 2], ['dob', 4]].forEach(function (f) {
+    [['mother', 2], ['dob', 4], ['gender', 8], ['religion', 16]].forEach(function (f) {
       var el = $(f[0]);
-      if (info.m & f[1]) { el.value = ''; el.dataset.srv = '1'; maskField(f[0], false); }
+      if (info.m & f[1]) {
+        el.value = ''; el.dataset.srv = '1';
+        if (f[0] === 'religion') el.dispatchEvent(new Event('change'));
+        maskField(f[0], false);
+      }
       else if (isSrv(f[0])) unmaskField(f[0], true);
     });
+    if (!(info.m & 8) && info.gender && !val('gender')) $('gender').value = info.gender;
     if (save) { try { localStorage.setItem('srijon_access_fill', JSON.stringify({ rid: accessId, name: info.name, father: info.father, phone: info.phone, m: info.m, gender: info.gender, religion: info.religion, mtype: info.mtype })); } catch (e) {} }
   }
   function setApproved(on) {
