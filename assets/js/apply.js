@@ -16,7 +16,7 @@
   function feeText(t, ref) { var n = feeAmount(t, ref); return n ? bnNum(n) + ' টাকা' : ''; }
   function bnNum(n) { return bn(String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')); }
   var TYPE_LABEL = { general: 'সাধারণ সদস্য', expat: 'প্রবাসী সদস্য', junior: 'জুনিয়র সদস্য', donor: 'দাতা সদস্য' };
-  var PHOTO_MAX_SIDE = 1600;                                 // সংরক্ষণের জন্য ছবি এর বেশি বড় হলে ছোট করা হয় (আপলোডের সীমা নেই)
+  var PHOTO_MAX_SIDE = 1280;                                 // সংরক্ষণের জন্য ছবি এর বেশি বড় হলে ছোট করা হয় (আপলোডের সীমা নেই)
   // সিটি কর্পোরেশনের ওয়ার্ড সংখ্যা
   var CITY_WARDS = {
     'ঢাকা দক্ষিণ সিটি কর্পোরেশন': 75, 'ঢাকা উত্তর সিটি কর্পোরেশন': 54, 'গাজীপুর সিটি কর্পোরেশন': 57,
@@ -661,24 +661,31 @@
       var payload = { action: 'pdf', formNo: serverInfo.formNo, token: serverInfo.token, memberType: data.memberType, nameEn: data.nameEn, pdf: window.SrijonPDF.toBase64(pdf.bytes) };
       var note = document.createElement('p');
       note.className = 'small muted';
-      note.textContent = 'সংগঠনের কাছে পিডিএফ কপি ও ছবি সংরক্ষণ করা হচ্ছে…';
+      note.textContent = 'সংগঠনের কাছে পিডিএফ কপি ও ছবি সংরক্ষণ করা হচ্ছে… শেষ না হওয়া পর্যন্ত পেইজটি বন্ধ করবেন না।';
       $('applySuccess').insertBefore(note, $('applySuccess').querySelector('.btn-row'));
       var why = [];
-      function upload(payload, retry) {
+      // সর্বোচ্চ ৩ বার চেষ্টা; "already saved" মানে আগেই সংরক্ষিত — সফল
+      function upload(payload, tries) {
+        tries = tries || 3;
         return post(payload).then(function (r) {
+          if (r && !r.ok && r.error === 'already saved') return true;
           if (!r || !r.ok) throw new Error((r && r.error) || 'empty response');
           return true;
         }).catch(function (e) {
           var m = String(e && e.message || e);
           if (window.console) console.error('upload ' + payload.action + ' failed:', m);
-          if (retry) return upload(payload, false);
+          if (tries > 1) return new Promise(function (ok) { setTimeout(ok, 1500); }).then(function () { return upload(payload, tries - 1); });
           why.push(payload.action + ': ' + m.substring(0, 160));
           return false;
         });
       }
+      var guard = function (e) { e.preventDefault(); e.returnValue = ''; return ''; };
+      window.addEventListener('beforeunload', guard);       // সংরক্ষণ শেষ হওয়ার আগে পেইজ বন্ধ করলে সতর্কতা
       var photoPayload = { action: 'photo', formNo: serverInfo.formNo, token: serverInfo.token, nameEn: data.nameEn, photo: photoDataUrl.split(',')[1], thumb: photoThumbUrl.split(',')[1] };
-      return upload(payload, true).then(function (okPdf) {
-        return upload(photoPayload, true).then(function (okPhoto) {
+      return Promise.all([upload(payload), upload(photoPayload)]).then(function (rs) {
+        var okPdf = rs[0], okPhoto = rs[1];
+        window.removeEventListener('beforeunload', guard);
+        return Promise.resolve().then(function () {
           note.textContent = okPdf && okPhoto ? '✔ পিডিএফ কপি ও ছবি সংগঠনের কাছে সংরক্ষিত হয়েছে।'
             : 'আপনার আবেদন গৃহীত হয়েছে। ' + (okPdf ? '' : 'পিডিএফ কপি ') + (!okPdf && !okPhoto ? 'ও ' : '') + (okPhoto ? '' : 'ছবি ') + 'সংরক্ষণে সমস্যা হয়েছে; আপনার ডাউনলোড করা কপিটি সংগঠনের কার্যালয়ে জমা দিন।';
           if (why.length) {
