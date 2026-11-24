@@ -337,7 +337,7 @@
 
     // শিরোনাম পিল
     ctx.fillStyle = '#92d050';
-    roundRect(ctx, 211, 245, 173, 23, 11.5);
+    roundRect(ctx, 211, 177, 173, 23, 11.5);
     ctx.fill();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.1;
@@ -345,7 +345,7 @@
     ctx.fillStyle = '#000';
     ctx.font = font(700, 17);
     ctx.textAlign = 'center';
-    ctx.fillText('সদস্য নিবন্ধন ফরম', CX, 262.6);
+    ctx.fillText('সদস্য নিবন্ধন ফরম', CX, 194.6);
     ctx.textAlign = 'left';
 
     // উপরের দুই সারি
@@ -486,22 +486,40 @@
     ctx.textAlign = 'right'; ctx.fillText('আবেদনকারীর স্বাক্ষর–', 373, 716); ctx.textAlign = 'left';      // ডটেডের উপর থেকে সরে বাঁয়ে
     dotted(ctx, 378, 546, 727, G);
 
-    // যাচাই-কিউআর (ফরম জমার সাথে সাথে বসে; পরে আইডি কার্ডেও একই কিউআর) — প্রদত্ত নকশা অনুযায়ী স্লোগানের নিচে, মাঝখানে
+    // সবুজ ঘর: একপাশে যাচাই-কিউআর (আগের মাপেই, ৬৪ পয়েন্ট), অন্যপাশে সদস্য ধরণ (সাধারণ/প্রবাসী…)
+    var BX = 207, BY = 205, BW = 181, BH = 68;
+    ctx.fillStyle = '#2e7031';
+    roundRect(ctx, BX, BY, BW, BH, 9);
+    ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.1;
+    roundRect(ctx, BX, BY, BW, BH, 9);
+    ctx.stroke();
     if (d.vcode && d.formNo && window.SrijonQR) {
-      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), CX - 32, 176, 64, d._qlogo, 1 / (SCALE * K), 'H', 0);   // ECC H, লোগোসহ
+      window.SrijonQR.draw(ctx, window.SrijonQR.verifyUrl(d.formNo, d.vcode), BX + 2, BY + 2, 64, d._qlogo, 1 / (SCALE * K), 'H', 0);   // ECC H, লোগোসহ
     }
+    var SHORT = { general: 'সাধারণ', expat: 'প্রবাসী', junior: 'জুনিয়র', donor: 'দাতা' };
+    var st = SHORT[d.memberType] || '';
+    if (st) {
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+      var sz = 36;
+      ctx.font = font(700, sz);
+      while (ctx.measureText(st).width > BW - 64 - 16 && sz > 14) { sz -= 1; ctx.font = font(700, sz); }
+      ctx.fillText(st, BX + 68 + (BW - 68) / 2, BY + BH / 2 + sz * 0.33);
+      ctx.textAlign = 'left';
+    }
+
     // সদস্যপদ লাভের তারিখ (বাদামী কিনারার ঘর), সাধারণ সম্পাদক ও সভাপতি
     ctx.fillStyle = '#fff';
-    ctx.fillRect(231.5, 739, 130, 65);
+    ctx.fillRect(231.5, 744, 130, 60);
     ctx.strokeStyle = '#843c0c'; ctx.lineWidth = 1.4;
-    ctx.strokeRect(231.5, 739, 130, 65);
+    ctx.strokeRect(231.5, 744, 130, 60);
     dotted(ctx, 238, 354, 779, '#000');
     ctx.fillStyle = '#000';
     ctx.font = font(500, 13.4);
     ctx.textAlign = 'center';
     ctx.fillText('সদস্যপদ লাভের তারিখ', CX, 792);
-    dotted(ctx, 43, 170, 794, '#000');
-    dotted(ctx, 421, 570, 792, '#000');
+    dotted(ctx, 42, 191, 792, '#000');
+    dotted(ctx, 420, 569, 792, '#000');
     ctx.fillStyle = SIGN;
     ctx.fillText('সাধারণ সম্পাদক', 116.5, 809);
     ctx.fillText('সভাপতি', 494.5, 809);
