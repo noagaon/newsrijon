@@ -321,17 +321,18 @@
       ctx.drawImage(logo, 19.5, 261 - lh, lw, lh);   // নিচের রেখা = ছবির ঘরের নিচের রেখা (261)   // ডানের ছবির ঘরের সমান্তরালে (মাঝ-রেখা একই)
     }
 
-    // ছবির বক্স
+    // ছবির বক্স: উপরের রেখা লোগোর দৃশ্যমান মাথার (মনোগ্রামের চাপের) সমান, নিচের রেখা আগের মতো (261)
+    var pTop = logo ? 261 - 0.902 * lw * logo.height / logo.width : 135, pH = 261 - pTop;
     ctx.save();
-    roundRect(ctx, 459, 135, 109, 126, 15);
+    roundRect(ctx, 459, pTop, 109, pH, 15);
     ctx.fillStyle = '#dae3f3';
     ctx.fill();
     ctx.clip();
-    if (photo) drawCover(ctx, photo, 459, 135, 109, 126);
+    if (photo) drawCover(ctx, photo, 459, pTop, 109, pH);
     ctx.restore();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.2;
-    roundRect(ctx, 459, 135, 109, 126, 15);
+    roundRect(ctx, 459, pTop, 109, pH, 15);
     ctx.stroke();
 
     // শিরোনাম পিল
