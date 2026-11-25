@@ -41,6 +41,7 @@ var CONFIG = {
   // অনুমতি-ব্যবস্থা
   PERMIT_TAB: 'অনুমতি',
   APPROVERS: ['srijonshil2011@gmail.com', 'noagaon161271@gmail.com'],
+  SITE_URL: 'https://srijonshil2011.com',      // ইমেইলের অনুমোদন-লিংক ওয়েবসাইটের পেইজে যায় (গুগল-অ্যাকাউন্ট ঝামেলা এড়াতে)
   WEBAPP_URL: 'https://script.google.com/macros/s/AKfycbzTWo1I6LaAeZos36cV8hz2d1YrePtvtdgpfjtkYEhZgkrgEB33i07LHnPonAgwSLM9ew/exec',
   PERMIT_VALID_HOURS: 24,          // অনুরোধের পর এত ঘণ্টার মধ্যে অনুমোদন ও জমা দিতে হবে
   PERMIT_MAX_PER_PHONE: 15,        // এক ফোনে ২৪ ঘণ্টায় সর্বোচ্চ অনুরোধ (একই ফোন থেকে একাধিক আবেদন চলে)
@@ -76,6 +77,7 @@ function doPost(e) {
       case 'pick':           return json_(pick_(req));
       case 'access_request': return json_(requestAccess_(req));
       case 'access_status':  return json_(accessStatus_(req));
+      case 'decide':         return json_(decideCore_(req));
       case 'submit':   return json_(submit_(req.data || {}));
       case 'pdf':      return json_(savePdf_(req));
       case 'photo':    return json_(savePhoto_(req));
@@ -394,8 +396,8 @@ function mailApprovers_(rid, name, phone, tsStr, father) {
   var results = [];
   CONFIG.APPROVERS.forEach(function (email, idx) {
     try {
-      var ok = CONFIG.WEBAPP_URL + '?a=decide&rid=' + rid + '&v=approve&u=' + idx + '&sig=' + sign_(rid, 'approve', idx);
-      var no = CONFIG.WEBAPP_URL + '?a=decide&rid=' + rid + '&v=reject&u=' + idx + '&sig=' + sign_(rid, 'reject', idx);
+      var ok = CONFIG.SITE_URL + '/pages/decide.html?rid=' + rid + '&v=approve&u=' + idx + '&sig=' + sign_(rid, 'approve', idx);
+      var no = CONFIG.SITE_URL + '/pages/decide.html?rid=' + rid + '&v=reject&u=' + idx + '&sig=' + sign_(rid, 'reject', idx);
       var btn = 'display:inline-block;color:#fff;padding:14px 26px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px;margin:6px 8px 6px 0;';
       var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#111;max-width:520px">' +
         '<h2 style="color:#0b3d24;margin:0 0 10px">সদস্য আবেদনের অনুমতির অনুরোধ</h2>' +
@@ -444,6 +446,15 @@ function accessStatus_(r) {
 
 // অনুমোদনকারীর ইমেইলের লিংক খুললে
 function decidePage_(q) {
+  var d = decideCore_(q), msg = d.msg, good = d.good;
+  var color = good ? '#157347' : '#8a5a00';
+  var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:40px auto;padding:24px;border:2px solid ' + color + ';border-radius:14px;text-align:center">' +
+    '<h2 style="color:' + color + ';line-height:1.5">' + msg + '</h2><p style="color:#555">সৃজনশীল তরুণ সংঘ</p></div>';
+  return HtmlService.createHtmlOutput(html).setTitle('অনুমতি').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// সিদ্ধান্তের মূল কাজ (ইমেইল-লিংক পেইজ ও সরাসরি লিংক দুটোই এটি ব্যবহার করে)
+function decideCore_(q) {
   var rid = String(q.rid || ''), verdict = String(q.v || ''), idx = Number(q.u);
   var msg, good = false;
   try {
@@ -479,10 +490,7 @@ function decidePage_(q) {
     console.error(err && err.stack || err);
     msg = 'সমস্যা হয়েছে, আবার চেষ্টা করুন।';
   }
-  var color = good ? '#157347' : '#8a5a00';
-  var html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:40px auto;padding:24px;border:2px solid ' + color + ';border-radius:14px;text-align:center">' +
-    '<h2 style="color:' + color + ';line-height:1.5">' + msg + '</h2><p style="color:#555">সৃজনশীল তরুণ সংঘ</p></div>';
-  return HtmlService.createHtmlOutput(html).setTitle('অনুমতি').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return { ok: true, good: good, msg: msg };
 }
 
 // ---------------------------------------------------------------- ১) আবেদন জমা

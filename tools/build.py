@@ -264,6 +264,7 @@ def build_pages():
     write('pages/mysrijon-login.html', NOIDX(page('mysrijon', account_page.body('login'), ACC_JS, title='লগইন', parent='mysrijon')))
     write('pages/mysrijon-account.html', NOIDX(page('mysrijon', account_page.body('account'), ACC_JS, title='সদস্য অ্যাকাউন্ট', parent='mysrijon', mid=[('mysrijon-login.html', 'লগইন')])))
     write('v.html', '<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>যাচাই</title></head><body><p>যাচাই করা হচ্ছে…</p><script>location.replace("pages/verify.html" + location.search)</script></body></html>')
+    write('pages/decide.html', NOIDX(page('members', '<div id="dc"><p class="lead">অপেক্ষা করুন…</p></div>', '<script src="../config.js"></script><script src="../assets/js/decide.js"></script>', title='অনুমতির সিদ্ধান্ত', parent='members')))
     write('pages/verify.html', NOIDX(page('members', '<div id="vf"><p class="lead">যাচাই করা হচ্ছে…</p></div>', '<script src="../config.js"></script><script src="../assets/js/verify.js"></script>', title='পরিচয়পত্র যাচাই', parent='members')))
     write('pages/account.html', '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>আমার সৃজন</title><script>location.replace("mysrijon.html"+location.hash)</script><p><a href="mysrijon.html">আমার সৃজন</a></p>')
     write('pages/member-card.html', html.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>', 1))
