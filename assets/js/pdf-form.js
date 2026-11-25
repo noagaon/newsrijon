@@ -272,8 +272,8 @@
     if (logo) {
       ctx.save();
       ctx.globalAlpha = 0.11;
-      var wmH = 470, wmW = wmH * logo.width / logo.height;     // ইমুজির মাপের বৃত্তের ভেতরে (৬৭–৫৩২ × ২৬৯–৭৩৯), মাঝ ≈ (২৯৯.৫, ৫০৪)
-      ctx.drawImage(logo, 299.5 - wmW / 2, 504 - wmH / 2, wmW, wmH);
+      var wmH = 514, wmW = wmH * logo.width / logo.height;     // নিচের কিনারা আগের মতোই ৭৩৯, উপরের দৃশ্যমান মাথা ≈ ২৭৫ (লাল দাগ)
+      ctx.drawImage(logo, 299.5 - wmW / 2, 739 - wmH, wmW, wmH);
       ctx.restore();
     }
 
