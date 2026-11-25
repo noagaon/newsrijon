@@ -281,6 +281,23 @@ def sync_roster():
     open(path, 'w', encoding='utf-8').write(src[:a] + new + src[b:])
 
 
+def bust_cache():
+    """প্রতিটি পেইজে assets/js ও assets/css লিংকে ফাইলের হ্যাশ (?v=) বসায়, যাতে ব্রাউজার পুরনো স্ক্রিপ্ট না দেখায়"""
+    import hashlib, glob
+    pat = re.compile(r'((?:src|href)="(?:\.\./|\./)?)(assets/(?:js|css)/[^"?]+)(?:\?v=\w+)?"')
+    for f in glob.glob(os.path.join(ROOT, '*.html')) + glob.glob(os.path.join(ROOT, 'pages', '*.html')):
+        t = open(f, encoding='utf-8').read()
+        def sub(m):
+            fp = os.path.join(ROOT, m.group(2))
+            if not os.path.exists(fp):
+                return m.group(0)
+            h = hashlib.md5(open(fp, 'rb').read()).hexdigest()[:8]
+            return m.group(1) + m.group(2) + '?v=' + h + '"'
+        n = pat.sub(sub, t)
+        if n != t:
+            open(f, 'w', encoding='utf-8').write(n)
+
+
 if __name__ == '__main__':
     sync_roster()
     build_home()
@@ -290,4 +307,5 @@ if __name__ == '__main__':
     write('assets/js/members.js', 'window.SRIJON_MEMBERS=' + _j.dumps(
         {k: [{'n': n, 'no': no, 'd': d} for (n, no, d) in v] for k, v in pc.MEMBERS.items()},
         ensure_ascii=False, separators=(',', ':')) + ';\n')
+    bust_cache()
     print('OK: index.html +', len(MENU), 'pages')
