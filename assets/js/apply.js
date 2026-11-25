@@ -305,7 +305,10 @@
   // ---------- অনুমতি-ব্যবস্থা ----------
   var KEY = 'srijon_access_rid';
   var accessId = '', approved = false, pollTimer = null, capId = '';
-  function store(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); } catch (e) {} }
+  function store(v) {
+    try { if (v) localStorage.setItem(KEY, v); else { localStorage.removeItem(KEY); localStorage.removeItem('srijon_access_fill'); } } catch (e) {}
+    var rb = $('permitReset'); if (rb) rb.hidden = !v;      // অনুরোধ থাকলেই “বাতিল করে নতুন করুন” বোতাম দেখায়
+  }
   function stored() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
   function pStatus(cls, msg) { var s = $('permitStatus'); s.className = 'status' + (cls ? ' ' + cls : ''); s.textContent = msg || ''; }
 
@@ -443,6 +446,19 @@
       pollTimer = setTimeout(poll, 6000);
     }).catch(function () { pollTimer = setTimeout(poll, 9000); });
   }
+
+  // আটকে থাকা/পুরনো অনুরোধ বাতিল করে একদম নতুন করে শুরু
+  $('permitReset').addEventListener('click', function () {
+    if (!window.confirm('বর্তমান অনুরোধ ও অনুমতির তথ্য মুছে নতুন করে শুরু করবেন?')) return;
+    stopPoll(); accessId = ''; store('');
+    ['memberType', 'nameBn', 'phone', 'father', 'mother', 'dob', 'gender', 'religion'].forEach(function (id) {
+      unmaskField(id, true); var el = $(id); if (el) { el.value = ''; if (el.blur) el.blur(); }
+    });
+    ['permitName', 'permitFather', 'permitPhone'].forEach(function (id) { $(id).value = ''; });
+    $('permitType').value = '';
+    setApproved(false); $('permitBtn').disabled = false; pStatus('', ''); loadCaptcha();
+    window.scrollTo({ top: $('permitName').getBoundingClientRect().top + window.pageYOffset - 120, behavior: 'smooth' });
+  });
 
   var PERMIT_ERR = {
     captcha: 'নিরাপত্তা প্রশ্নের উত্তর ঠিক হয়নি। নতুন প্রশ্নের উত্তর দিন।',
@@ -715,7 +731,7 @@
 
   // শুরু: ক্যাপচা লোড, আগের অনুরোধ থাকলে চালিয়ে যাওয়া
   loadCaptcha();
-  accessId = stored();
+  accessId = stored(); store(accessId);
   try {
     var sv = JSON.parse(localStorage.getItem('srijon_access_fill') || 'null');
     if (sv && sv.rid && sv.rid === accessId) fillFromPermit(sv, false);
