@@ -256,7 +256,7 @@
   function draw(canvas, d, logo, photo) {
     var ctx = canvas.getContext('2d');
     ctx.setTransform(SCALE * K, 0, 0, SCALE * K, 0, 0);   // এখন থেকে সব মাপ pt
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = ({ expat: '#e6f0fb' }[d.memberType]) || '#fff';   // প্রবাসী সদস্যের ফরমের পেইজ হালকা নীল
     ctx.fillRect(0, 0, PW, PH);
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
