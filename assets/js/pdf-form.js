@@ -256,8 +256,10 @@
   function draw(canvas, d, logo, photo) {
     var ctx = canvas.getContext('2d');
     ctx.setTransform(SCALE * K, 0, 0, SCALE * K, 0, 0);   // এখন থেকে সব মাপ pt
-    ctx.fillStyle = ({ general: '#e9f5e4', expat: '#e6f0fb', junior: '#fde8e8', donor: '#fff8d6' }[d.memberType]) || '#fff';   // পেইজের হালকা রং: সাধারণ সবুজ, প্রবাসী নীল, জুনিয়র লাল, দাতা হলুদ
-    ctx.fillRect(0, 0, PW, PH);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, PW, PH);                           // বর্ডারের বাইরের অংশ সবসময় সাদা
+    ctx.fillStyle = ({ general: '#e9f5e4', expat: '#e6f0fb', junior: '#fde8e8', donor: '#fff8d6' }[d.memberType]) || '#fff';   // বর্ডারের ভেতরে হালকা রং: সাধারণ সবুজ, প্রবাসী নীল, জুনিয়র লাল, দাতা হলুদ
+    ctx.fillRect(14.8, 14.8, PW - 29.6, PH - 29.6);
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
 
