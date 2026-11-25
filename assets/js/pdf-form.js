@@ -488,7 +488,9 @@
 
     // সবুজ ঘর: একপাশে যাচাই-কিউআর (আগের মাপেই, ৬৪ পয়েন্ট), অন্যপাশে সদস্য ধরণ (সাধারণ/প্রবাসী…)
     var BX = 207, BY = 205, BW = 181, BH = 68;
-    ctx.fillStyle = '#2e7031';
+    // রং: সাধারণ সবুজ, প্রবাসী নীল, জুনিয়র লাল, দাতা হলুদ
+    var TC = { general: ['#2e7031', '#fff'], expat: ['#1f4e9c', '#fff'], junior: ['#c00000', '#fff'], donor: ['#ffc000', '#3b2a00'] }[d.memberType] || ['#2e7031', '#fff'];
+    ctx.fillStyle = TC[0];
     roundRect(ctx, BX, BY, BW, BH, 9);
     ctx.fill();
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1.1;
@@ -500,7 +502,7 @@
     var SHORT = { general: 'সাধারণ', expat: 'প্রবাসী', junior: 'জুনিয়র', donor: 'দাতা' };
     var st = SHORT[d.memberType] || '';
     if (st) {
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+      ctx.fillStyle = TC[1]; ctx.textAlign = 'center';
       var sz = 36;
       ctx.font = font(700, sz);
       while (ctx.measureText(st).width > BW - 64 - 16 && sz > 14) { sz -= 1; ctx.font = font(700, sz); }
