@@ -147,19 +147,19 @@ def membership_body():
   <div class="row-3">
     <div class="field"><label for="dob">৭। জন্ম তারিখ <span class="req">*</span></label><input id="dob" name="dob" type="date" required></div>
     <div class="field"><label for="gender">৮। লিঙ্গ <span class="req">*</span></label><select id="gender" name="gender" required>%(gender)s</select></div>
-    <div class="field"><label for="blood">৯। রক্ত গ্রুপ</label><select id="blood" name="blood">%(blood)s</select></div>
+    <div class="field"><label for="religion">৯। ধর্ম <span class="req">*</span></label><select id="religion" name="religion" required>%(rel)s<option value="__other">অন্য</option></select>
+      <input id="religionOther" name="religionOther" type="text" maxlength="40" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
   </div>
   <div class="row-2">
-    <div class="field"><label for="education">১০। শিক্ষাগত যোগ্যতা (সর্বশেষ পাশকৃত শ্রেণি) <span class="req">*</span></label>
+    <div class="field"><label for="blood">১০। রক্ত গ্রুপ</label><select id="blood" name="blood">%(blood)s</select></div>
+    <div class="field"><label for="education">১১। শিক্ষাগত যোগ্যতা (সর্বশেষ পাশকৃত শ্রেণি) <span class="req">*</span></label>
       <select id="education" name="education" required>%(edu)s<option value="__other">অন্য</option></select>
       <input id="educationOther" name="educationOther" type="text" maxlength="80" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
-    <div class="field"><label for="profession">১১। পেশা <span class="req">*</span></label>
-      <select id="profession" name="profession" required>%(prof)s<option value="__other">অন্য</option></select>
-      <input id="professionOther" name="professionOther" type="text" maxlength="80" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
   </div>
   <div class="row-2">
-    <div class="field"><label for="religion">১২। ধর্ম <span class="req">*</span></label><select id="religion" name="religion" required>%(rel)s<option value="__other">অন্য</option></select>
-      <input id="religionOther" name="religionOther" type="text" maxlength="40" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
+    <div class="field"><label for="profession">১২। পেশা <span class="req">*</span></label>
+      <select id="profession" name="profession" required>%(prof)s<option value="__other">অন্য</option></select>
+      <input id="professionOther" name="professionOther" type="text" maxlength="80" placeholder="অন্য হলে এখানে লিখুন" hidden></div>
     <div class="field"><label for="nid">১৩। জাতীয় পরিচয় পত্র (এনআইডি) নম্বর <span class="req" id="nidReq">*</span></label><input id="nid" name="nid" type="text" inputmode="numeric" maxlength="20"><small id="nidHelp">সাধারণ সদস্যের জন্য বাধ্যতামূলক</small></div>
   </div>
   <div class="field" id="birthRegWrap" hidden><label for="birthReg">জন্মনিবন্ধন সনদ নম্বর</label><input id="birthReg" name="birthReg" type="text" inputmode="numeric" maxlength="25"><small>জুনিয়র সদস্যের জন্য এনআইডি অথবা জন্মনিবন্ধন সনদ নম্বর — যেকোনো একটি দেওয়া বাধ্যতামূলক</small></div>

@@ -272,8 +272,8 @@
     if (logo) {
       ctx.save();
       ctx.globalAlpha = 0.11;
-      var wmW = 520, wmH = wmW * logo.height / logo.width;     // পেইজ বর্ডারের ভেতরে
-      ctx.drawImage(logo, PW / 2 - wmW / 2, 421 - wmH / 2, wmW, wmH);
+      var wmH = 498, wmW = wmH * logo.width / logo.height;     // লাল দাগের ঘর (৩৮–৫৫৫ × ২৯০–৭৮৮) ভেতরে, মাঝখানে
+      ctx.drawImage(logo, PW / 2 - wmW / 2, 539 - wmH / 2, wmW, wmH);
       ctx.restore();
     }
 
