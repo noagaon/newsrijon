@@ -8,8 +8,8 @@
   var W = 794, H = 1123;            // A4 @96dpi
   var SCALE = 2;                    // আউটপুট রেজোলিউশন গুণক
   var FONT = '"Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';
-  var INK = '#000';                 // আবেদনকারীর লেখা: কালো (ফন্ট স্টাইল আগের মতোই)
-  var LABEL = '#7030a0';            // ১–১৬ নং ক্ষেত্রের মূল লেখা: বেগুনি (ডটেড লাইন নেভি-নীলই থাকে)
+  var INK = '#7030a0';              // আবেদনকারীর ইনপুট করা তথ্য: বেগুনি (ফন্ট স্টাইল আগের মতোই)
+  var LABEL = '#000';               // ১–১৬ নং ক্ষেত্রের মূল লেখা ও ডটেড লাইন: কালো
   var NAVY = '#002060', RED = '#ff0000', SIGN = '#1f3864';
   var FIXF = '"Noto Serif Bengali","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",serif';   // স্থায়ী লেখার ফন্ট
   var VALF = '"Atma","Noto Sans Bengali","Hind Siliguri","Kalpurush","Nikosh","SolaimanLipi","Siyam Rupali","Vrinda",sans-serif';          // পূরণ করা তথ্যের ফন্ট
@@ -231,7 +231,7 @@
     ctx.strokeStyle = '#000'; ctx.lineWidth = 0.6;
     ctx.strokeRect(bx, by, bw, bh);
     if (value) {
-      ctx.fillStyle = INK;
+      ctx.fillStyle = '#000';
       var fs = fitFont(ctx, value, vWeight || 600, vSize || 12.4, bw - 6, 7, true);
       ctx.font = vfont(vWeight || 600, fs);
       if (value === 'X') { ctx.textAlign = 'center'; ctx.fillText(value, bx + bw / 2, by + bh - 4.2); ctx.textAlign = 'left'; }   // "X" বাক্সের মধ্যখানে
